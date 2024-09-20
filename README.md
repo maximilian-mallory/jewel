@@ -4,8 +4,6 @@ Project Emerald intends to serve the busy people of the world. It is not very of
 
 # Objectives 
 
-TODO: Provide individual and group learning goals, as well as the intended outcome of this project 
-
 ## Individual Learning Goals 
 
 - ### Jeremy 
@@ -25,6 +23,7 @@ During this project, I would like to develop my knowledge of Flutter and Dart as
 During this project, my primary goal is to gain more knowledge in the orchestration of CI/CD pipelines and developing software systems. I would also like to further my experience leading projects, especially with a group of developers who will be using most of the project technologies for the very first time. This will assess my current skills as a teacher and leader, while also creating a benchmark that serves as our final product.
 
 ## Group Learning Goals 
+TODO:
 
 ## Intended Project Outcome 
 
@@ -109,7 +108,6 @@ TODO: Provide examples of objects that may require schema. Things like user mode
     colorStyle: string,
 }
 
-
 # Algorithms and Data Structures 
 
 TODO: Describe how algorithms may be used in any of the many features this program will have. Graphs are likely, but other ADTs may be useful to us in this application. It is appropriate to include things we will use that are built into AWS. 
@@ -124,8 +122,6 @@ This does not need to be an AI tool. By giving goals weight and implementing a G
 
 # APIs and External Services 
 
-TODO: Search through Google APIs and the Microsoft Graph API to find the list of services we want to learn or use. Okta is also worth looking into, as well as Mongoose. The AWS Resources can also go here. 
-
 ## APIs 
 
 - Google APIs 
@@ -139,7 +135,6 @@ TODO: Search through Google APIs and the Microsoft Graph API to find the list of
 
 - Other 
     - Mongoose for MongoDB 
-
 
 ## External Services 
 
@@ -193,10 +188,11 @@ All tested will be automated with the CI/CD pipeline. When a developer deploys t
 - Can we give the Maps API bogus information?
 - Can we give the Maps API real information?
 - Can we login and logout?
-- Can we 
+- Can we ... ?
 
+## Integration Testing
+TODO: complete
  
-
 # Project Timeline 
 
 Our projected timeline begins with Sprint 1 and ends one full week before the project deadline. To provide a crisp and bug-free product, our project will not be allowed modifications the week prior to its submission. This will also allow members to focus on studying for their final exams. 
