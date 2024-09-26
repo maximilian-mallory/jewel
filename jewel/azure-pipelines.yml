@@ -6,9 +6,6 @@
 trigger:
 - main
 
-pool:
-  vmImage: ubuntu-latest
-
 steps:
 - script: echo Hello, world!
   displayName: 'Run a one-line script'
@@ -20,7 +17,7 @@ steps:
 - task: FlutterTest@0
   inputs:
     projectDirectory: 'jewel/'
-    testName: 'flutter_test'
+    testName: 'testWidgets'
     testPlainName: 'default test'
     generateCodeCoverageReport: true
     concurrency: '2'
