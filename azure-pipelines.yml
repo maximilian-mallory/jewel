@@ -6,6 +6,9 @@
 trigger:
 - max_backlog
 
+pool: 
+  name: local
+  
 steps:
 
 - task: FlutterTest@0
