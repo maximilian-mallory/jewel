@@ -16,5 +16,6 @@ steps:
     projectDirectory: 'jewel/'
     testName: 'testWidgets'
     testPlainName: 'default test'
+    extraArgs: '--no-test-assets'
     generateCodeCoverageReport: true
     concurrency: '1'
