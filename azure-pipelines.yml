@@ -10,7 +10,10 @@ pool:
   name: Default
 
 steps:
-
+- task: FlutterBuild@0
+  inputs:
+    target: 'all'
+    projectDirectory: '.'
 - task: FlutterTest@0
   inputs:
     projectDirectory: 'C:\repos\Project-Emerald\jewel'
