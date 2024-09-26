@@ -17,7 +17,5 @@ steps:
 - task: FlutterTest@0
   inputs:
     projectDirectory: 'jewel/'
-    testName: 'main'
-    testPlainName: 'default test'
     generateCodeCoverageReport: true
     concurrency: '2'
