@@ -18,7 +18,7 @@ steps:
 - task: FlutterBuild@0
   inputs:
     target: 'apk'
-    projectDirectory: '.'
+    projectDirectory: '.\jewel'
 - task: FlutterTest@0
   inputs:
     projectDirectory: 'C:\repos\Project-Emerald\jewel'
