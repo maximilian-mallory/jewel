@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<testsuites>
+  <testsuite name="widget_test.dart" timestamp="2024-09-26T22:49:55.110Z" errors="0" skipped="0" failures="0" tests="1">
+    <testcase name="loading C:/repos/Project-Emerald/jewel/test/widget_test.dart" classname="loading C:/repos/Project-Emerald/jewel/test/widget_test.dart" time="0"/>
+  </testsuite>
+  <testsuite timestamp="2024-09-26T22:49:55.110Z" errors="0" skipped="0" failures="0" tests="2">
+    <testcase name="Counter increments smoke test" classname="Counter increments smoke test" time="0.991"/>
+    <testcase name="All tests passed!" classname="All tests passed!" time="0"/>
+  </testsuite>
+</testsuites>
