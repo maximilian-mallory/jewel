@@ -4,18 +4,23 @@
 # https://aka.ms/yaml
 
 trigger:
-- main
+- max_backlog
+
+pool: 
+  name: Default
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- task: FlutterInstall@0
+  inputs:
+    mode: 'auto'
+    channel: 'stable'
+    version: 'latest'
+- task: FlutterBuild@0
+  inputs:
+    target: 'apk'
+    projectDirectory: '.\jewel'
 - task: FlutterTest@0
   inputs:
-    projectDirectory: 'jewel/'
+    projectDirectory: 'C:\repos\Project-Emerald\jewel'
     generateCodeCoverageReport: true
-    concurrency: '2'
+    concurrency: '1'
