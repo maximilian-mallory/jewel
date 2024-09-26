@@ -13,7 +13,7 @@ steps:
 
 - task: FlutterTest@0
   inputs:
-    projectDirectory: 'jewel/'
+    projectDirectory: '.jewel/'
     testName: 'testWidgets'
     testPlainName: 'default test'
     extraArgs: '--no-test-assets'
