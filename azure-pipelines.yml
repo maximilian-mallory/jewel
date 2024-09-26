@@ -17,7 +17,7 @@ steps:
     version: 'latest'
 - task: FlutterBuild@0
   inputs:
-    target: 'all'
+    target: 'apk'
     projectDirectory: '.'
 - task: FlutterTest@0
   inputs:
