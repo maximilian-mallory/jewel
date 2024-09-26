@@ -22,7 +22,7 @@ steps:
 - task: FlutterTest@0
   inputs:
     projectDirectory: 'C:\repos\Project-Emerald\jewel'
-    testName: 'testWidgets'
+    testName: 'main'
     testPlainName: 'default test'
     extraArgs: '--no-test-assets'
     generateCodeCoverageReport: true
