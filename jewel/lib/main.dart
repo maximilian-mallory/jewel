@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'widgets/toggle_button.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 
 void main() {
@@ -107,6 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            ToggleButton(),
             const Text(
               'You have pushed the button this many times:',
             ),
