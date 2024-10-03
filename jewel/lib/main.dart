@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'widgets/toggle_button.dart';
+import 'package:jewel/widgets/custom_nav.dart';
 
 void main() {
   runApp(const MyApp());
@@ -11,7 +13,8 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false, //turns off the "dubug" banner in the top right corner
+      title: 'Jewel',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -105,6 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            ToggleButton(),
             const Text(
               'You have pushed the button this many times:',
             ),
@@ -119,7 +123,9 @@ class _MyHomePageState extends State<MyHomePage> {
         onPressed: _incrementCounter,
         tooltip: 'Increment',
         child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
+      ),      
+
+      bottomNavigationBar: CustomNav(), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
