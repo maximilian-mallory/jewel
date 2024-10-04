@@ -10,7 +10,12 @@ RUN apt-get update && apt-get install -y \
     openjdk-8-jdk \
     wget \
     xz-utils \
-    libglu1-mesa && \
+    cmake \
+    ninja-build \
+    build-essential \
+    libglu1-mesa \
+    libglib2.0-dev \
+    && \
     apt-get clean
 
 # Install Flutter
