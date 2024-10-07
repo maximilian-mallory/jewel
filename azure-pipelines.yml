@@ -17,7 +17,7 @@ steps:
     version: 'latest'
 - task: FlutterBuild@0
   inputs:
-    target: 'apk'
+    target: 'web'
     projectDirectory: '.\jewel'
 - task: FlutterTest@0
   inputs:

@@ -11,10 +11,20 @@ RUN apt-get update && apt-get install -y \
     wget \
     xz-utils \
     cmake \
+    clang \
     ninja-build \
     build-essential \
-    libglu1-mesa \
+    pkg-config \
+    libgtk-3-dev \
     libglib2.0-dev \
+    libgdk-pixbuf2.0-dev \
+    libxcursor-dev \
+    libxrandr-dev \
+    libx11-dev \
+    libxi-dev \
+    libxss-dev \
+    libasound2-dev \
+    xvfb \ 
     && \
     apt-get clean
 
@@ -65,4 +75,6 @@ RUN flutter doctor
 RUN flutter build web
 
 # Command to run your app (optional)
-CMD ["flutter", "run"]
+CMD ["flutter", "run", "-d", "web-server", "--web-port=3000", "--web-hostname=0.0.0.0"]
+
+
