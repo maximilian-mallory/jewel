@@ -1,8 +1,18 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:jewel/auth/auth_gate.dart';
+import 'package:jewel/firebase_options.dart';
 import 'widgets/toggle_button.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 
-void main() {
+import 'auth/app.dart';
+
+Future<void> main() async {
+   WidgetsFlutterBinding.ensureInitialized();
+ await Firebase.initializeApp(
+   options: DefaultFirebaseOptions.currentPlatform,
+ );
+
   runApp(const MyApp());
 }
 
@@ -34,7 +44,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: const AuthGate()
+      //MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
 }
