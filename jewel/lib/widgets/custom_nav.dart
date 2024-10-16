@@ -21,6 +21,7 @@ class CustomNav extends StatelessWidget{
             selectedIcon: Icon(Icons.home),
             icon: Icon(Icons.home_outlined),
             label: 'Home',
+          
           ),
           NavigationDestination( //second destination option
             icon: Badge(child: Icon(Icons.notifications_sharp)),
