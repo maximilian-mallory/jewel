@@ -19,9 +19,15 @@ dependencies {
 
   implementation 'com.android.support:multidex:1.0.3' 
 
+  implementation 'com.github.jeremydmiller:gradle-dotenv:1.0.0'
+
 
 }
 
+apply from: 'gradle-dotenv.gradle'
+dotenv{
+    envFile = file("$rootDir/.env")
+}
 
 android {
     namespace = "com.jewel.app"

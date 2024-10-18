@@ -39,6 +39,10 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_ui_auth: ^1.16.0
   firebase_ui_oauth_google: ^1.4.0
+  google_maps_flutter: ^2.9.0
+  http: ^1.2.2
+  json_annotation: ^4.9.0
+  json_serializable: ^6.8.0
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +54,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  build_runner: ^2.4.13
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
