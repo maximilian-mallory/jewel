@@ -1,38 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 
-class CustomNavigationBar extends StatelessWidget {
-  final int selectedIndex;
+class CustomNavBar extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
 
-  const CustomNavigationBar({
-    required this.selectedIndex,
-    Key? key,
-  }) : super(key: key);
+  CustomNavBar({required this.currentIndex, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return NavigationBar(
-      onDestinationSelected: (int index) {
-        switch (index) {
-          case 0:
-            context.go('/'); // Navigate to Home
-            break;
-          case 1:
-            context.go('/second'); // Navigate to Second Screen
-            break;
-        }
-      },
-      selectedIndex: selectedIndex,
-      destinations: const <NavigationDestination>[
-        NavigationDestination(
-          icon: Icon(Icons.home),
-          label: 'Home',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.settings),
-          label: 'Second',
-        ),
-      ],
+    return BottomAppBar(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildNavItem(Icons.home, 'Home', 0),
+          _buildNavItem(Icons.business, 'Business', 1),
+          _buildNavItem(Icons.school, 'School', 2),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNavItem(IconData icon, String label, int index) {
+    final isSelected = currentIndex == index;
+    return GestureDetector(
+      onTap: () => onTap(index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            color: isSelected ? Colors.blue : Colors.grey,
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.blue : Colors.grey,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
