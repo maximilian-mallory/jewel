@@ -1,18 +1,18 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:jewel/auth/auth_gate.dart';
+import 'package:jewel/google/auth/auth_gate.dart';
 import 'package:jewel/firebase_options.dart';
 import 'widgets/toggle_button.dart';
 import 'package:jewel/widgets/custom_nav.dart';
-
-import 'auth/app.dart';
+import '/google/calendar/g_g_merge.dart';
+import 'google/auth/app.dart';
 
 Future<void> main() async {
-   WidgetsFlutterBinding.ensureInitialized();
+ WidgetsFlutterBinding.ensureInitialized();
  await Firebase.initializeApp(
    options: DefaultFirebaseOptions.currentPlatform,
  );
-
+ await fetchEventData();
   runApp(const MyApp());
 }
 
