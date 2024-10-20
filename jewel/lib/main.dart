@@ -4,6 +4,7 @@ import 'package:jewel/auth/auth_gate.dart';
 import 'package:jewel/firebase_options.dart';
 import 'widgets/toggle_button.dart';
 import 'package:jewel/widgets/custom_nav.dart';
+import 'package:jewel/notifications.dart';
 
 import 'auth/app.dart';
 
@@ -12,7 +13,8 @@ Future<void> main() async {
  await Firebase.initializeApp(
    options: DefaultFirebaseOptions.currentPlatform,
  );
-
+await NotificationController.initializeLocalNotifications();
+NotificationController.createNewNotification(); //sends notification when app is ran
   runApp(const MyApp());
 }
 
