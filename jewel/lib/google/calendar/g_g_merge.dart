@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/material.dart';
 
 Map<String, dynamic> mock1 = {
   "kind": "calendar#event",
@@ -143,3 +145,38 @@ Future<void> storeMockEvents() async {
     print('Error storing events: $e');
   }
 }
+
+Future<void> fetchEventData() async {
+  try {
+    DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
+        .collection('data') // Collection name
+        .doc('mockEvents') // Document name
+        .get();
+    if (documentSnapshot.exists) {
+      var eventData = documentSnapshot.data() as Map<String, dynamic>;
+
+      // Create a list of entries from the map
+      var entries = eventData.entries.toList();
+
+      // Sort the entries based on start.dateTime
+      entries.sort((a, b) {
+        DateTime startA = DateTime.parse(a.value['start']['dateTime']);
+        DateTime startB = DateTime.parse(b.value['start']['dateTime']);
+        return startA.compareTo(startB);
+      });
+
+      // Create a sorted map (optional, depending on your needs)
+      var sortedEvents = {
+        for (var entry in entries) entry.key: entry.value,
+      };
+
+      print('Sorted Events: $sortedEvents'); // Sorted by start time
+    } else {
+      print('Document does not exist');
+    }
+  } catch (e) {
+    print('Error fetching event data: $e');
+  }
+  
+}
+

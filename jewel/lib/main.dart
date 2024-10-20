@@ -12,7 +12,7 @@ Future<void> main() async {
  await Firebase.initializeApp(
    options: DefaultFirebaseOptions.currentPlatform,
  );
- await storeMockEvents();
+ await fetchEventData();
   runApp(const MyApp());
 }
 
