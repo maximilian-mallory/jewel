@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -146,14 +148,27 @@ Future<void> storeMockEvents() async {
   }
 }
 
-Future<void> fetchEventData() async {
+Future<Map<String, dynamic>> fetchEventData() async {
   try {
     DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
         .collection('data') // Collection name
         .doc('mockEvents') // Document name
         .get();
     if (documentSnapshot.exists) {
-      var eventData = documentSnapshot.data() as Map<String, dynamic>;
+      return googleCalendarMerge(documentSnapshot.data());
+    } else {
+      print('Document does not exist');
+      return {};
+
+    }
+  } catch (e) {
+    print('Error fetching event data: $e');
+    return {};
+  }
+}
+
+Future<Map<String, dynamic>> googleCalendarMerge(snapshot) async {
+  var eventData = snapshot as Map<String, dynamic>;
 
       // Create a list of entries from the map
       var entries = eventData.entries.toList();
@@ -165,18 +180,46 @@ Future<void> fetchEventData() async {
         return startA.compareTo(startB);
       });
 
-      // Create a sorted map (optional, depending on your needs)
+      // Create a sorted map 
       var sortedEvents = {
         for (var entry in entries) entry.key: entry.value,
       };
+      return sortedEvents;
+      // print('Sorted Events: $sortedEvents'); // Sorted by start time
+}
 
-      print('Sorted Events: $sortedEvents'); // Sorted by start time
-    } else {
-      print('Document does not exist');
+Future<List<Map<String, dynamic>>> identifyConflict(Map<String, dynamic> sortedEvents) async {
+  List<Map<String, dynamic>> conflicts = []; // List to store conflicting events
+   String conflictMessage ="";
+  // Get a list of event entries
+  var entries = sortedEvents.entries.toList();
+
+  for (int i = 0; i < entries.length - 1; i++) {
+    // Current event
+    var currentEvent = entries[i].value;
+    var nextEvent = entries[i + 1].value;
+
+    // Parse start and end times
+    DateTime currentStart = DateTime.parse(currentEvent['start']['dateTime']);
+    DateTime currentEnd = DateTime.parse(currentEvent['end']['dateTime']);
+    DateTime nextStart = DateTime.parse(nextEvent['start']['dateTime']);
+    DateTime nextEnd = DateTime.parse(nextEvent['end']['dateTime']);
+
+    // Check for overlap: current event overlaps with the next event
+    if (currentStart.isBefore(nextEnd) && nextStart.isBefore(currentEnd)) {
+      // Print conflict details
+      conflictMessage = 'Conflict detected between events:\n'
+          '1. ${currentEvent['summary']} - Start: $currentStart, End: $currentEnd\n'
+          '2. ${nextEvent['summary']} - Start: $nextStart, End: $nextEnd\n'
+          'Reason: The events overlap in time.\n';
+
+      // Add the conflict message to the list
+
+      conflicts.add(currentEvent); // Add current event to conflicts
+      conflicts.add(nextEvent); // Add next event to conflicts
     }
-  } catch (e) {
-    print('Error fetching event data: $e');
   }
-  
+
+  return conflicts; // Return the list of conflicts
 }
 
