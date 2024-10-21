@@ -17,7 +17,9 @@ class _CalendarIntegrationExampleState extends State<CalendarIntegrationExample>
       appBar: AppBar(
         title: Text('Google Calendar Events'),
       ),
-      body: ListView.builder(
+      body:_events.isEmpty
+          ? Center(child: Text('No events found or failed to fetch events')) 
+      : ListView.builder(
         itemCount: _events.length,
         itemBuilder: (context, index) {
           return ListTile(
@@ -41,9 +43,11 @@ class _CalendarIntegrationExampleState extends State<CalendarIntegrationExample>
     if (user != null) {
       final googleAuth = await user.getIdTokenResult(true);
       final accessToken = googleAuth.token;
-
+      print('Access Token: $accessToken'); // Debug print
       if (accessToken != null) {
         await _fetchEvents(accessToken);
+      }else {
+        print('Access token is null');
       }
     } else {
       print('User is not signed in');
@@ -51,6 +55,7 @@ class _CalendarIntegrationExampleState extends State<CalendarIntegrationExample>
   }
 
   Future<void> _fetchEvents(String accessToken) async {
+    try{
     var client = http.Client();
     var authenticatedClient = AuthenticatedClient(client, accessToken);
 
@@ -58,8 +63,13 @@ class _CalendarIntegrationExampleState extends State<CalendarIntegrationExample>
     var events = await calendarApi.events.list("primary");
 
     setState(() {
-      _events = events.items!;
+      _events = events.items??[];
     });
+    
+    print('Fetched ${_events.length} events'); // Debug print
+    } catch (e) {
+      print('Error fetching events: $e');
+    }
   }
 }
 
