@@ -1,15 +1,19 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:jewel/auth/auth_gate.dart';
+import 'package:jewel/google/auth/auth_gate.dart';
 import 'package:jewel/firebase_options.dart';
+import 'package:jewel/widgets/calendar_event_list.dart';
+import 'package:jewel/widgets/event_list_screen.dart';
 import 'widgets/toggle_button.dart';
 import 'package:jewel/widgets/custom_nav.dart';
+import '/google/calendar/g_g_merge.dart';
+import 'google/auth/app.dart';
 import 'package:jewel/notifications.dart';
 
 import 'auth/app.dart';
 
 Future<void> main() async {
-   WidgetsFlutterBinding.ensureInitialized();
+ WidgetsFlutterBinding.ensureInitialized();
  await Firebase.initializeApp(
    options: DefaultFirebaseOptions.currentPlatform,
  );
@@ -46,7 +50,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const AuthGate()
+      home: CalendarEventList()
       //MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
