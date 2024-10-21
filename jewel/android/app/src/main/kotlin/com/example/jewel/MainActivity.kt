@@ -1,4 +1,4 @@
-package com.example.jewel
+package com.jewel.app
 
 import io.flutter.embedding.android.FlutterActivity
 
