@@ -8,12 +8,16 @@ import 'widgets/toggle_button.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import '/google/calendar/g_g_merge.dart';
 import 'google/auth/app.dart';
+import 'package:jewel/notifications.dart';
+
 
 Future<void> main() async {
  WidgetsFlutterBinding.ensureInitialized();
  await Firebase.initializeApp(
    options: DefaultFirebaseOptions.currentPlatform,
  );
+await NotificationController.initializeLocalNotifications();
+NotificationController.createNewNotification(); //sends notification when app is ran
   runApp(const MyApp());
 }
 
