@@ -39,11 +39,14 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_ui_auth: ^1.16.0
   firebase_ui_oauth_google: ^1.4.0
-
+  http: ^0.13.0
+  googleapis: ^3.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
 
+dependency_overrides:
+  http: ^0.13.0
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
