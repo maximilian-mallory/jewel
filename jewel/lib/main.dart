@@ -10,7 +10,6 @@ import '/google/calendar/g_g_merge.dart';
 import 'google/auth/app.dart';
 import 'package:jewel/notifications.dart';
 
-import 'auth/app.dart';
 
 Future<void> main() async {
  WidgetsFlutterBinding.ensureInitialized();
