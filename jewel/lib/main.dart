@@ -2,6 +2,13 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel/google/auth/auth_gate.dart';
 import 'package:jewel/firebase_options.dart';
+<<<<<<< HEAD
+import 'package:jewel/widgets/custom_nav.dart';
+import 'package:jewel/screens/test_screen1.dart';
+import 'package:jewel/screens/test_screen2.dart';
+import 'package:jewel/screens/test_screen3.dart';
+import 'auth/app.dart';
+=======
 import 'package:jewel/widgets/calendar_event_list.dart';
 import 'package:jewel/widgets/event_list_screen.dart';
 import 'widgets/toggle_button.dart';
@@ -10,6 +17,7 @@ import '/google/calendar/g_g_merge.dart';
 import 'google/auth/app.dart';
 import 'package:jewel/notifications.dart';
 
+>>>>>>> 7add08b5dd0f72d912468e052918d58a20e8f76a
 
 Future<void> main() async {
  WidgetsFlutterBinding.ensureInitialized();
@@ -24,12 +32,14 @@ NotificationController.createNewNotification(); //sends notification when app is
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false, //turns off the "dubug" banner in the top right corner
       title: 'Jewel',
+<<<<<<< HEAD
+      home: HomeScreen()
+=======
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -51,97 +61,43 @@ class MyApp extends StatelessWidget {
       ),
       home: CalendarEventList()
       //MyHomePage(title: 'Flutter Demo Home Page'),
+>>>>>>> 7add08b5dd0f72d912468e052918d58a20e8f76a
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
+class HomeScreen extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
 
-  void _incrementCounter() {
+  final List<Widget> _screens = [
+    //This is the list of screens, if you need to add one to the navigation bar make sure 
+    //it is in the same order as it shows up here
+    //You also need to add it to the navigation which is in widgets/custom_nav.dart
+    Screen1(), //0
+    Screen2(), //1
+    Screen3(), //2
+  ];
+
+  void _onItemTapped(int index) {
     setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
+      _selectedIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+      appBar: AppBar(title: Text('Jewel')),
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: CustomNavBar(
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
       ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            ToggleButton(),
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),      
-
-      bottomNavigationBar: CustomNav(), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
