@@ -25,7 +25,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false, //turns off the "dubug" banner in the top right corner
       title: 'Jewel',
-      //home: const AuthGate() //commented out for the time being because it was throwing an error
+      home: HomeScreen()
     );
   }
 }
@@ -39,9 +39,12 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
 
   final List<Widget> _screens = [
-    Screen1(),
-    Screen2(),
-    Screen3(),
+    //This is the list of screens, if you need to add one to the navigation bar make sure 
+    //it is in the same order as it shows up here
+    //You also need to add it to the navigation which is in widgets/custom_nav.dart
+    Screen1(), //0
+    Screen2(), //1
+    Screen3(), //2
   ];
 
   void _onItemTapped(int index) {

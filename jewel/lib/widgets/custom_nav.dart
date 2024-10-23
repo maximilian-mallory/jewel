@@ -12,6 +12,9 @@ class CustomNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
+          //For adding a new option, you need to create a "_buildNavItem"
+          //This creates a widget that has paramaters as an icon, label, and index
+          //The index here needs to match the index in the main.dart list
           _buildNavItem(Icons.home, 'Home', 0),
           _buildNavItem(Icons.business, 'Business', 1),
           _buildNavItem(Icons.school, 'School', 2),
@@ -27,16 +30,8 @@ class CustomNavBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            color: isSelected ? Colors.blue : Colors.grey,
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.blue : Colors.grey,
-            ),
-          ),
+          Icon(icon,color: isSelected ? Colors.blue : Colors.grey,),
+          Text(label,style: TextStyle(color: isSelected ? Colors.blue : Colors.grey,),),
         ],
       ),
     );
