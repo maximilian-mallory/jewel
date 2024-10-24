@@ -1,15 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:jewel/google_events.dart';
+import 'package:jewel/google/calendar/google_events.dart';
 import 'package:jewel/notifications.dart';
 
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-  
-  
-
   @override
   Widget build(BuildContext context) {
     final user =FirebaseAuth.instance.currentUser;
@@ -28,11 +25,6 @@ class HomeScreen extends StatelessWidget {
         final profilePhoto = providerProfile.photoURL;
       }
     }
-
-    
-    
-
-    
     return Scaffold(
       appBar: AppBar(
         actions: [
@@ -78,7 +70,7 @@ class HomeScreen extends StatelessWidget {
               style: Theme.of(context).textTheme.displaySmall,
             ),
             const SignOutButton(),
-            ElevatedButton(
+            /*ElevatedButton(
               onPressed: () {
                 Navigator.push(
                   context,
@@ -88,14 +80,14 @@ class HomeScreen extends StatelessWidget {
                 );
               },
               child: const Text('View Google Calendar Events'),
-            )
+            )*/
 
-            /*ElevatedButton(
+            ElevatedButton(
               onPressed: () {
                 NotificationController.createNewNotification();
               },
               child: const Text('Send Notification'),
-            ),*/
+            ),
           ],
         ),
       ),
