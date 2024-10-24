@@ -2,13 +2,10 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:jewel/google/auth/auth_gate.dart';
 import 'package:jewel/firebase_options.dart';
-<<<<<<< HEAD
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/screens/test_screen1.dart';
 import 'package:jewel/screens/test_screen2.dart';
 import 'package:jewel/screens/test_screen3.dart';
-import 'auth/app.dart';
-=======
 import 'package:jewel/widgets/calendar_event_list.dart';
 import 'package:jewel/widgets/event_list_screen.dart';
 import 'widgets/toggle_button.dart';
@@ -17,7 +14,6 @@ import '/google/calendar/g_g_merge.dart';
 import 'google/auth/app.dart';
 import 'package:jewel/notifications.dart';
 
->>>>>>> 7add08b5dd0f72d912468e052918d58a20e8f76a
 
 Future<void> main() async {
  WidgetsFlutterBinding.ensureInitialized();
@@ -37,9 +33,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false, //turns off the "dubug" banner in the top right corner
       title: 'Jewel',
-<<<<<<< HEAD
-      home: HomeScreen()
-=======
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -61,7 +54,6 @@ class MyApp extends StatelessWidget {
       ),
       home: CalendarEventList()
       //MyHomePage(title: 'Flutter Demo Home Page'),
->>>>>>> 7add08b5dd0f72d912468e052918d58a20e8f76a
     );
   }
 }

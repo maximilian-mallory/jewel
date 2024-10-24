@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jewel/google/calendar/g_g_merge.dart';
-import 'event_list_screen.dart'; // Import the EventListScreen to use its methods
 
 class CalendarEventList extends StatefulWidget {
   @override

@@ -39,13 +39,10 @@ dependencies:
   firebase_core: ^3.6.0
   firebase_ui_auth: ^1.16.0
   firebase_ui_oauth_google: ^1.4.0
-<<<<<<< HEAD
   go_router: ^14.3.0
 
-=======
   cloud_firestore: ^5.4.4
   awesome_notifications: 0.10.0
->>>>>>> 7add08b5dd0f72d912468e052918d58a20e8f76a
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jewel/google/calendar/g_g_merge.dart';
 
 class EventListScreen extends StatefulWidget {
