@@ -1,38 +1,39 @@
 import 'package:flutter/material.dart';
 
-// ignore: must_be_immutable
-class CustomNav extends StatelessWidget{
-  CustomNav({super.key});
+class CustomNavBar extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
 
-  int currentPageIndex = 0;
+  CustomNavBar({required this.currentIndex, required this.onTap});
+
   @override
   Widget build(BuildContext context) {
-    
-    return NavigationBar(
-        onDestinationSelected: (int index) {
-          setState(() {
-            currentPageIndex = index;
-          });
-        },
-        indicatorColor: Colors.cyan,
-        selectedIndex: currentPageIndex,
-        destinations: const <Widget>[
-          NavigationDestination( //first destination option
-            selectedIcon: Icon(Icons.home),
-            icon: Icon(Icons.home_outlined),
-            label: 'Home',
-          ),
-          NavigationDestination( //second destination option
-            icon: Badge(child: Icon(Icons.notifications_sharp)),
-            label: 'Notifications',
-          ),
-          NavigationDestination( //third destination option
-            icon: Badge(label: Text('2'),child: Icon(Icons.messenger_sharp),),
-            label: 'Messages',
-          ),
+    return BottomAppBar(
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          //For adding a new option, you need to create a "_buildNavItem"
+          //This creates a widget that has paramaters as an icon, label, and index
+          //The index here needs to match the index in the main.dart list
+          _buildNavItem(Icons.home, 'Home', 0),
+          _buildNavItem(Icons.business, 'Business', 1),
+          _buildNavItem(Icons.school, 'School', 2),
         ],
-      );
+      ),
+    );
   }
-  
-  void setState(Null Function() param0) {}
+
+  Widget _buildNavItem(IconData icon, String label, int index) {
+    final isSelected = currentIndex == index;
+    return GestureDetector(
+      onTap: () => onTap(index),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon,color: isSelected ? Colors.blue : Colors.grey,),
+          Text(label,style: TextStyle(color: isSelected ? Colors.blue : Colors.grey,),),
+        ],
+      ),
+    );
+  }
 }
