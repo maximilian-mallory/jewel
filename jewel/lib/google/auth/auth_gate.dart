@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart'; // new
 import 'package:flutter/material.dart';
+import 'package:jewel/widgets/home_screen.dart';
 
-import 'home.dart';
 
 class AuthGate extends StatelessWidget {
  const AuthGate({super.key});
@@ -24,7 +24,7 @@ class AuthGate extends StatelessWidget {
                padding: const EdgeInsets.all(20),
                child: AspectRatio(
                  aspectRatio: 1,
-                 child: Image.asset('flutterfire_300x.png'),
+                 child: const Text("welcome"),
                ),
              );
            },
@@ -49,7 +49,7 @@ class AuthGate extends StatelessWidget {
          );
        }
 
-       return const HomeScreen();
+       return HomeScreen();
      },
    );
  }
