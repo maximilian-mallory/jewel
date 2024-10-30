@@ -2,7 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:jewel/google/auth/auth_gate.dart';
-import 'package:jewel/firebase_options.dart';
+import 'firebase_options.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/screens/test_screen1.dart';
 import 'package:jewel/screens/test_screen2.dart';
@@ -14,17 +14,28 @@ import 'widgets/toggle_button.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import '/google/calendar/g_g_merge.dart';
 import 'package:jewel/notifications.dart';
-
+import 'package:flutter/foundation.dart';
 
 Future<void> main() async {
- WidgetsFlutterBinding.ensureInitialized();
- await Firebase.initializeApp(
-   options: DefaultFirebaseOptions.currentPlatform,
- );
-await NotificationController.initializeLocalNotifications();
-NotificationController.createNewNotification(); //sends notification when app is ran
-await dotenv.load(fileName: ".env");
-runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables
+  if (kIsWeb) {
+    await dotenv.load(fileName: "assets/.env");
+  } else {
+    await dotenv.load(fileName: ".env");
+  }
+
+  // Initialize Firebase
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
+  // Initialize notifications
+  await NotificationController.initializeLocalNotifications();
+  NotificationController.createNewNotification();
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
