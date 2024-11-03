@@ -68,20 +68,17 @@ void _onMapCreated(GoogleMapController controller) {
   // Define the initMap function
   void initMap() {
     print('initMap function called');
-    
-    final googleMaps = js.context['google'] as js.JsObject?;
-    final maps = js.context['maps'] as js.JsObject?;
-
-    if(maps!=null){
-      final mapOptions = js.JsObject.jsify({
+    final mapOptions = js.JsObject.jsify({
       'center': js.JsObject.jsify({'lat': _center.latitude, 'lng': _center.longitude}),
       'zoom': 11,
     });
-    final map = js.JsObject(maps['Map'], [
-      html.document.getElementById('map'),
-      mapOptions,
-    ]);
+    if(kIsWeb){
+      final map = js.JsObject(js.context['google']['maps']['Map'], [html.document.getElementById('map'), mapOptions]);
     }
     
+    else{
+      print("test");
+          //final map = js.JsObject(js.context['google']['maps']['Map'], []);
+    }
   }
 }
