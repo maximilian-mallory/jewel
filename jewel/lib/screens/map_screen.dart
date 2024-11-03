@@ -20,7 +20,6 @@ void _onMapCreated(GoogleMapController controller) {
   Widget build(BuildContext context) {
     // Load the API key from the environment
     String? apiKey = dotenv.env['GOOGLE_MAPS_KEY'];
-    print('API Key: $apiKey');
     if (kIsWeb) {//if a
       print('Running on Web');
       // Web: Inject Google Maps API HTML
@@ -49,7 +48,7 @@ void _onMapCreated(GoogleMapController controller) {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Maps App'),
+          title: const Text('Maps Sample App'),
           elevation: 2,
         ),
         body: GoogleMap(
@@ -60,8 +59,7 @@ void _onMapCreated(GoogleMapController controller) {
           ),
         ),
       ),
-
-      );
+    );
     }
   }
 
@@ -72,13 +70,11 @@ void _onMapCreated(GoogleMapController controller) {
       'center': js.JsObject.jsify({'lat': _center.latitude, 'lng': _center.longitude}),
       'zoom': 11,
     });
-    if(kIsWeb){
-      final map = js.JsObject(js.context['google']['maps']['Map'], [html.document.getElementById('map'), mapOptions]);
-    }
-    
-    else{
-      print("test");
-          //final map = js.JsObject(js.context['google']['maps']['Map'], []);
-    }
+
+      final googleMaps = js.context['google'] as js.JsObject;
+      final maps = googleMaps['maps'] as js.JsObject;
+      final mapConstructor = maps['Map'] as js.JsFunction;
+      final map = js.JsObject(mapConstructor, [html.document.getElementById('map'), mapOptions]);
+  
   }
 }
