@@ -15,7 +15,7 @@ import 'package:jewel/widgets/custom_nav.dart';
 import '/google/calendar/g_g_merge.dart';
 import 'package:jewel/notifications.dart';
 import 'package:flutter/foundation.dart';
-import 'package:pure_dart_ui/pure_dart_ui.dart' as ui;
+import '/utils/fake_ui.dart' if (dart.library.html) '/utils/real_ui.dart' as ui;
 import "package:universal_html/html.dart" as html;
 
 Future<void> main() async {

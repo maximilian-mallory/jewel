@@ -8,6 +8,13 @@ import "package:universal_html/html.dart" as html; // For web only
 
 class MapScreen extends StatelessWidget {
   final LatLng _center = const LatLng(45.521563, -122.677433);
+  late GoogleMapController mapController;
+
+void _onMapCreated(GoogleMapController controller) {
+    mapController = controller;
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -35,16 +42,25 @@ class MapScreen extends StatelessWidget {
       );
     } else {
       // Mobile: Use google_maps_flutter plugin
-      return Scaffold(
-        appBar: AppBar(title: Text('Google Maps - Mobile')),
+      return MaterialApp(
+      theme: ThemeData(
+        useMaterial3: true,
+        colorSchemeSeed: Colors.green[700],
+      ),
+      home: Scaffold(
+        appBar: AppBar(
+          title: const Text('Maps App'),
+          elevation: 2,
+        ),
         body: GoogleMap(
-          onMapCreated: (GoogleMapController controller) {},
+          onMapCreated: _onMapCreated,
           initialCameraPosition: CameraPosition(
             target: _center,
             zoom: 11.0,
           ),
-          mapType: MapType.normal,
         ),
+      ),
+
       );
     }
   }
@@ -52,10 +68,20 @@ class MapScreen extends StatelessWidget {
   // Define the initMap function
   void initMap() {
     print('initMap function called');
-    final mapOptions = js.JsObject.jsify({
+    
+    final googleMaps = js.context['google'] as js.JsObject?;
+    final maps = js.context['maps'] as js.JsObject?;
+
+    if(maps!=null){
+      final mapOptions = js.JsObject.jsify({
       'center': js.JsObject.jsify({'lat': _center.latitude, 'lng': _center.longitude}),
       'zoom': 11,
     });
-    final map = js.JsObject(js.context['google']['maps']['Map'], [html.document.getElementById('map'), mapOptions]);
+    final map = js.JsObject(maps['Map'], [
+      html.document.getElementById('map'),
+      mapOptions,
+    ]);
+    }
+    
   }
 }
