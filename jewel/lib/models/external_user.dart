@@ -19,6 +19,9 @@ class ExternalUser {
   String _cause;
   String get cause => _cause;
 
+  List<Map<String, dynamic>> _calendars;
+  List<Map<String, dynamic>> get calendars => _calendars;
+
   ExternalUser({
     required User firebaseUser,
     required String userType,
@@ -26,12 +29,14 @@ class ExternalUser {
     required List<Map<String, dynamic>> openHours,
     required String title,
     required String cause,
+    required calendars,
   })  : _firebaseUser = firebaseUser,
         _userType = userType,
         _companyName = companyName,
         _openHours = openHours,
         _title = title,
-        _cause = cause;
+        _cause = cause,
+        _calendars = calendars;
 
   set userType(String value) {
     if (value.isNotEmpty) {
@@ -69,6 +74,12 @@ class ExternalUser {
     }
   }
 
+  set calendars(List<Map<String, dynamic>> value){
+    if (value.isNotEmpty){
+      _calendars = value;
+    }
+  }
+
   // Factory method to create an ExternalUser instance
   factory ExternalUser.create({
     required User firebaseUser,
@@ -77,6 +88,7 @@ class ExternalUser {
     required List<Map<String, dynamic>> openHours,
     required String title,
     required String cause,
+    required List<Map<String, dynamic>> calendars,
   }) {
     return ExternalUser(
       firebaseUser: firebaseUser,
@@ -85,8 +97,13 @@ class ExternalUser {
       openHours: openHours,
       title: title,
       cause: cause,
+      calendars: calendars,
     );
   }
+
+// create a function to return a widget that holds all calendar events
+
+
 }
 
 
