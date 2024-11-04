@@ -46,7 +46,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '954035696925',
     projectId: 'jewel-b2dcd',
     authDomain: 'jewel-b2dcd.firebaseapp.com',
-    storageBucket: 'jewel-b2dcd.appspot.com',
+    storageBucket: 'jewel-b2dcd.firebasestorage.app',
     measurementId: 'G-KE5DY2P8T7',
   );
 
@@ -55,7 +55,7 @@ class DefaultFirebaseOptions {
     appId: '1:954035696925:android:04545e70c33dd07cd89df4',
     messagingSenderId: '954035696925',
     projectId: 'jewel-b2dcd',
-    storageBucket: 'jewel-b2dcd.appspot.com',
+    storageBucket: 'jewel-b2dcd.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
@@ -63,7 +63,8 @@ class DefaultFirebaseOptions {
     appId: '1:954035696925:ios:350759e2cf003472d89df4',
     messagingSenderId: '954035696925',
     projectId: 'jewel-b2dcd',
-    storageBucket: 'jewel-b2dcd.appspot.com',
+    storageBucket: 'jewel-b2dcd.firebasestorage.app',
+    androidClientId: '954035696925-2v1n6ep4v89rl58mju2ol9a23k7i4qdi.apps.googleusercontent.com',
     iosClientId: '954035696925-lccrf4i2o0je8ab7afva92uo5n1q0oqi.apps.googleusercontent.com',
     iosBundleId: 'com.example.jewel',
   );
@@ -73,7 +74,8 @@ class DefaultFirebaseOptions {
     appId: '1:954035696925:ios:350759e2cf003472d89df4',
     messagingSenderId: '954035696925',
     projectId: 'jewel-b2dcd',
-    storageBucket: 'jewel-b2dcd.appspot.com',
+    storageBucket: 'jewel-b2dcd.firebasestorage.app',
+    androidClientId: '954035696925-2v1n6ep4v89rl58mju2ol9a23k7i4qdi.apps.googleusercontent.com',
     iosClientId: '954035696925-lccrf4i2o0je8ab7afva92uo5n1q0oqi.apps.googleusercontent.com',
     iosBundleId: 'com.example.jewel',
   );
@@ -84,7 +86,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '954035696925',
     projectId: 'jewel-b2dcd',
     authDomain: 'jewel-b2dcd.firebaseapp.com',
-    storageBucket: 'jewel-b2dcd.appspot.com',
+    storageBucket: 'jewel-b2dcd.firebasestorage.app',
     measurementId: 'G-C635Z97X9N',
   );
+
 }
