@@ -18,6 +18,7 @@ class CustomNavBar extends StatelessWidget {
           _buildNavItem(Icons.home, 'Home', 0),
           _buildNavItem(Icons.business, 'Business', 1),
           _buildNavItem(Icons.school, 'School', 2),
+          _buildNavItem(Icons.school, 'Maps', 3),
         ],
       ),
     );

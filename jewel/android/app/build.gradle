@@ -1,3 +1,4 @@
+
 plugins {
     id "com.android.application"
     id "kotlin-android"
@@ -5,6 +6,7 @@ plugins {
     id "dev.flutter.flutter-gradle-plugin"   
     // Add the Google services Gradle plugin
     id 'com.google.gms.google-services'
+    id 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin'
 }
 
 dependencies {
@@ -18,10 +20,20 @@ dependencies {
   // https://firebase.google.com/docs/android/setup#available-libraries
 
   implementation 'com.android.support:multidex:1.0.3' 
-
+  implementation 'com.google.android.libraries.mapsplatform.secrets-gradle-plugin:secrets-gradle-plugin:2.0.1'
 
 }
 
+
+def secretProperties = new Properties()
+def secretPropertiesFile = rootProject.file('secrets.properties')
+if (secretPropertiesFile.exists()) {
+    secretPropertiesFile.withInputStream { stream ->
+        secretProperties.load(stream)
+    }
+}
+
+def googleMapsApiKey = secretProperties['googleMapsApiKey']
 
 android {
     namespace = "com.jewel.app"
@@ -47,6 +59,7 @@ android {
         versionCode = flutter.versionCode
         versionName = flutter.versionName
         multiDexEnabled true
+        resValue "string", "google_maps_key", googleMapsApiKey
     }
 
     buildTypes {
