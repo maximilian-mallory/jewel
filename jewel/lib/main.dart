@@ -27,9 +27,7 @@ Future<void> main() async {
   }
 
   // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp();
 
   // Initialize notifications
   await NotificationController.initializeLocalNotifications();
