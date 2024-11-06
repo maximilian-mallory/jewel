@@ -151,8 +151,8 @@ Future<void> storeMockEvents() async {
 Future<Map<String, dynamic>> fetchEventData() async {
   try {
     DocumentSnapshot documentSnapshot = await FirebaseFirestore.instance
-        .collection('jewel_users') // Collection name
-        .doc('external') // Document name
+        .collection('data') // Collection name
+        .doc('mockEvents') // Document name
         .get();
     if (documentSnapshot.exists) {
       return googleCalendarMerge(documentSnapshot.data());

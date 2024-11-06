@@ -3,7 +3,7 @@ import 'package:jewel/google/calendar/google_events.dart';
 import 'package:jewel/screens/test_screen1.dart';
 import 'package:jewel/screens/test_screen2.dart';
 import 'package:jewel/screens/test_screen3.dart';
-import 'package:jewel/screens/map_screen.dart';
+import 'package:jewel/google/maps/map_screen.dart';
 import 'package:jewel/widgets/calendar_event_list.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 
