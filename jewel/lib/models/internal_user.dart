@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:woosmap_flutter/woosmap_flutter.dart';
 
 class InternalUser 
 {
@@ -12,8 +13,8 @@ class InternalUser
   String _internalID;
   String get internalID => _internalID;
 
-  List<Map<String, dynamic>> _openHours;
-  List<Map<String, dynamic>> get openHours => _openHours;
+  StoreWeeklyOpeningHoursPeriod _openHours;
+  StoreWeeklyOpeningHoursPeriod get openHours => _openHours;
 
   String _title;
   String get title => _title;
@@ -25,7 +26,7 @@ class InternalUser
       required User firebaseUser,
       required String userType,
       required String internalID,
-      required List<Map<String, dynamic>> openHours,
+      required StoreWeeklyOpeningHoursPeriod openHours,
       required String title,
       required List<Map<String, dynamic>> calendars,
   })  : _firebaseUser = firebaseUser,
@@ -57,10 +58,9 @@ class InternalUser
     
   }
 
-  set openHours(List<Map<String, dynamic>> value){
-    if (value.isNotEmpty){
-      _openHours = value;
-    }
+  set openHours(StoreWeeklyOpeningHoursPeriod value){
+    
+    _openHours = value;
     
   }
 
@@ -81,7 +81,7 @@ class InternalUser
     required User firebaseUser,
     required String userType,
     required String internalID,
-    required List<Map<String, dynamic>> openHours,
+    required StoreWeeklyOpeningHoursPeriod openHours,
     required String title,
     required List<Map<String, dynamic>> calendars,
   }) {

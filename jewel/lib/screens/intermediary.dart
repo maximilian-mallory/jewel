@@ -14,8 +14,7 @@ class Intermediary extends StatefulWidget{
 
 class _IntermediaryScreenState extends State<Intermediary> {
   final user =FirebaseAuth.instance.currentUser;
-  var name;
-  var email;
+
 
 
 
@@ -30,7 +29,18 @@ class _IntermediaryScreenState extends State<Intermediary> {
       name = providerProfile.displayName;
       email = providerProfile.email;
     }
-    new ExternalUser(firebaseUser: user, userType: "contractor", companyName: "Null Contracting", openHours: , title: "contractor", cause: "external contractor", calendars: null)
+    StoreOpeningHoursPeriod dailyHours = new StoreOpeningHoursPeriod();
+
+    dailyHours.start = "9:00";
+    dailyHours.end = "17:00";
+    dailyHours.allDay = false;
+    
+    List<StoreOpeningHoursPeriod> hoursList = new List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
+
+   
+    StoreWeeklyOpeningHoursPeriod weeklyHours = new StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
+   
+    new ExternalUser(firebaseUser: user, userType: "contractor", companyName: "Null Contracting", openHours: weeklyHours, title: "contractor", cause: "external contractor", calendars: null);
   }
   }
 
@@ -41,19 +51,20 @@ class _IntermediaryScreenState extends State<Intermediary> {
       name = providerProfile.displayName;
       email = providerProfile.email;
     }
-    List<StoreOpeningHoursPeriod> hoursList = List<>();
+    
     StoreOpeningHoursPeriod dailyHours = new StoreOpeningHoursPeriod();
 
-    dailyHours.start = "8:00";
+    dailyHours.start = "9:00";
     dailyHours.end = "17:00";
     dailyHours.allDay = false;
     
-    for (int i =0; i< 7; i++){
-      hoursList.add(dailyHours);
-    }
-    StoreWeeklyOpeningHoursPeriod weeklyHours;
-    weeklyHours.hours = hoursList; 
-    new InternalUser(firebaseUser: user, userType: "internal", internalID: "12345678", openHours: "", title: "employee", calendars: "")
+    List<StoreOpeningHoursPeriod> hoursList = new List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
+
+   
+    StoreWeeklyOpeningHoursPeriod weeklyHours = new StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
+   
+    
+    InternalUser storeInDatabase = new InternalUser(firebaseUser: user, userType: "internal", internalID: "12345678", openHours: weeklyHours, title: "employee", calendars: null);
   }
   }
 

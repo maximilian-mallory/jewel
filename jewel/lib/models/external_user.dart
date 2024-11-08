@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:woosmap_flutter/woosmap_flutter.dart';
 
 class ExternalUser {
   User _firebaseUser;
@@ -10,8 +11,8 @@ class ExternalUser {
   String _companyName;
   String get companyName => _companyName;
 
-  List<Map<String, dynamic>> _openHours;
-  List<Map<String, dynamic>> get openHours => _openHours;
+  StoreWeeklyOpeningHoursPeriod _openHours;
+  StoreWeeklyOpeningHoursPeriod get openHours => _openHours;
 
   String _title;
   String get title => _title;
@@ -26,7 +27,7 @@ class ExternalUser {
     required User firebaseUser,
     required String userType,
     required String companyName,
-    required List<Map<String, dynamic>> openHours,
+    required StoreWeeklyOpeningHoursPeriod openHours,
     required String title,
     required String cause,
     required calendars,
@@ -56,10 +57,9 @@ class ExternalUser {
     }
   }
 
-  set openHours(List<Map<String, dynamic>> value) {
-    if (value.isNotEmpty) {
-      _openHours = value;
-    }
+  set openHours(StoreWeeklyOpeningHoursPeriod value) {
+    _openHours = value;
+    
   }
 
   set title(String value) {
@@ -85,7 +85,7 @@ class ExternalUser {
     required User firebaseUser,
     required String userType,
     required String companyName,
-    required List<Map<String, dynamic>> openHours,
+    required StoreWeeklyOpeningHoursPeriod openHours,
     required String title,
     required String cause,
     required List<Map<String, dynamic>> calendars,
