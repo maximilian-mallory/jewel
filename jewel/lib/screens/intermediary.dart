@@ -13,7 +13,7 @@ class Intermediary extends StatefulWidget{
 }
 
 class _IntermediaryScreenState extends State<Intermediary> {
-  final user =FirebaseAuth.instance.currentUser;
+  
 
 
 
@@ -24,6 +24,7 @@ class _IntermediaryScreenState extends State<Intermediary> {
   }
 
   void createExternalUser(){
+    final user =FirebaseAuth.instance.currentUser;
     if (user != null){
     for (final providerProfile in user!.providerData){
       name = providerProfile.displayName;
@@ -40,12 +41,13 @@ class _IntermediaryScreenState extends State<Intermediary> {
    
     StoreWeeklyOpeningHoursPeriod weeklyHours = new StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
    
-    new ExternalUser(firebaseUser: user, userType: "contractor", companyName: "Null Contracting", openHours: weeklyHours, title: "contractor", cause: "external contractor", calendars: null);
+    new ExternalUser(firebaseUser: user, userType: "contractor", companyName: "Null Contracting", openHours: weeklyHours, title: "contractor", cause: "external contractor", calendars: [{}]);
   }
   }
 
 
   void createInternalUser(){
+    final user =FirebaseAuth.instance.currentUser;
     if (user != null){
     for (final providerProfile in user!.providerData){
       name = providerProfile.displayName;
@@ -64,7 +66,7 @@ class _IntermediaryScreenState extends State<Intermediary> {
     StoreWeeklyOpeningHoursPeriod weeklyHours = new StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
    
     
-    InternalUser storeInDatabase = new InternalUser(firebaseUser: user, userType: "internal", internalID: "12345678", openHours: weeklyHours, title: "employee", calendars: null);
+    InternalUser storeInDatabase = new InternalUser(firebaseUser: user, userType: "internal", internalID: "12345678", openHours: weeklyHours, title: "employee", calendars: [{}]);
   }
   }
 

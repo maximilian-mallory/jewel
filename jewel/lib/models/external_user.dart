@@ -30,7 +30,7 @@ class ExternalUser {
     required StoreWeeklyOpeningHoursPeriod openHours,
     required String title,
     required String cause,
-    required calendars,
+    required List<Map<String, dynamic>> calendars,
   })  : _firebaseUser = firebaseUser,
         _userType = userType,
         _companyName = companyName,
