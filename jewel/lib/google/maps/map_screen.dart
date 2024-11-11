@@ -82,7 +82,7 @@ void _onMapCreated(GoogleMapController controller) {
       final maps = googleMaps['maps'] as js.JsObject;
       final mapConstructor = maps['Map'] as js.JsFunction;
       final map = js.JsObject(mapConstructor, [html.document.getElementById('map'), mapOptions]);
-      isStreetAddress();
+      //isStreetAddress();
       calculateDistance();
   }
 }

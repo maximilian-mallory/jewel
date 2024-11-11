@@ -27,25 +27,35 @@ void injectGoogleMapsHtml(String apiKey) {
   print('Google Maps script injected');
 }
 
-Future<String> injectGoogleMapsMatrix(String apiKey, String origin, String destination) async {
-  final url = 'https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=$origin&destinations=$destination&key=$apiKey';
+Future<Map<String, dynamic>> injectGoogleMapsMatrix(String apiKey, String origin, String destination) async {
+  final url = Uri.http('localhost:3000', '/distance-matrix', {
+    'apiKey': apiKey,
+    'origin': origin,
+    'destination': destination,
+  });
+  
   // Set up the headers to allow CORS
-  final headers = {
+  /*final headers = {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*', // Allow all origins, or specify a particular domain
     'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE', // Specify allowed methods
     'Access-Control-Allow-Headers': 'Content-Type', // Specify allowed headers
-  };
+  };*/
   // Use BrowserClient for web-specific HTTP requests
   final client = browser_http.BrowserClient();
-  final response = await http.get(Uri.parse(url), headers: headers);
+  final response = await http.get(url);
   print('response: $response');
   if(response.statusCode==200){
     final data = json.decode(response.body);
     final distance = data['rows'][0]['elements'][0]['distance']['value'];
-    final duration = data['rows'][0]['elements'][0]['duration']['text'];
-    print('Duration: $duration');
-    return distance;
+    String duration = data['rows'][0]['elements'][0]['duration']['text'];
+    
+    duration = duration.replaceAll('mins', 'minutes');
+
+    return {
+      'distance': distance,
+      'duration': duration
+    };
   }
   else{
     throw Exception('Failed to load distance');
