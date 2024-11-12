@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:jewel/google/calendar/google_events.dart';
+import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/screens/test_screen1.dart';
 import 'package:jewel/screens/test_screen2.dart';
 import 'package:jewel/screens/test_screen3.dart';
 import 'package:jewel/widgets/calendar_event_list.dart';
 import 'package:jewel/widgets/custom_nav.dart';
+
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -20,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
     //You also need to add it to the navigation which is in widgets/custom_nav.dart
     CalendarIntegrationKey(), //0
     CalendarEventList(), //1
-    Screen3(), //2
+    SignInDemo(), //2
   ];
 
   void _onItemTapped(int index) {

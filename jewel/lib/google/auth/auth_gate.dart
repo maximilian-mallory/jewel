@@ -49,21 +49,21 @@ class AuthGate extends StatelessWidget {
             },
           );
         }
-
+        return HomeScreen();
         // After signing in, check if the user is authenticated
-        final user = snapshot.data!;
-        return FutureBuilder(
-          future: _handleGoogleOAuth(user, context), // Pass context to handle URL
-          builder: (context, AsyncSnapshot<void> snapshot) {
-            if (snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
-            } else if (snapshot.hasError) {
-              return Center(child: Text('Error: ${snapshot.error}'));
-            }
+        // final user = snapshot.data!;
+        // return FutureBuilder(
+        //   future: _handleGoogleOAuth(user, context), // Pass context to handle URL
+        //   builder: (context, AsyncSnapshot<void> snapshot) {
+        //     if (snapshot.connectionState == ConnectionState.waiting) {
+        //       return const Center(child: CircularProgressIndicator());
+        //     } else if (snapshot.hasError) {
+        //       return Center(child: Text('Error: ${snapshot.error}'));
+        //     }
 
-            return HomeScreen();
-          },
-        );
+        //     return HomeScreen();
+        //   },
+        // );
       },
     );
   }
