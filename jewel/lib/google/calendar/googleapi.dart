@@ -1,38 +1,22 @@
-// Copyright 2013 The Flutter Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-
-// ignore_for_file: avoid_print
-
 import 'dart:async';
-import 'dart:convert' show json;
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis/calendar/v3.dart' as gcal; // Add a prefix for the googleapis package
+import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:intl/intl.dart';
 
-/// The scopes required by this application.
-// #docregion Initialize
+
 const List<String> scopes = <String>[
-  'email',
   'https://www.googleapis.com/auth/calendar',
-  'https://www.googleapis.com/auth/contacts.readonly',
 ];
 
-typedef HandleSignInFn = Future<void> Function();
-
 GoogleSignIn _googleSignIn = GoogleSignIn(
-  // Optional clientId
-  //clientId: '954035696925-6853rfv8pcd087nsrl438100kuui3vba.apps.googleusercontent.com',
   scopes: scopes,
 );
-// #enddocregion Initialize
 
-/// The SignInDemo app.
 class SignInDemo extends StatefulWidget {
-  ///
-  const SignInDemo({super.key});
+  const SignInDemo({Key? key}) : super(key: key);
 
   @override
   State createState() => _SignInDemoState();
@@ -40,178 +24,277 @@ class SignInDemo extends StatefulWidget {
 
 class _SignInDemoState extends State<SignInDemo> {
   GoogleSignInAccount? _currentUser;
-  bool _isAuthorized = false; // has granted permissions?
-  String _contactText = '';
-  Map<String, dynamic>? data;
+  bool _isAuthorized = false;
+  List<gcal.Event> _events = [];
+  DateTime _currentDate = DateTime.now(); // Track the current date for fetching events
+  bool _isDayMode = true; // Toggle between Day and Month mode
+
   @override
   void initState() {
     super.initState();
-
-    _googleSignIn.onCurrentUserChanged
-        .listen((GoogleSignInAccount? account) async {
-// #docregion CanAccessScopes
-      // In mobile, being authenticated means being authorized...
+    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
       bool isAuthorized = account != null;
-      // However, on web...
-      if (kIsWeb && account != null) {
-        isAuthorized = await _googleSignIn.canAccessScopes(scopes);
-      }
-// #enddocregion CanAccessScopes
-
-      setState(() {
-        _currentUser = account;
-        _isAuthorized = isAuthorized;
-      });
-
-      // Now that we know that the user can access the required scopes, the app
-      // can call the REST API.
       if (isAuthorized) {
-        //unawaited(_handleGetContact(account!));
+        setState(() {
+          _currentUser = account;
+          _isAuthorized = isAuthorized;
+        });
+        createCalendarApiInstance();
       }
     });
-
-    // In the web, _googleSignIn.signInSilently() triggers the One Tap UX.
-    //
-    // It is recommended by Google Identity Services to render both the One Tap UX
-    // and the Google Sign In button together to "reduce friction and improve
-    // sign-in rates" ([docs](https://developers.google.com/identity/gsi/web/guides/display-button#html)).
     _googleSignIn.signInSilently();
   }
 
-  
-/// Renders a SIGN IN button that (maybe) calls the `handleSignIn` onclick.
-  Widget buildSignInButton({HandleSignInFn? onPressed}) {
-  return ElevatedButton(
-    onPressed: onPressed,
-    child: const Text('SIGN IN'),
-  );
-  
-}
-  // Calls the People API REST endpoint for the signed-in user to retrieve information.
-  
-
-  // This is the on-click handler for the Sign In button that is rendered by Flutter.
-  //
-  // On the web, the on-click handler of the Sign In button is owned by the JS
-  // SDK, so this method can be considered mobile only.
-  // #docregion SignIn
   Future<void> _handleSignIn() async {
     try {
       await _googleSignIn.signIn();
     } catch (error) {
-      print(error);
+      print('Sign in failed: $error');
     }
   }
-  // #enddocregion SignIn
 
-  // Prompts the user to authorize `scopes`.
-  //
-  // This action is **required** in platforms that don't perform Authentication
-  // and Authorization at the same time (like the web).
-  //
-  // On the web, this must be called from an user interaction (button click).
-  // #docregion RequestScopes
-  Future<void> _handleAuthorizeScopes() async {
-    final bool isAuthorized = await _googleSignIn.requestScopes(scopes);
-    // #enddocregion RequestScopes
+  Future<void> _handleSignOut() async {
+    await _googleSignIn.disconnect();
     setState(() {
-      _isAuthorized = isAuthorized;
+      _currentUser = null;
+      _isAuthorized = false;
+      _events.clear();
     });
-    // #docregion RequestScopes
-    if (isAuthorized) {
-      unawaited(_handleGetEvents(_currentUser!));
-    }
-    // #enddocregion RequestScopes
   }
-  Future<void> _handleGetEvents(GoogleSignInAccount user) async {
-    print("fetching events");
-    setState(() {
-      _contactText = 'Loading contact info...';
-    });
-    final http.Response response = await http.get(
-      Uri.parse('https://www.googleapis.com/calendar/v3/calendars/primary/events/'),
-      headers: await user.authHeaders,
-    );
-    if (response.statusCode != 200) {
-      setState(() {
-        _contactText = 'People API gave a ${response.statusCode} '
-            'response. Check logs for details.';
-      });
-      print('People API ${response.statusCode} response: ${response.body}');
+
+  Future<String?> getGoogleAccessToken() async {
+    final GoogleSignInAuthentication auth = await _currentUser!.authentication;
+    return auth.accessToken;
+  }
+
+  Future<void> createCalendarApiInstance() async {
+    String? accessToken = await getGoogleAccessToken();
+    if (accessToken == null) {
+      print('Access token not available');
       return;
     }
-    
-    
-    setState(() {
-      data = json.decode(response.body) as Map<String, dynamic>;
-    });
-    print(data);
-  }
-  Future<void> _handleSignOut() => _googleSignIn.disconnect();
 
-  Widget _buildBody() {
-    final GoogleSignInAccount? user = _currentUser;
-    if (user != null) {
-      // The user is Authenticated
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          ListTile(
-            leading: GoogleUserCircleAvatar(
-              identity: user,
-            ),
-            title: Text(user.displayName ?? ''),
-            subtitle: Text(user.email),
-          ),
-          const Text('Signed in successfully.'),
-          if (_isAuthorized) ...<Widget>[
-            // The user has Authorized all required scopes
-            Text(_contactText),
-            ElevatedButton(
-              child: const Text('REFRESH'),
-              onPressed: () => _handleGetEvents(user),
-            ),
-          ],
-          if (!_isAuthorized) ...<Widget>[
-            // The user has NOT Authorized all required scopes.
-            // (Mobile users may never see this button!)
-            const Text('Additional permissions needed to read your contacts.'),
-            ElevatedButton(
-              onPressed: _handleAuthorizeScopes,
-              child: const Text('REQUEST PERMISSIONS'),
-            ),
-          ],
-          ElevatedButton(
-            onPressed: _handleSignOut,
-            child: const Text('SIGN OUT'),
-          ),
-        ],
-      );
-    } else {
-      // The user is NOT Authenticated
-      return Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: <Widget>[
-          const Text('You are not currently signed in.'),
-          // This method is used to separate mobile from web code with conditional exports.
-          // See: src/sign_in_button.dart
-          buildSignInButton(
-            onPressed: _handleSignIn,
-          ),
-        ],
-      );
+    final httpClient = http.Client();
+    final AuthClient authClient = authenticatedClient(
+      httpClient,
+      AccessCredentials(
+        AccessToken('Bearer', accessToken, DateTime.now().toUtc().add(Duration(hours: 1))),
+        null,
+        scopes,
+      ),
+    );
+
+    gcal.CalendarApi calendarApi = gcal.CalendarApi(authClient);
+    print("API instance created");
+    await getAllEvents(calendarApi);
+  }
+
+  Future<void> getAllEvents(gcal.CalendarApi calendarApi) async {
+    try {
+      String? pageToken;
+      List<gcal.Event> eventsList = [];
+      DateTime startOfPeriod;
+      DateTime endOfPeriod;
+
+      startOfPeriod = _currentDate;
+      endOfPeriod = _currentDate.add(Duration(days: 1));
+
+      do {
+        gcal.Events events = await calendarApi.events.list(
+          'primary',
+          timeMin: startOfPeriod.toUtc(),
+          timeMax: endOfPeriod.toUtc(),
+          singleEvents: true,
+          orderBy: 'startTime',
+          pageToken: pageToken,
+        );
+
+        if (events.items != null) {
+          eventsList.addAll(events.items!);
+        }
+
+        pageToken = events.nextPageToken;
+      } while (pageToken != null);
+
+      setState(() {
+        _events = eventsList;
+      });
+    } catch (e) {
+      print('Error fetching events: $e');
     }
+  }
+
+  // Change the current date based on the toggle mode (Day or Month)
+  void _changeDateBy(int daysOrMonths) {
+    setState(() {
+      if (_isDayMode) {
+        _currentDate = _currentDate.add(Duration(days: daysOrMonths));
+      } else {
+        _currentDate = DateTime(
+          _currentDate.year,
+          _currentDate.month + daysOrMonths,
+          1,
+        );
+      }
+    });
+    createCalendarApiInstance();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final GoogleSignInAccount? user = _currentUser;
+    if (user != null) {
+      return Scaffold(
         appBar: AppBar(
-          title: const Text('Google Sign In'),
+          title: const Text('Google Calendar Events'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => _changeDateBy(_isDayMode ? -1 : -1), // Go to the previous day or month
+            ),
+            IconButton(
+              icon: const Icon(Icons.arrow_forward),
+              onPressed: () => _changeDateBy(_isDayMode ? 1 : 1), // Go to the next day or month
+            ),
+          ],
         ),
-        body: ConstrainedBox(
-          constraints: const BoxConstraints.expand(),
-          child: _buildBody(),
-        ));
+        body: _isAuthorized
+            ? Column(
+        children: [
+          // Day/Month toggle at the top
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _isDayMode
+                      ? 'Day Mode: ${DateFormat('MM/dd/yyyy').format(_currentDate)}'
+                      : 'Month Mode: ${DateFormat('MM/yyyy').format(_currentDate)}',
+                  style: TextStyle(fontSize: 18),
+                ),
+                Switch(
+                  value: _isDayMode,
+                  onChanged: (bool value) {
+                    setState(() {
+                      _isDayMode = value;
+                    });
+                    createCalendarApiInstance(); // Reload events with the new mode
+                  },
+                ),
+              ],
+            ),
+          ),
+          // Scrollable content for sidebar and main content
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Left Sidebar with Hours
+                  Container(
+                    width: 50,
+                    color: Colors.grey[200],
+                    child: Column(
+                      children: List.generate(24, (index) {
+                        String timeLabel = _isDayMode
+                            ? '${index.toString().padLeft(2, '0')}:00'
+                            : '${index}';
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: Text(
+                            timeLabel,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                  // Main content area for the calendar view
+                  Expanded(
+                    child: Column(
+                      children: List.generate(24, (hourIndex) {
+                        return Column(
+                          children: [
+                            Container(
+                              height: 100.0,
+                              decoration: BoxDecoration(
+                                border: Border(
+                                  bottom: BorderSide(color: Colors.grey[300]!),
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  ..._events.where((event) {
+                                    final start = event.start?.dateTime;
+                                    return start != null && start.hour == hourIndex;
+                                  }).map((event) {
+                                    String eventTitle = event.summary ?? 'No Title';
+                                    String eventTime = event.start?.dateTime != null
+                                        ? '${event.start?.dateTime} - ${event.end?.dateTime}'
+                                        : 'All-day event';
+
+                                    return Positioned(
+                                      top: 10,
+                                      left: 60,
+                                      right: 10,
+                                      child: Card(
+                                        color: Colors.blueAccent,
+                                        margin: EdgeInsets.symmetric(vertical: 2),
+                                        child: ListTile(
+                                          title: Text(
+                                            eventTitle,
+                                            style: TextStyle(color: Colors.white),
+                                          ),
+                                          subtitle: Text(
+                                            eventTime,
+                                            style: TextStyle(color: Colors.white70),
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }).toList(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      )
+      : Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Please sign in to view calendar events.'),
+              ElevatedButton(
+                onPressed: _handleSignIn,
+                child: const Text('Sign In with Google'),
+              ),
+            ],
+          ),
+        ),
+      );
+    } else {
+      return Scaffold(
+        body: Center(
+          child: ElevatedButton(
+            onPressed: _handleSignIn,
+            child: const Text('Sign In with Google'),
+          ),
+        ),
+      );
+    }
   }
 }
