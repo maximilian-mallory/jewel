@@ -97,6 +97,12 @@ class InternalUser
 
 // create a function to return a widget that holds all calendar events
 
-
-
+//create a function to serialize the user
+Map<String, dynamic> toJson() => {
+    'firebaseUser': firebaseUser,
+    'userType': userType,
+    'openHours': openHours,
+    'title': title,
+    'calendars': calendars,  
+  };
 }

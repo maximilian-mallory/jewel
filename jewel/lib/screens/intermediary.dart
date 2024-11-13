@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart'; // new
@@ -14,7 +15,7 @@ class Intermediary extends StatefulWidget{
 
 class _IntermediaryScreenState extends State<Intermediary> {
   
-
+bool isLoading = true; // To show loading indicator
 
 
 
@@ -23,36 +24,8 @@ class _IntermediaryScreenState extends State<Intermediary> {
     super.initState();
   }
 
-  void createExternalUser(){
-    final user =FirebaseAuth.instance.currentUser;
-    if (user != null){
-    for (final providerProfile in user!.providerData){
-      name = providerProfile.displayName;
-      email = providerProfile.email;
-    }
-    StoreOpeningHoursPeriod dailyHours = new StoreOpeningHoursPeriod();
-
-    dailyHours.start = "9:00";
-    dailyHours.end = "17:00";
-    dailyHours.allDay = false;
-    
-    List<StoreOpeningHoursPeriod> hoursList = new List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
-
-   
-    StoreWeeklyOpeningHoursPeriod weeklyHours = new StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
-   
-    new ExternalUser(firebaseUser: user, userType: "contractor", companyName: "Null Contracting", openHours: weeklyHours, title: "contractor", cause: "external contractor", calendars: [{}]);
-  }
-  }
-
-
-  void createInternalUser(){
-    final user =FirebaseAuth.instance.currentUser;
-    if (user != null){
-    for (final providerProfile in user!.providerData){
-      name = providerProfile.displayName;
-      email = providerProfile.email;
-    }
+  Future<void> createExternalUser() async {
+    User? user =FirebaseAuth.instance.currentUser;
     
     StoreOpeningHoursPeriod dailyHours = new StoreOpeningHoursPeriod();
 
@@ -64,11 +37,72 @@ class _IntermediaryScreenState extends State<Intermediary> {
 
    
     StoreWeeklyOpeningHoursPeriod weeklyHours = new StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
-   
     
-    InternalUser storeInDatabase = new InternalUser(firebaseUser: user, userType: "internal", internalID: "12345678", openHours: weeklyHours, title: "employee", calendars: [{}]);
+    if (user != null){
+      ExternalUser storeInDatabase = ExternalUser(firebaseUser: user, userType: "contractor", companyName: "Null Contracting", openHours: weeklyHours, title: "contractor", cause: "external contractor", calendars: [{}]);
+      print(storeInDatabase.toJson());
+      await FirebaseFirestore.instance
+          .collection('people') // Collection name
+          .doc('external') // Document name
+          .set(storeInDatabase.toJson());
+    }
   }
-  }
+  
 
 
+  Future<void> createInternalUser() async {
+    final user =FirebaseAuth.instance.currentUser;
+    
+
+    
+    StoreOpeningHoursPeriod dailyHours = new StoreOpeningHoursPeriod();
+
+    dailyHours.start = "9:00";
+    dailyHours.end = "17:00";
+    dailyHours.allDay = false;
+    
+    List<StoreOpeningHoursPeriod> hoursList = new List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
+
+   
+    StoreWeeklyOpeningHoursPeriod weeklyHours = new StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
+    
+    if (user != null){
+      InternalUser storeInDatabase = InternalUser(firebaseUser: user, userType: "internal", internalID: "12345678", openHours: weeklyHours, title: "employee", calendars: [{}]);
+      print(storeInDatabase.toJson());
+      await FirebaseFirestore.instance
+          .collection('people') // Collection name
+          .doc('internal') // Document name
+          .set(storeInDatabase.toJson());
+
+    }
+
+  }
+
+  Future<bool> searchForUser() async{
+    final user =FirebaseAuth.instance.currentUser;
+    final databaseSearch = await FirebaseFirestore.instance;
+    final externalRef = databaseSearch.collection("people");
+    final internalRef = databaseSearch.collection("people");
+
+    final queryInternal = internalRef.where("firebaseUser", isEqualTo: user);
+
+    if (queryInternal == null){
+      return false;
+    }
+    
+    else {
+
+
+      return true;
+    }
+
+  }
+
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+
+    );
+  }
 }

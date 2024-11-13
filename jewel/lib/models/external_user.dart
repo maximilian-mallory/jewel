@@ -101,9 +101,19 @@ class ExternalUser {
     );
   }
 
-// create a function to return a widget that holds all calendar events
+  // create a function to return a widget that holds all calendar events
 
+  // create a function that serializes the user
 
+  Map<String, dynamic> toJson() => {
+    'firebaseUser': firebaseUser,
+    'userType': userType,
+    'companyName': companyName,
+    'openHours': openHours,
+    'title': title,
+    'cause': cause,
+    'calendars': calendars,  
+  };
 }
 
 
