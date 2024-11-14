@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:googleapis/calendar/v3.dart';
 import 'package:jewel/google/calendar/google_events.dart';
 import 'package:jewel/screens/test_screen1.dart';
 import 'package:jewel/screens/test_screen2.dart';
@@ -6,6 +7,7 @@ import 'package:jewel/screens/test_screen3.dart';
 import 'package:jewel/google/maps/map_screen.dart';
 import 'package:jewel/widgets/calendar_event_list.dart';
 import 'package:jewel/widgets/custom_nav.dart';
+import 'package:jewel/widgets/settings.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -34,7 +36,20 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Jewel')),
+      appBar: AppBar(title: Text('Jewel'), leading: Builder(
+        builder: (BuildContext context) {
+          return IconButton(
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SettingsScreen()),
+              );
+            },
+            tooltip: MaterialLocalizations.of(context).showMenuTooltip,
+          );
+        },
+      ),),
       body: _screens[_selectedIndex],
       bottomNavigationBar: CustomNavBar(
         currentIndex: _selectedIndex,
