@@ -25,7 +25,7 @@ class _HomeScreenState extends State<HomeScreen> {
     //You also need to add it to the navigation which is in widgets/custom_nav.dart
     CalendarEventList(), //1
     SignInDemo(),
-    MapScreen(), //2
+    MapScreen(),//2
   ];
 
   void _onItemTapped(int index) {
