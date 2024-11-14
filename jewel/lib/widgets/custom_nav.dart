@@ -15,10 +15,9 @@ class CustomNavBar extends StatelessWidget {
           //For adding a new option, you need to create a "_buildNavItem"
           //This creates a widget that has paramaters as an icon, label, and index
           //The index here needs to match the index in the main.dart list
-          _buildNavItem(Icons.home, 'Home', 0),
-          _buildNavItem(Icons.business, 'Business', 1),
-          _buildNavItem(Icons.school, 'School', 2),
-          _buildNavItem(Icons.school, 'Maps', 3),
+          _buildNavItem(Icons.business, 'Business', 0),
+          _buildNavItem(Icons.school, 'School', 1),
+          _buildNavItem(Icons.school, 'Maps', 2),
         ],
       ),
     );

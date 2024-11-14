@@ -21,11 +21,9 @@ class _HomeScreenState extends State<HomeScreen> {
     //This is the list of screens, if you need to add one to the navigation bar make sure 
     //it is in the same order as it shows up here
     //You also need to add it to the navigation which is in widgets/custom_nav.dart
-    CalendarIntegrationKey(), //0
     CalendarEventList(), //1
-    Screen3(), //2
-    MapScreen(),
-    SignInDemo(), //2
+    SignInDemo(),
+    MapScreen(), //2
   ];
 
   void _onItemTapped(int index) {
