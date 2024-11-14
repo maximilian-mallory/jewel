@@ -16,6 +16,8 @@ import 'package:jewel/widgets/custom_nav.dart';
 import '/google/calendar/g_g_merge.dart';
 import 'package:jewel/notifications.dart';
 import 'package:flutter/foundation.dart';
+import '/utils/fake_ui.dart' if (dart.library.html) '/utils/real_ui.dart' as ui;
+import "package:universal_html/html.dart" as html;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -33,6 +35,14 @@ Future<void> main() async {
   // Initialize notifications
   await NotificationController.initializeLocalNotifications();
   NotificationController.createNewNotification();
+
+  // Register the view type for the map
+  if (kIsWeb) {
+    ui.platformViewRegistry.registerViewFactory('map', (int viewId) {
+      return html.DivElement()..id = 'map';
+    });
+  }
+
 
   runApp(const MyApp());
 }
