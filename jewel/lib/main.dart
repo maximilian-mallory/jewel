@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:jewel/google/auth/auth_gate.dart';
+import 'package:jewel/google/calendar/googleapi.dart';
 import 'firebase_options.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/screens/test_screen1.dart';
@@ -29,9 +30,7 @@ Future<void> main() async {
   }
 
   // Initialize Firebase
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp();
 
   // Initialize notifications
   await NotificationController.initializeLocalNotifications();
@@ -75,7 +74,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: AuthGate()
+      home: HomeScreen()
       //MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }
