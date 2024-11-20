@@ -28,7 +28,13 @@ void _onMapCreated(GoogleMapController controller) {
         print('Injecting Google Maps HTML with API Key');
         injectGoogleMapsHtml(apiKey);
         // Define the initMap function
-        js.context['initMap'] = initMap;
+        js.context['initMap'] = (){
+          Future.delayed(Duration(milliseconds: 500), (){
+            initMap();
+          }
+          
+          );
+        };
       }
       return Scaffold(
         appBar: AppBar(title: Text('Google Maps - Web')),
@@ -76,6 +82,7 @@ void _onMapCreated(GoogleMapController controller) {
       final maps = googleMaps['maps'] as js.JsObject;
       final mapConstructor = maps['Map'] as js.JsFunction;
       final map = js.JsObject(mapConstructor, [html.document.getElementById('map'), mapOptions]);
-      isStreetAddress();
+      //isStreetAddress();
+      calculateDistance();
   }
 }

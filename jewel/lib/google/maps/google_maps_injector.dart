@@ -1,4 +1,9 @@
+import "dart:convert";
+
 import "package:universal_html/html.dart" as html;
+import 'package:http/http.dart' as http;
+import 'package:http/browser_client.dart' as browser_http;
+
 
 void injectGoogleMapsHtml(String apiKey) {
   // Create the script element
@@ -20,4 +25,41 @@ void injectGoogleMapsHtml(String apiKey) {
   // Append the script to the head of the document
   html.document.head!.append(script);
   print('Google Maps script injected');
+}
+
+Future<Map<String, dynamic>> injectGoogleMapsMatrix(String apiKey, String origin, String destination) async {
+  final url = Uri.http('localhost:3000', '/distance-matrix', {
+    'apiKey': apiKey,
+    'origin': origin,
+    'destination': destination,
+  });
+  
+  // Set up the headers to allow CORS
+  /*final headers = {
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*', // Allow all origins, or specify a particular domain
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE', // Specify allowed methods
+    'Access-Control-Allow-Headers': 'Content-Type', // Specify allowed headers
+  };*/
+  // Use BrowserClient for web-specific HTTP requests
+  final client = browser_http.BrowserClient();
+  final response = await http.get(url);
+  print('response: $response');
+  if(response.statusCode==200){
+    final data = json.decode(response.body);
+    final distance = data['rows'][0]['elements'][0]['distance']['value'];
+    String duration = data['rows'][0]['elements'][0]['duration']['text'];
+    
+    duration = duration.replaceAll('mins', 'minutes');
+
+    return {
+      'distance': distance,
+      'duration': duration
+    };
+  }
+  else{
+    throw Exception('Failed to load distance');
+  }
+
+  
 }
