@@ -30,7 +30,9 @@ Future<void> main() async {
   }
 
   // Initialize Firebase
-  await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   // Initialize notifications
   await NotificationController.initializeLocalNotifications();

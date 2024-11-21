@@ -75,6 +75,6 @@ RUN flutter doctor
 RUN flutter build web
 
 # Command to run your app (optional)
-CMD ["flutter", "run", "-d", "web-server", "--web-port=3000", "--web-hostname=0.0.0.0"]
+CMD ["flutter", "run", "-d", "web-server", "--web-port=80", "--web-hostname=0.0.0.0"]
 
 
