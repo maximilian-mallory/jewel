@@ -1,18 +1,33 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:googleapis/calendar/v3.dart' as gcal; // Add a prefix for the googleapis package
+import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:intl/intl.dart';
 
+import 'dart:html' as html;
 
 const List<String> scopes = <String>[
   'https://www.googleapis.com/auth/calendar',
 ];
 
-GoogleSignIn _googleSignIn = GoogleSignIn(
+String? getClientId() {
+  if (kIsWeb) {
+    // Fetch the meta tag dynamically
+    final metaTag = html.document.querySelector('meta[name="google-signin-client_id"]');
+    final clientId = metaTag?.attributes['content'];
+    print("Client ID fetched from meta tag: $clientId"); // Ensure it prints the client ID
+    return clientId;
+  }
+  return null; // Non-web platforms
+}
+
+// Dynamically assign the client ID for GoogleSignIn on web
+final GoogleSignIn _googleSignIn = GoogleSignIn(
   scopes: scopes,
+  clientId: kIsWeb ? "954035696925-p4j9gbmpjknoc04qjd701r2h5ah190ug.apps.googleusercontent.com" : null, // Set client ID only for web
 );
 
 class SignInDemo extends StatefulWidget {
@@ -25,31 +40,39 @@ class SignInDemo extends StatefulWidget {
 class _SignInDemoState extends State<SignInDemo> {
   GoogleSignInAccount? _currentUser;
   bool _isAuthorized = false;
-  List<gcal.Event> _events = [];
-  DateTime _currentDate = DateTime.now(); // Track the current date for fetching events
-  bool _isDayMode = true; // Toggle between Day and Month mode
 
   @override
   void initState() {
     super.initState();
+
+    // Ensure the client ID is printed on init for debugging
+    if (kIsWeb) {
+      print("Initializing Google Sign-In for Web...");
+      final clientId = getClientId();
+      print("Client ID used: $clientId");
+    }
+
     _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
-      bool isAuthorized = account != null;
-      if (isAuthorized) {
+      if (account != null) {
         setState(() {
           _currentUser = account;
-          _isAuthorized = isAuthorized;
+          _isAuthorized = true;
         });
         createCalendarApiInstance();
       }
     });
-    _googleSignIn.signInSilently();
   }
 
   Future<void> _handleSignIn() async {
     try {
+      if (kIsWeb) {
+        print("Attempting Google Sign-In on Web...");
+      } else {
+        print("Attempting Google Sign-In on non-web platform...");
+      }
       await _googleSignIn.signIn();
     } catch (error) {
-      print('Sign in failed: $error');
+      print('Sign-In failed: $error');
     }
   }
 
@@ -58,243 +81,62 @@ class _SignInDemoState extends State<SignInDemo> {
     setState(() {
       _currentUser = null;
       _isAuthorized = false;
-      _events.clear();
     });
-  }
-
-  Future<String?> getGoogleAccessToken() async {
-    final GoogleSignInAuthentication auth = await _currentUser!.authentication;
-    return auth.accessToken;
   }
 
   Future<void> createCalendarApiInstance() async {
-    String? accessToken = await getGoogleAccessToken();
-    if (accessToken == null) {
-      print('Access token not available');
-      return;
-    }
-
-    final httpClient = http.Client();
-    final AuthClient authClient = authenticatedClient(
-      httpClient,
-      AccessCredentials(
-        AccessToken('Bearer', accessToken, DateTime.now().toUtc().add(Duration(hours: 1))),
-        null,
-        scopes,
-      ),
-    );
-
-    gcal.CalendarApi calendarApi = gcal.CalendarApi(authClient);
-    print("API instance created");
-    await getAllEvents(calendarApi);
-  }
-
-  Future<void> getAllEvents(gcal.CalendarApi calendarApi) async {
     try {
-      String? pageToken;
-      List<gcal.Event> eventsList = [];
-      DateTime startOfPeriod;
-      DateTime endOfPeriod;
-
-      startOfPeriod = _currentDate;
-      endOfPeriod = _currentDate.add(Duration(days: 1));
-
-      do {
-        gcal.Events events = await calendarApi.events.list(
-          'primary',
-          timeMin: startOfPeriod.toUtc(),
-          timeMax: endOfPeriod.toUtc(),
-          singleEvents: true,
-          orderBy: 'startTime',
-          pageToken: pageToken,
-        );
-
-        if (events.items != null) {
-          eventsList.addAll(events.items!);
-        }
-
-        pageToken = events.nextPageToken;
-      } while (pageToken != null);
-
-      setState(() {
-        _events = eventsList;
-      });
-    } catch (e) {
-      print('Error fetching events: $e');
-    }
-  }
-
-  // Change the current date based on the toggle mode (Day or Month)
-  void _changeDateBy(int daysOrMonths) {
-    setState(() {
-      if (_isDayMode) {
-        _currentDate = _currentDate.add(Duration(days: daysOrMonths));
-      } else {
-        _currentDate = DateTime(
-          _currentDate.year,
-          _currentDate.month + daysOrMonths,
-          1,
-        );
+      if (_currentUser == null) {
+        print('User is not signed in');
+        return;
       }
-    });
-    createCalendarApiInstance();
+
+      final GoogleSignInAuthentication auth = await _currentUser!.authentication;
+      final String? accessToken = auth.accessToken;
+
+      if (accessToken == null) {
+        print('Access token not available');
+        return;
+      }
+
+      final httpClient = http.Client();
+      final AuthClient authClient = authenticatedClient(
+        httpClient,
+        AccessCredentials(
+          AccessToken('Bearer', accessToken, DateTime.now().toUtc().add(const Duration(hours: 1))),
+          null,
+          scopes,
+        ),
+      );
+
+      gcal.CalendarApi calendarApi = gcal.CalendarApi(authClient);
+      print("Calendar API instance created successfully");
+    } catch (e) {
+      print('Error creating Calendar API instance: $e');
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final GoogleSignInAccount? user = _currentUser;
-    if (user != null) {
-      return Scaffold(
-        appBar: AppBar(
-          title: const Text('Google Calendar Events'),
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () => _changeDateBy(_isDayMode ? -1 : -1), // Go to the previous day or month
-            ),
-            IconButton(
-              icon: const Icon(Icons.arrow_forward),
-              onPressed: () => _changeDateBy(_isDayMode ? 1 : 1), // Go to the next day or month
-            ),
-          ],
-        ),
-        body: _isAuthorized
+    return Scaffold(
+      appBar: AppBar(title: const Text('Google Calendar Integration')),
+      body: Center(
+        child: _currentUser != null
             ? Column(
-        children: [
-          // Day/Month toggle at the top
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  _isDayMode
-                      ? 'Day Mode: ${DateFormat('MM/dd/yyyy').format(_currentDate)}'
-                      : 'Month Mode: ${DateFormat('MM/yyyy').format(_currentDate)}',
-                  style: TextStyle(fontSize: 18),
-                ),
-                Switch(
-                  value: _isDayMode,
-                  onChanged: (bool value) {
-                    setState(() {
-                      _isDayMode = value;
-                    });
-                    createCalendarApiInstance(); // Reload events with the new mode
-                  },
-                ),
-              ],
-            ),
-          ),
-          // Scrollable content for sidebar and main content
-          Expanded(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Left Sidebar with Hours
-                  Container(
-                    width: 50,
-                    color: Colors.grey[200],
-                    child: Column(
-                      children: List.generate(24, (index) {
-                        String timeLabel = _isDayMode
-                            ? '${index.toString().padLeft(2, '0')}:00'
-                            : '${index}';
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
-                          child: Text(
-                            timeLabel,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.black54,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        );
-                      }),
-                    ),
-                  ),
-                  // Main content area for the calendar view
-                  Expanded(
-                    child: Column(
-                      children: List.generate(24, (hourIndex) {
-                        return Column(
-                          children: [
-                            Container(
-                              height: 100.0,
-                              decoration: BoxDecoration(
-                                border: Border(
-                                  bottom: BorderSide(color: Colors.grey[300]!),
-                                ),
-                              ),
-                              child: Stack(
-                                children: [
-                                  ..._events.where((event) {
-                                    final start = event.start?.dateTime;
-                                    return start != null && start.hour == hourIndex;
-                                  }).map((event) {
-                                    String eventTitle = event.summary ?? 'No Title';
-                                    String eventTime = event.start?.dateTime != null
-                                        ? '${event.start?.dateTime} - ${event.end?.dateTime}'
-                                        : 'All-day event';
-
-                                    return Positioned(
-                                      top: 10,
-                                      left: 60,
-                                      right: 10,
-                                      child: Card(
-                                        color: Colors.blueAccent,
-                                        margin: EdgeInsets.symmetric(vertical: 2),
-                                        child: ListTile(
-                                          title: Text(
-                                            eventTitle,
-                                            style: TextStyle(color: Colors.white),
-                                          ),
-                                          subtitle: Text(
-                                            eventTime,
-                                            style: TextStyle(color: Colors.white70),
-                                          ),
-                                        ),
-                                      ),
-                                    );
-                                  }).toList(),
-                                ],
-                              ),
-                            ),
-                          ],
-                        );
-                      }),
-                    ),
+                  Text('Signed in as: ${_currentUser!.email}'),
+                  ElevatedButton(
+                    onPressed: _handleSignOut,
+                    child: const Text('Sign Out'),
                   ),
                 ],
-              ),
-            ),
-          ),
-        ],
-      )
-      : Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('Please sign in to view calendar events.'),
-              ElevatedButton(
+              )
+            : ElevatedButton(
                 onPressed: _handleSignIn,
                 child: const Text('Sign In with Google'),
               ),
-            ],
-          ),
-        ),
-      );
-    } else {
-      return Scaffold(
-        body: Center(
-          child: ElevatedButton(
-            onPressed: _handleSignIn,
-            child: const Text('Sign In with Google'),
-          ),
-        ),
-      );
-    }
+      ),
+    );
   }
 }
