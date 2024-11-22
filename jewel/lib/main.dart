@@ -30,8 +30,9 @@ Future<void> main() async {
   }
 
   // Initialize Firebase
-  await Firebase.initializeApp();
-
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   // Initialize notifications
   await NotificationController.initializeLocalNotifications();
   NotificationController.createNewNotification();
@@ -74,7 +75,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: HomeScreen()
+      home: AuthGate()
       //MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }

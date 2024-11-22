@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
+import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:googleapis/calendar/v3.dart' as calendar;
 import 'package:googleapis_auth/auth_io.dart';
@@ -49,7 +50,7 @@ class AuthGate extends StatelessWidget {
             },
           );
         }
-        return HomeScreen();
+        return Intermediary();
         // After signing in, check if the user is authenticated
         // final user = snapshot.data!;
         // return FutureBuilder(

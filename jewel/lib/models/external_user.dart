@@ -2,8 +2,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
 
 class ExternalUser {
-  User _firebaseUser;
-  User get firebaseUser => _firebaseUser;
+  String _email;
+  String get email => _email;
 
   String _userType;
   String get userType => _userType;
@@ -24,14 +24,14 @@ class ExternalUser {
   List<Map<String, dynamic>> get calendars => _calendars;
 
   ExternalUser({
-    required User firebaseUser,
+    required String email,
     required String userType,
     required String companyName,
     required StoreWeeklyOpeningHoursPeriod openHours,
     required String title,
     required String cause,
     required List<Map<String, dynamic>> calendars,
-  })  : _firebaseUser = firebaseUser,
+  })  : _email = email,
         _userType = userType,
         _companyName = companyName,
         _openHours = openHours,
@@ -45,9 +45,9 @@ class ExternalUser {
     }
   }
 
-  set firebaseUser(User? value) {
-    if (value != null) {
-      _firebaseUser = value;
+  set email(String value) {
+    if (value.isNotEmpty) {
+      _email = value;
     }
   }
 
@@ -82,7 +82,7 @@ class ExternalUser {
 
   // Factory method to create an ExternalUser instance
   factory ExternalUser.create({
-    required User firebaseUser,
+    required String email,
     required String userType,
     required String companyName,
     required StoreWeeklyOpeningHoursPeriod openHours,
@@ -91,7 +91,7 @@ class ExternalUser {
     required List<Map<String, dynamic>> calendars,
   }) {
     return ExternalUser(
-      firebaseUser: firebaseUser,
+      email: email,
       userType: userType,
       companyName: companyName,
       openHours: openHours,
@@ -106,7 +106,7 @@ class ExternalUser {
   // create a function that serializes the user
 
   Map<String, dynamic> toJson() => {
-    'firebaseUser': firebaseUser,
+    'email': email,
     'userType': userType,
     'companyName': companyName,
     'openHours': openHours,

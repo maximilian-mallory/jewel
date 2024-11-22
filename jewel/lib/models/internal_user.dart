@@ -4,8 +4,8 @@ import 'package:woosmap_flutter/woosmap_flutter.dart';
 class InternalUser 
 {
 
-  User _firebaseUser;
-  User get firebaseUser => _firebaseUser;
+  String _email;
+  String get email => _email;
 
   String _userType;
   String get userType => _userType;
@@ -23,13 +23,13 @@ class InternalUser
   List<Map<String, dynamic>> get calendars => _calendars;
 
     InternalUser({
-      required User firebaseUser,
+      required String email,
       required String userType,
       required String internalID,
       required StoreWeeklyOpeningHoursPeriod openHours,
       required String title,
       required List<Map<String, dynamic>> calendars,
-  })  : _firebaseUser = firebaseUser,
+  })  : _email = email,
         _userType = userType,
         _internalID = internalID,
         _openHours = openHours,
@@ -44,9 +44,9 @@ class InternalUser
     
   }
 
-  set firebaseUser(User? value){
-    if (value != null){
-      _firebaseUser = value;
+  set firebaseUser(String value){
+    if (value.isEmpty){
+      _email = value;
     }
     
   }
@@ -78,7 +78,7 @@ class InternalUser
   }
 
   factory InternalUser.create({
-    required User firebaseUser,
+    required String email,
     required String userType,
     required String internalID,
     required StoreWeeklyOpeningHoursPeriod openHours,
@@ -86,7 +86,7 @@ class InternalUser
     required List<Map<String, dynamic>> calendars,
   }) {
     return InternalUser(
-      firebaseUser: firebaseUser,
+      email: email,
       userType: userType,
       internalID: internalID,
       openHours: openHours,
@@ -99,7 +99,7 @@ class InternalUser
 
 //create a function to serialize the user
 Map<String, dynamic> toJson() => {
-    'firebaseUser': firebaseUser,
+    'email': email,
     'userType': userType,
     'openHours': openHours,
     'title': title,
