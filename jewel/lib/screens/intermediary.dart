@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart'; // new
@@ -103,16 +104,17 @@ bool isLoading = true; // To show loading indicator
     final externalRef = databaseSearch.collection("external_users");
     final internalRef = databaseSearch.collection("internal_users");
     bool userFound = true;
-    Future<QuerySnapshot<Map<String, dynamic>>>? queryInternal= null;
-    try {
-      queryInternal = internalRef.where("email", isEqualTo: email).get();
-    }
-    catch(e){
-      print(e);
-    }
+    int numUsers = 0;
+    await internalRef.where("email", isEqualTo: email).get().then((QuerySnapshot queryInternal){
+      print(queryInternal.size);
+      numUsers = queryInternal.size;
+    });
+    
 
+    
 
-   /**  if (isEmpty(queryInternal)){
+     
+     if (numUsers == 0){
       userFound = false;
       print("user not found in internal_users");
     }
@@ -124,15 +126,12 @@ bool isLoading = true; // To show loading indicator
     }
     
     if (userFound == false){
-      Query queryExternal;
-      try {
-        queryExternal = externalRef.where("email", isEqualTo: email);
-      }
-      catch(e){
-        print(e);
-      }
+      await internalRef.where("email", isEqualTo: email).get().then((QuerySnapshot queryInternal){
+        print(queryInternal.size);
+        numUsers = queryInternal.size;
+      });
 
-      if (queryExternal == 0){
+      if (numUsers == 0){
         userFound = false;
         print("user not found in external_users");
       }
@@ -142,8 +141,8 @@ bool isLoading = true; // To show loading indicator
         print("user found in internal_users");
       }
     }
-    */
-
+    
+    
     return userFound;
   }
 
