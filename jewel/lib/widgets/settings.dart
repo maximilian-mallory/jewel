@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -50,7 +52,7 @@ class SettingsCategory extends StatelessWidget {
   final String title;
   final List<Widget> settings;
 
-  SettingsCategory({required this.title, required this.settings});
+  const SettingsCategory({super.key, required this.title, required this.settings});
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +77,7 @@ class SettingsCategory extends StatelessWidget {
 class ToggleSetting extends StatefulWidget {
   final String title;
 
-  ToggleSetting({required this.title});
+  const ToggleSetting({super.key, required this.title});
 
   @override
   _ToggleSettingState createState() => _ToggleSettingState();
@@ -101,7 +103,7 @@ class _ToggleSettingState extends State<ToggleSetting> {
 class ColorPickerSetting extends StatefulWidget {
   final String title;
 
-  ColorPickerSetting({required this.title});
+  const ColorPickerSetting({super.key, required this.title});
 
   @override
   _ColorPickerSettingState createState() => _ColorPickerSettingState();
@@ -159,7 +161,7 @@ class _ColorPickerSettingState extends State<ColorPickerSetting> {
 class NumberInputSetting extends StatefulWidget {
   final String title;
 
-  NumberInputSetting({required this.title});
+  const NumberInputSetting({super.key, required this.title});
 
   @override
   _NumberInputSettingState createState() => _NumberInputSettingState();
@@ -172,7 +174,7 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
   Widget build(BuildContext context) {
     return ListTile(
       title: Text(widget.title),
-      trailing: Container(
+      trailing: SizedBox(
         width: 100,
         child: TextField(
           keyboardType: TextInputType.number,

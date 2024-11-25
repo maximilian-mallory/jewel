@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jewel/google/calendar/g_g_merge.dart';
 
 class CalendarEventList extends StatefulWidget {
+  const CalendarEventList({super.key});
+
   @override
   _CalendarEventListState createState() => _CalendarEventListState();
 }

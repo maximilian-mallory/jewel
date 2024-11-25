@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:jewel/google/calendar/google_events.dart';
 import 'package:jewel/notifications.dart';
 
 
@@ -10,7 +9,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user =FirebaseAuth.instance.currentUser;
-    var name;
+    String? name;
     if (user != null){
       for (final providerProfile in user.providerData) {
         // ID of the provider (google.com, apple.com, etc.)

@@ -11,6 +11,8 @@ class MapScreen extends StatelessWidget {
   final LatLng _center = const LatLng(45.521563, -122.677433);
   late GoogleMapController mapController;
 
+  MapScreen({super.key});
+
 void _onMapCreated(GoogleMapController controller) {
     mapController = controller;
   }
@@ -39,7 +41,7 @@ void _onMapCreated(GoogleMapController controller) {
       return Scaffold(
         appBar: AppBar(title: Text('Google Maps - Web')),
         body: Center(
-          child: Container(
+          child: SizedBox(
             width: double.infinity,
             height: double.infinity,
             child: HtmlElementView(viewType: 'map'),

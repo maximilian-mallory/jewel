@@ -97,7 +97,7 @@ class AuthGate extends StatelessWidget {
       });
     } catch (e) {
       print('Error retrieving Google Calendar events: $e');
-      throw e; // Handle error accordingly
+      rethrow; // Handle error accordingly
     }
   }
 

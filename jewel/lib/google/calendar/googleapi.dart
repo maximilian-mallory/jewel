@@ -1,142 +1,130 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:intl/intl.dart';
-
 import 'dart:html' as html;
 
+// Define constants and scopes
 const List<String> scopes = <String>[
   'https://www.googleapis.com/auth/calendar',
 ];
 
 String? getClientId() {
   if (kIsWeb) {
-    // Fetch the meta tag dynamically
     final metaTag = html.document.querySelector('meta[name="google-signin-client_id"]');
-    final clientId = metaTag?.attributes['content'];
-    print("Client ID fetched from meta tag: $clientId"); // Ensure it prints the client ID
-    return clientId;
+    return metaTag?.attributes['content'];
   }
-  return null; // Non-web platforms
+  return null;
 }
 
-// Dynamically assign the client ID for GoogleSignIn on web
-final GoogleSignIn _googleSignIn = GoogleSignIn(
+// Initialize GoogleSignIn instance
+final GoogleSignIn googleSignIn = GoogleSignIn(
   scopes: scopes,
-  clientId: kIsWeb ? "954035696925-p4j9gbmpjknoc04qjd701r2h5ah190ug.apps.googleusercontent.com" : null, // Set client ID only for web
+  clientId: kIsWeb ? "954035696925-p4j9gbmpjknoc04qjd701r2h5ah190ug.apps.googleusercontent.com" : null,
 );
 
-class SignInDemo extends StatefulWidget {
-  const SignInDemo({Key? key}) : super(key: key);
+class CalendarLogic {
+  GoogleSignInAccount? currentUser;
+  bool isAuthorized = false;
+  List<gcal.Event> events = [];
+  DateTime currentDate = DateTime.now();
+  bool isDayMode = true;
 
-  @override
-  State createState() => _SignInDemoState();
-}
-
-class _SignInDemoState extends State<SignInDemo> {
-  GoogleSignInAccount? _currentUser;
-  bool _isAuthorized = false;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // Ensure the client ID is printed on init for debugging
-    if (kIsWeb) {
-      print("Initializing Google Sign-In for Web...");
-      final clientId = getClientId();
-      print("Client ID used: $clientId");
-    }
-
-    _googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
-      if (account != null) {
-        setState(() {
-          _currentUser = account;
-          _isAuthorized = true;
-        });
-        createCalendarApiInstance();
-      }
-    });
-  }
-
-  Future<void> _handleSignIn() async {
+  Future<void> handleSignIn() async {
     try {
-      if (kIsWeb) {
-        print("Attempting Google Sign-In on Web...");
-      } else {
-        print("Attempting Google Sign-In on non-web platform...");
-      }
-      await _googleSignIn.signIn();
+      await googleSignIn.signIn();
     } catch (error) {
       print('Sign-In failed: $error');
     }
   }
 
-  Future<void> _handleSignOut() async {
-    await _googleSignIn.disconnect();
-    setState(() {
-      _currentUser = null;
-      _isAuthorized = false;
-    });
+  Future<void> handleSignOut() async {
+    await googleSignIn.disconnect();
+    currentUser = null;
+    isAuthorized = false;
+    events.clear();
   }
 
-  Future<void> createCalendarApiInstance() async {
+  Future<gcal.CalendarApi> createCalendarApiInstance() async {
+    if (currentUser == null) {
+      throw Exception('No current user found.');
+    }
+
+    final auth = await currentUser!.authentication;
+    final accessToken = auth.accessToken;
+
+    if (accessToken == null) {
+      throw Exception('Access token is null.');
+    }
+
+    final httpClient = http.Client();
+    final authClient = authenticatedClient(
+      httpClient,
+      AccessCredentials(
+        AccessToken('Bearer', accessToken, DateTime.now().toUtc().add(const Duration(hours: 1))),
+        null,
+        scopes,
+      ),
+    );
+
+    return gcal.CalendarApi(authClient);
+  }
+
+  Future<void> getAllEvents(gcal.CalendarApi calendarApi) async {
     try {
-      if (_currentUser == null) {
-        print('User is not signed in');
-        return;
-      }
+      String? pageToken;
+      List<gcal.Event> eventsList = [];
+      DateTime startOfPeriod = isDayMode ? currentDate : DateTime(currentDate.year, currentDate.month, 1);
+      DateTime endOfPeriod = isDayMode
+          ? currentDate.add(const Duration(days: 1))
+          : DateTime(currentDate.year, currentDate.month + 1, 0);
 
-      final GoogleSignInAuthentication auth = await _currentUser!.authentication;
-      final String? accessToken = auth.accessToken;
+      do {
+        gcal.Events events = await calendarApi.events.list(
+          'primary',
+          timeMin: startOfPeriod.toUtc(),
+          timeMax: endOfPeriod.toUtc(),
+          singleEvents: true,
+          orderBy: 'startTime',
+          pageToken: pageToken,
+        );
 
-      if (accessToken == null) {
-        print('Access token not available');
-        return;
-      }
+        if (events.items != null) {
+          for (var event in events.items!) {
+            if (event.start?.dateTime != null) {
+              // Adjust to local time zone
+              event.start!.dateTime = event.start!.dateTime!.toLocal();
+            }
+            if (event.end?.dateTime != null) {
+              // Adjust to local time zone
+              event.end!.dateTime = event.end!.dateTime!.toLocal();
+            }
+            eventsList.add(event);
+          }
+        }
 
-      final httpClient = http.Client();
-      final AuthClient authClient = authenticatedClient(
-        httpClient,
-        AccessCredentials(
-          AccessToken('Bearer', accessToken, DateTime.now().toUtc().add(const Duration(hours: 1))),
-          null,
-          scopes,
-        ),
-      );
+        pageToken = events.nextPageToken;
+      } while (pageToken != null);
 
-      gcal.CalendarApi calendarApi = gcal.CalendarApi(authClient);
-      print("Calendar API instance created successfully");
+      events = eventsList;
     } catch (e) {
-      print('Error creating Calendar API instance: $e');
+      print('Error fetching events: $e');
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Google Calendar Integration')),
-      body: Center(
-        child: _currentUser != null
-            ? Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Signed in as: ${_currentUser!.email}'),
-                  ElevatedButton(
-                    onPressed: _handleSignOut,
-                    child: const Text('Sign Out'),
-                  ),
-                ],
-              )
-            : ElevatedButton(
-                onPressed: _handleSignIn,
-                child: const Text('Sign In with Google'),
-              ),
-      ),
-    );
+  Future<void> changeDateBy(int daysOrMonths) async {
+    if (isDayMode) {
+      currentDate = currentDate.add(Duration(days: daysOrMonths));
+    } else {
+      currentDate = DateTime(currentDate.year, currentDate.month + daysOrMonths, 1);
+    }
+    await createCalendarApiInstance(); // Update events when date changes.
+  }
+
+  Future<void> toggleDayMode(bool value) async {
+    isDayMode = value;
+    await createCalendarApiInstance(); // Update events when mode changes.
   }
 }
