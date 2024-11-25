@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
@@ -15,6 +16,7 @@ class SignInDemo extends StatefulWidget {
 
 class _SignInDemoState extends State<SignInDemo> {
   late final CalendarLogic _calendarLogic;
+  String? selectedCalendar;
 
   @override
   void initState() {
@@ -28,10 +30,68 @@ class _SignInDemoState extends State<SignInDemo> {
       if (account != null) {
         gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
         await _calendarLogic.getAllEvents(calendarApi);
+        updateCalendar();
+        getAllCalendars(_calendarLogic.currentUser);
         setState(() {});
       }
     });
   }
+
+  void getAllCalendars(account) async {
+    final calendarPrm = FirebaseFirestore.instance.collection("calendar_prm");
+    try {
+      final userEmail = account.email;
+      // Query the document where the owner matches the user's email
+      final docSnapshot = await calendarPrm.doc(userEmail).get();
+      print(docSnapshot.data());
+      if (docSnapshot.exists) {
+        Map<String, dynamic> calendarsData = docSnapshot.data() as Map<String, dynamic>;
+        
+      }
+    } 
+    catch (error) {
+      print("Error updating calendar: $error");
+    }
+  }
+
+  void updateCalendar() async {
+  if (_calendarLogic.currentUser == null) {
+    print("No user is signed in.");
+    return;
+  }
+
+  // Get the signed-in user's email address
+  final userEmail = _calendarLogic.currentUser!.email;
+
+  // Reference the Firestore collection
+  final calendarSet = FirebaseFirestore.instance.collection("calendars");
+
+  try {
+    // Query the document where the owner matches the user's email
+    final querySnapshot = await calendarSet.where("owner", isEqualTo: userEmail).get();
+
+    if (querySnapshot.docs.isNotEmpty) {
+      // Get the single document
+      final doc = querySnapshot.docs.first;
+
+      print("Calendar found: ${doc.id} => ${doc.data()}");
+
+      // Assuming `_calendarLogic.events` contains the events you want to save
+      final eventsToSave = _calendarLogic.mapEvents(_calendarLogic.events);
+
+      // Update the document with the events
+      await calendarSet.doc(doc.id).update({
+        "events": eventsToSave,
+      });
+
+      print("Events added to calendar document: ${doc.id}");
+    } else {
+      print("No calendars found for the user with email: $userEmail");
+    }
+  } catch (error) {
+    print("Error updating calendar: $error");
+  }
+}
 
   Widget buildCalendarUI() {
     return Scaffold(
@@ -44,6 +104,7 @@ class _SignInDemoState extends State<SignInDemo> {
               await _calendarLogic.changeDateBy(_calendarLogic.isDayMode ? -1 : -1);
               gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
               await _calendarLogic.getAllEvents(calendarApi);
+              getAllCalendars(_calendarLogic.currentUser);
               setState(() {});
             },
           ),
@@ -80,6 +141,46 @@ class _SignInDemoState extends State<SignInDemo> {
                 ),
               ],
             ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: FutureBuilder<void>(
+              future: _calendarLogic.getAllCalendars(_calendarLogic.currentUser),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const CircularProgressIndicator();
+                }
+                if (snapshot.hasError) {
+                  return const Text("Error loading calendars");
+                }
+
+                if (_calendarLogic.calendars.isEmpty) {
+                  return const Text("No calendars found");
+                }
+
+                // Correctly iterate through the Map<String, dynamic>
+                return DropdownButton<String>(
+                  value: selectedCalendar,
+                  hint: const Text("Select Calendar"),
+                  items: _calendarLogic.calendars.entries.map((entry) {
+                    // Ensure the value is a String and handle dynamic values appropriately
+                    final calendarId = entry.key; // Key is expected to be a String
+                    final calendarName = entry.value.toString(); // Convert value to a String
+                    return DropdownMenuItem<String>(
+                      value: calendarId,
+                      child: Text(calendarName),
+                    );
+                  }).toList(),
+                  onChanged: (String? newValue) {
+                    if (newValue != null) {
+                      setState(() {
+                        selectedCalendar = newValue;
+                      });
+                    }
+                  },
+                );
+              },
+            )
           ),
           Expanded(
             child: SingleChildScrollView(
