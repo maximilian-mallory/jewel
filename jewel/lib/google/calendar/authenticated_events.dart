@@ -5,19 +5,21 @@ import 'package:intl/intl.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 
 class SignInDemo extends StatefulWidget {
-  const SignInDemo({super.key});
+  final CalendarLogic calendarLogic;
+
+  const SignInDemo({super.key, required this.calendarLogic});
 
   @override
   State createState() => _SignInDemoState();
 }
 
 class _SignInDemoState extends State<SignInDemo> {
-  final CalendarLogic _calendarLogic = CalendarLogic();
+  late final CalendarLogic _calendarLogic;
 
   @override
   void initState() {
     super.initState();
-
+    _calendarLogic = widget.calendarLogic;
     googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
       setState(() {
         _calendarLogic.currentUser = account;
