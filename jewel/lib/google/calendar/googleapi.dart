@@ -26,6 +26,13 @@ final GoogleSignIn googleSignIn = GoogleSignIn(
 );
 
 class CalendarLogic {
+  static final CalendarLogic _instance = CalendarLogic._internal();
+
+  factory CalendarLogic() {
+    return _instance;
+  }
+
+  CalendarLogic._internal();
   GoogleSignInAccount? currentUser;
   bool isAuthorized = false;
   List<gcal.Event> events = [];
