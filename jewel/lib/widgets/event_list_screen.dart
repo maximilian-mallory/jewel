@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:jewel/google/calendar/g_g_merge.dart';
 
 class EventListScreen extends StatefulWidget {
+  const EventListScreen({super.key});
+
   @override
   _EventListScreenState createState() => _EventListScreenState();
 }

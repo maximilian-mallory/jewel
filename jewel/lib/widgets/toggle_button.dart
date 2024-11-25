@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ToggleButton extends StatefulWidget {
+  const ToggleButton({super.key});
+
   @override
   _ToggleButtonState createState() => _ToggleButtonState();
 }
@@ -21,6 +23,7 @@ class _ToggleButtonState extends State<ToggleButton> {
   Widget build(BuildContext context) {
     return ToggleButtons(
       isSelected: isSelected,
+      onPressed: _toggleButton,
       children: <Widget>[
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -31,7 +34,6 @@ class _ToggleButtonState extends State<ToggleButton> {
           child: Text('Off', style: TextStyle(fontSize: 18)),
         ),
       ],
-      onPressed: _toggleButton,
     );
   }
 }

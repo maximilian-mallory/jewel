@@ -9,6 +9,8 @@ import 'package:jewel/models/internal_user.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
 
 class Intermediary extends StatefulWidget{
+  const Intermediary({super.key});
+
   @override
   _IntermediaryScreenState createState() => _IntermediaryScreenState();  
 }
@@ -27,16 +29,16 @@ bool isLoading = true; // To show loading indicator
   Future<void> createExternalUser() async {
     User? user =FirebaseAuth.instance.currentUser;
     
-    StoreOpeningHoursPeriod dailyHours = new StoreOpeningHoursPeriod();
+    StoreOpeningHoursPeriod dailyHours = StoreOpeningHoursPeriod();
 
     dailyHours.start = "9:00";
     dailyHours.end = "17:00";
     dailyHours.allDay = false;
     
-    List<StoreOpeningHoursPeriod> hoursList = new List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
+    List<StoreOpeningHoursPeriod> hoursList = List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
 
    
-    StoreWeeklyOpeningHoursPeriod weeklyHours = new StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
+    StoreWeeklyOpeningHoursPeriod weeklyHours = StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
     
     if (user != null){
       ExternalUser storeInDatabase = ExternalUser(firebaseUser: user, userType: "contractor", companyName: "Null Contracting", openHours: weeklyHours, title: "contractor", cause: "external contractor", calendars: [{}]);
@@ -55,16 +57,16 @@ bool isLoading = true; // To show loading indicator
     
 
     
-    StoreOpeningHoursPeriod dailyHours = new StoreOpeningHoursPeriod();
+    StoreOpeningHoursPeriod dailyHours = StoreOpeningHoursPeriod();
 
     dailyHours.start = "9:00";
     dailyHours.end = "17:00";
     dailyHours.allDay = false;
     
-    List<StoreOpeningHoursPeriod> hoursList = new List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
+    List<StoreOpeningHoursPeriod> hoursList = List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
 
    
-    StoreWeeklyOpeningHoursPeriod weeklyHours = new StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
+    StoreWeeklyOpeningHoursPeriod weeklyHours = StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
     
     if (user != null){
       InternalUser storeInDatabase = InternalUser(firebaseUser: user, userType: "internal", internalID: "12345678", openHours: weeklyHours, title: "employee", calendars: [{}]);
@@ -80,22 +82,14 @@ bool isLoading = true; // To show loading indicator
 
   Future<bool> searchForUser() async{
     final user =FirebaseAuth.instance.currentUser;
-    final databaseSearch = await FirebaseFirestore.instance;
+    final databaseSearch = FirebaseFirestore.instance;
     final externalRef = databaseSearch.collection("people");
     final internalRef = databaseSearch.collection("people");
 
     final queryInternal = internalRef.where("firebaseUser", isEqualTo: user);
 
-    if (queryInternal == null){
-      return false;
-    }
-    
-    else {
-
-
-      return true;
-    }
-
+    return true;
+  
   }
 
   
