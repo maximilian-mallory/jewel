@@ -1,19 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:jewel/google/auth/auth_gate.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'firebase_options.dart';
-import 'package:jewel/widgets/custom_nav.dart';
-import 'package:jewel/screens/test_screen1.dart';
-import 'package:jewel/screens/test_screen2.dart';
-import 'package:jewel/screens/test_screen3.dart';
-import 'package:jewel/widgets/calendar_event_list.dart';
-import 'package:jewel/widgets/event_list_screen.dart';
 import 'package:jewel/widgets/home_screen.dart';
-import 'widgets/toggle_button.dart';
-import 'package:jewel/widgets/custom_nav.dart';
-import '/google/calendar/g_g_merge.dart';
 import 'package:jewel/notifications.dart';
 import 'package:flutter/foundation.dart';
 import '/utils/fake_ui.dart' if (dart.library.html) '/utils/real_ui.dart' as ui;
@@ -33,6 +23,7 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   // Initialize notifications
   await NotificationController.initializeLocalNotifications();
   NotificationController.createNewNotification();
@@ -45,11 +36,12 @@ Future<void> main() async {
   }
 
 
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final CalendarLogic calendarLogic = CalendarLogic();
+  MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +67,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: AuthGate()
+      home: HomeScreen(calendarLogic: calendarLogic)
       //MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }

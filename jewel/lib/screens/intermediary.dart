@@ -12,6 +12,8 @@ import 'package:woosmap_flutter/woosmap_flutter.dart';
 
 
 class Intermediary extends StatefulWidget{
+  const Intermediary({super.key});
+
   @override
   _IntermediaryScreenState createState() => _IntermediaryScreenState();  
 }
@@ -29,24 +31,17 @@ bool isLoading = true; // To show loading indicator
 
   Future<void> createExternalUserInDatabase() async {
     User? user =FirebaseAuth.instance.currentUser;
-
-    var email_Address;
-    if (user != null){
-      for (final providerProfile in user.providerData) {
-        email_Address = providerProfile.email;
-      }
-    }
     
-    StoreOpeningHoursPeriod dailyHours = new StoreOpeningHoursPeriod();
+    StoreOpeningHoursPeriod dailyHours = StoreOpeningHoursPeriod();
 
     dailyHours.start = "9:00";
     dailyHours.end = "17:00";
     dailyHours.allDay = false;
     
-    List<StoreOpeningHoursPeriod> hoursList = new List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
+    List<StoreOpeningHoursPeriod> hoursList = List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
 
    
-    StoreWeeklyOpeningHoursPeriod weeklyHours = new StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
+    StoreWeeklyOpeningHoursPeriod weeklyHours = StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
     
     if (user != null){
       ExternalUser storeInDatabase = ExternalUser(email: email_Address, userType: "contractor", companyName: "Null Contracting", openHours: weeklyHours, title: "contractor", cause: "external contractor", calendars: [{}]);
@@ -69,16 +64,16 @@ bool isLoading = true; // To show loading indicator
       }
     }
     
-    StoreOpeningHoursPeriod dailyHours = new StoreOpeningHoursPeriod();
+    StoreOpeningHoursPeriod dailyHours = StoreOpeningHoursPeriod();
 
     dailyHours.start = "9:00";
     dailyHours.end = "17:00";
     dailyHours.allDay = false;
     
-    List<StoreOpeningHoursPeriod> hoursList = new List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
+    List<StoreOpeningHoursPeriod> hoursList = List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
 
    
-    StoreWeeklyOpeningHoursPeriod weeklyHours = new StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
+    StoreWeeklyOpeningHoursPeriod weeklyHours = StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
     
     if (user != null){
       InternalUser storeInDatabase = InternalUser(email: email_Address, userType: "internal", internalID: "12345678", openHours: weeklyHours, title: "employee", calendars: [{}]);
@@ -93,77 +88,15 @@ bool isLoading = true; // To show loading indicator
   }
 
   Future<bool> searchForUser() async{
-    final user = FirebaseAuth.instance.currentUser;
-    var email;
-    if (user != null){
-      for (final providerProfile in user.providerData) {
-        email = providerProfile.email;
-      }
-    }
-    final databaseSearch = await FirebaseFirestore.instance;
-    final externalRef = databaseSearch.collection("external_users");
-    final internalRef = databaseSearch.collection("internal_users");
-    bool userFound = true;
-    int numUsers = 0;
-    await internalRef.where("email", isEqualTo: email).get().then((QuerySnapshot queryInternal){
-      print(queryInternal.size);
-      numUsers = queryInternal.size;
-    });
-    
+    final user =FirebaseAuth.instance.currentUser;
+    final databaseSearch = FirebaseFirestore.instance;
+    final externalRef = databaseSearch.collection("people");
+    final internalRef = databaseSearch.collection("people");
 
-    
+    final queryInternal = internalRef.where("firebaseUser", isEqualTo: user);
 
-     
-     if (numUsers == 0){
-      userFound = false;
-      print("user not found in internal_users");
-    }
-    
-    else {
-      userFound = true;
-      print("user found in internal_users");
-      
-    }
-    
-    if (userFound == false){
-      await internalRef.where("email", isEqualTo: email).get().then((QuerySnapshot queryInternal){
-        print(queryInternal.size);
-        numUsers = queryInternal.size;
-      });
-
-      if (numUsers == 0){
-        userFound = false;
-        print("user not found in external_users");
-      }
-
-      else{
-        userFound = true;
-        print("user found in internal_users");
-      }
-    }
-    
-    
-    return userFound;
-  }
-
-  Future<void> methodProcess()async{
-    Future<bool> foundUser = searchForUser();
-    if(await foundUser){
-      print("user found in database");
-      pushToHomeScreen();
-    }
-
-    else{
-      print("this user is not in the database and is not authorized to proceed");
-    }
+    return true;
   
-  }
-
-  Future<void> pushToHomeScreen()async {
-    Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => HomeScreen()),
-              );
   }
 
 

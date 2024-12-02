@@ -2,7 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:jewel/google/calendar/g_g_merge.dart';
 
+// ******************** //
+// FOR TESTING ONLY    //
+
+
 class CalendarEventList extends StatefulWidget {
+  const CalendarEventList({super.key});
+
   @override
   _CalendarEventListState createState() => _CalendarEventListState();
 }
@@ -62,6 +68,7 @@ class _CalendarEventListState extends State<CalendarEventList> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       appBar: AppBar(
         title: Text('Events Calendar'),
