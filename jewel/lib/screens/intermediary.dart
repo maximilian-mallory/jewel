@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 // new
 import 'package:flutter/material.dart';
@@ -85,15 +84,79 @@ bool isLoading = true; // To show loading indicator
   }
 
   Future<bool> searchForUser() async{
-    final user =FirebaseAuth.instance.currentUser;
-    final databaseSearch = FirebaseFirestore.instance;
-    final externalRef = databaseSearch.collection("people");
-    final internalRef = databaseSearch.collection("people");
+    final user = FirebaseAuth.instance.currentUser;
+    var email;
+    if (user != null){
+      for (final providerProfile in user.providerData) {
+        email = providerProfile.email;
+      }
+    }
+    final databaseSearch = await FirebaseFirestore.instance;
+    final externalRef = databaseSearch.collection("external_users");
+    final internalRef = databaseSearch.collection("internal_users");
+    bool userFound = true;
+    Future<QuerySnapshot<Map<String, dynamic>>>? queryInternal= null;
+    try {
+      queryInternal = internalRef.where("email", isEqualTo: email).get();
+    }
+    catch(e){
+      print(e);
+    }
 
-    final queryInternal = internalRef.where("firebaseUser", isEqualTo: user);
 
-    return true;
+   /**  if (isEmpty(queryInternal)){
+      userFound = false;
+      print("user not found in internal_users");
+    }
+    
+    else {
+      userFound = true;
+      print("user found in internal_users");
+      
+    }
+    
+    if (userFound == false){
+      Query queryExternal;
+      try {
+        queryExternal = externalRef.where("email", isEqualTo: email);
+      }
+      catch(e){
+        print(e);
+      }
+
+      if (queryExternal == 0){
+        userFound = false;
+        print("user not found in external_users");
+      }
+
+      else{
+        userFound = true;
+        print("user found in internal_users");
+      }
+    }
+    */
+
+    return userFound;
+  }
+
+  Future<void> methodProcess()async{
+    Future<bool> foundUser = searchForUser();
+    if(await foundUser){
+      print("user found in database");
+      pushToHomeScreen();
+    }
+
+    else{
+      print("this user is not in the database and is not authorized to proceed");
+    }
   
+  }
+
+  Future<void> pushToHomeScreen()async {
+    Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => HomeScreen()),
+              );
   }
 
 
