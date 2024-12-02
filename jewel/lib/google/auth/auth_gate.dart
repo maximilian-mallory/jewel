@@ -2,16 +2,14 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/material.dart';
-import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/screens/test_screen1.dart';
-import 'package:jewel/widgets/home_screen.dart';
 import 'package:googleapis/calendar/v3.dart' as calendar;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:url_launcher/url_launcher.dart'; // Import url_launcher
 
 class AuthGate extends StatelessWidget {
 
-  AuthGate({super.key});
+  const AuthGate({super.key});
 
   @override
   Widget build(BuildContext context) {
