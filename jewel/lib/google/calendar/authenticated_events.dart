@@ -15,44 +15,45 @@ class SignInDemo extends StatefulWidget {
 }
 
 class _SignInDemoState extends State<SignInDemo> {
-  late final CalendarLogic _calendarLogic;
+  late final CalendarLogic _calendarLogic; // This is what we use to make the method calls
   String? selectedCalendar;
 
   @override
   void initState() {
     super.initState();
-    _calendarLogic = widget.calendarLogic;
-    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
+    _calendarLogic = widget.calendarLogic; // widget. calls the Widget level object, which is the shared API instance from HomeScreen
+    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async { // Auth State listener
       setState(() {
         _calendarLogic.currentUser = account;
         _calendarLogic.isAuthorized = account != null;
       });
       if (account != null) {
-        gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
+        gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance(); // This is the auth state we give to the API instance
         await _calendarLogic.getAllEvents(calendarApi);
-        updateCalendar();
-        getAllCalendars(_calendarLogic.currentUser);
+        //updateCalendar();
+        //getAllCalendars(calendarApi);
         setState(() {});
       }
     });
   }
 
-  void getAllCalendars(account) async {
-    final calendarPrm = FirebaseFirestore.instance.collection("calendar_prm");
+  Future<void> getAllCalendars(gcal.CalendarApi calendarApi) async {
+    if (_calendarLogic.currentUser == null) {
+      _calendarLogic.calendars.clear();
+      return;
+    }
+
     try {
-      final userEmail = account.email;
-      // Query the document where the owner matches the user's email
-      final docSnapshot = await calendarPrm.doc(userEmail).get();
-      print(docSnapshot.data());
-      if (docSnapshot.exists) {
-        Map<String, dynamic> calendarsData = docSnapshot.data() as Map<String, dynamic>;
-        
+      var calendarList = await calendarApi.calendarList.list();
+      _calendarLogic.calendars.clear(); // Clear any old data
+      for (var calendarEntry in calendarList.items ?? []) {
+        _calendarLogic.calendars[calendarEntry.id ?? "unknown"] = calendarEntry.summary ?? "Unnamed Calendar";
       }
-    } 
-    catch (error) {
-      print("Error updating calendar: $error");
+    } catch (e) {
+      print("Error fetching calendars: $e");
     }
   }
+
 
   void updateCalendar() async {
   if (_calendarLogic.currentUser == null) {
@@ -100,17 +101,17 @@ class _SignInDemoState extends State<SignInDemo> {
         actions: [
           IconButton(
             icon: const Icon(Icons.arrow_back),
-            onPressed: () async {
+            onPressed: () async { // Update based on date query backward
               await _calendarLogic.changeDateBy(_calendarLogic.isDayMode ? -1 : -1);
               gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
               await _calendarLogic.getAllEvents(calendarApi);
-              getAllCalendars(_calendarLogic.currentUser);
+              //getAllCalendars(_calendarLogic.currentUser);
               setState(() {});
             },
           ),
           IconButton(
             icon: const Icon(Icons.arrow_forward),
-            onPressed: () async {
+            onPressed: () async { // Update based on date query forward
               await _calendarLogic.changeDateBy(_calendarLogic.isDayMode ? 1 : 1);
               gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
               await _calendarLogic.getAllEvents(calendarApi);
@@ -145,7 +146,9 @@ class _SignInDemoState extends State<SignInDemo> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: FutureBuilder<void>(
-              future: _calendarLogic.getAllCalendars(_calendarLogic.currentUser),
+              future: _calendarLogic.createCalendarApiInstance().then(
+                (calendarApi) => getAllCalendars(calendarApi),
+              ),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
@@ -153,19 +156,16 @@ class _SignInDemoState extends State<SignInDemo> {
                 if (snapshot.hasError) {
                   return const Text("Error loading calendars");
                 }
-
                 if (_calendarLogic.calendars.isEmpty) {
                   return const Text("No calendars found");
                 }
 
-                // Correctly iterate through the Map<String, dynamic>
                 return DropdownButton<String>(
                   value: selectedCalendar,
                   hint: const Text("Select Calendar"),
                   items: _calendarLogic.calendars.entries.map((entry) {
-                    // Ensure the value is a String and handle dynamic values appropriately
-                    final calendarId = entry.key; // Key is expected to be a String
-                    final calendarName = entry.value.toString(); // Convert value to a String
+                    final calendarId = entry.key;
+                    final calendarName = entry.value.toString();
                     return DropdownMenuItem<String>(
                       value: calendarId,
                       child: Text(calendarName),
@@ -180,7 +180,7 @@ class _SignInDemoState extends State<SignInDemo> {
                   },
                 );
               },
-            )
+            ),
           ),
           Expanded(
             child: SingleChildScrollView(
