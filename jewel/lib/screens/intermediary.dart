@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 // new
 import 'package:flutter/material.dart';
+import 'package:jewel/google/auth/home.dart';
 import 'package:jewel/models/external_user.dart';
 import 'package:jewel/models/internal_user.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
@@ -28,6 +29,13 @@ bool isLoading = true; // To show loading indicator
   Future<void> createExternalUserInDatabase() async {
     User? user =FirebaseAuth.instance.currentUser;
     
+    var email_Address;
+    if (user != null){
+      for (final providerProfile in user.providerData) {
+        email_Address = providerProfile.email;
+      }
+    }
+
     StoreOpeningHoursPeriod dailyHours = StoreOpeningHoursPeriod();
 
     dailyHours.start = "9:00";
@@ -95,16 +103,15 @@ bool isLoading = true; // To show loading indicator
     final externalRef = databaseSearch.collection("external_users");
     final internalRef = databaseSearch.collection("internal_users");
     bool userFound = true;
-    Future<QuerySnapshot<Map<String, dynamic>>>? queryInternal= null;
-    try {
-      queryInternal = internalRef.where("email", isEqualTo: email).get();
-    }
-    catch(e){
-      print(e);
-    }
+    
+    int numUsers = 0;
+    await internalRef.where("email", isEqualTo: email).get().then((QuerySnapshot queryInternal){
+      print(queryInternal.size);
+      numUsers = queryInternal.size;
+    });
 
 
-   /**  if (isEmpty(queryInternal)){
+    if (numUsers == 0){
       userFound = false;
       print("user not found in internal_users");
     }
@@ -114,17 +121,12 @@ bool isLoading = true; // To show loading indicator
       print("user found in internal_users");
       
     }
-    
     if (userFound == false){
-      Query queryExternal;
-      try {
-        queryExternal = externalRef.where("email", isEqualTo: email);
-      }
-      catch(e){
-        print(e);
-      }
-
-      if (queryExternal == 0){
+      await externalRef.where("email", isEqualTo: email).get().then((QuerySnapshot queryInternal){
+        print(queryInternal.size);
+        numUsers = queryInternal.size;
+      });
+      if (numUsers == 0){
         userFound = false;
         print("user not found in external_users");
       }
@@ -134,7 +136,6 @@ bool isLoading = true; // To show loading indicator
         print("user found in internal_users");
       }
     }
-    */
 
     return userFound;
   }
