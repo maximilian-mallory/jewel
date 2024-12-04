@@ -176,3 +176,25 @@ bool isLoading = true; // To show loading indicator
     );
   }
 }
+
+
+Future<Map<String, dynamic>> createCalendarsList() async {
+  final user =FirebaseAuth.instance.currentUser;
+  var email_Address;
+  if (user != null){
+    for (final providerProfile in user.providerData) {
+      email_Address = providerProfile.email;
+    }    
+  }
+
+  final databaseSearch = await FirebaseFirestore.instance;
+  final calendarsRef = databaseSearch.collection("calendar_prm");
+  Map<String, dynamic> storedCalendars = {};
+  
+  await calendarsRef.doc(email_Address).get().then((DocumentSnapshot doc){
+    storedCalendars = doc.data() as Map<String, dynamic>;
+  },
+
+  );
+  return storedCalendars;
+}
