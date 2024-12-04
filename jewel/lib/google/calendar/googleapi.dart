@@ -231,27 +231,23 @@ class CalendarLogic {
   Future<void> createCalendar({
     required String summary,
     String? description,
-    String? timeZone,
+    required String timeZone,
+    required gcal.CalendarApi calendarApi,
   }) async {
-    // Create a new calendar instance
-    final newCalendar = gcal.Calendar.fromJson(
-      {
-        summary: summary,
-        description: description,
-        timeZone: timeZone,
-      }
-    );
-
-    // Insert the new calendar using the Calendar API
     try {
-      final createdCalendar = await gcal.calendarApi.calendars.insert(newCalendar);
-      // Optionally, update your local calendars map
-      calendars[createdCalendar.id!] = createdCalendar.summary ?? 'Unnamed Calendar';
-      print('Calendar created with ID: ${createdCalendar.id}');
+      var calendar = gcal.Calendar();
+      calendar.summary = summary;
+      calendar.description = description;
+      calendar.timeZone = timeZone;
+
+      await calendarApi.calendars.insert(calendar);
+      print("Calendar created: $summary");
     } catch (e) {
-      print('Error creating calendar: $e');
+      print("Error creating calendar: $e");
+      throw e;
     }
   }
+
 
   // Method to increment or decrement the Day or Month value of the current date
   Future<void> changeDateBy(int daysOrMonths) async {

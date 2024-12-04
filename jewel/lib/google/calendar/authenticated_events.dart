@@ -86,7 +86,7 @@ class _AddCalendarFormState extends State<AddCalendarForm> {
 class _SignInDemoState extends State<SignInDemo> {
   late final CalendarLogic _calendarLogic; // This is what we use to make the method calls
   String? selectedCalendar;
-
+  late gcal.CalendarApi calendarApi;
   @override
   void initState() {
     super.initState();
@@ -97,7 +97,7 @@ class _SignInDemoState extends State<SignInDemo> {
         _calendarLogic.isAuthorized = account != null;
       });
       if (account != null) {
-        gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance(); // This is the auth state we give to the API instance
+        calendarApi = await _calendarLogic.createCalendarApiInstance(); // This is the auth state we give to the API instance
         await _calendarLogic.getAllEvents(calendarApi);
         //updateCalendar();
         //getAllCalendars(calendarApi);
@@ -265,15 +265,11 @@ class _SignInDemoState extends State<SignInDemo> {
                             child: AddCalendarForm(
                               onSubmit: (calendarName, description, timeZone) async {
                                 try {
-                                  final calendar = {
-                                    'summary': calendarName,
-                                    'description': description,
-                                    'timeZone': timeZone,
-                                  };
                                   await _calendarLogic.createCalendar(
-                                    summary: "New Project Calendar",
-                                    description: "This is a calendar for tracking project milestones",
-                                    timeZone: "America/New_York",
+                                      summary: calendarName,
+                                      description: description,
+                                      timeZone: timeZone,
+                                      calendarApi: calendarApi,
                                   );
                                   Navigator.of(context).pop(); // Close the modal
                                   ScaffoldMessenger.of(context).showSnackBar(
