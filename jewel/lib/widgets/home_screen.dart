@@ -27,7 +27,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _screens = [
       CalendarEventList(),//calendarLogic: widget.calendarLogic),
-      SignInDemo(calendarLogic: widget.calendarLogic),
+      AuthenticatedCalendar(calendarLogic: widget.calendarLogic),
       //MapScreen(), // Pass CalendarLogic if needed
       Screen1()
     ];
