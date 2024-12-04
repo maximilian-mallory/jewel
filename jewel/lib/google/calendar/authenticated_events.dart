@@ -14,6 +14,75 @@ class SignInDemo extends StatefulWidget {
   State createState() => _SignInDemoState();
 }
 
+class AddCalendarForm extends StatefulWidget {
+  final void Function(String calendarName, String description, String timeZone)
+      onSubmit;
+
+  const AddCalendarForm({Key? key, required this.onSubmit}) : super(key: key);
+
+  @override
+  _AddCalendarFormState createState() => _AddCalendarFormState();
+}
+
+class _AddCalendarFormState extends State<AddCalendarForm> {
+  final _formKey = GlobalKey<FormState>();
+  final _calendarNameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _timeZoneController = TextEditingController(text: "America/New_York"); // Default timezone
+
+  @override
+  void dispose() {
+    _calendarNameController.dispose();
+    _descriptionController.dispose();
+    _timeZoneController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView( // Ensures the form is scrollable when keyboard appears
+      child: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextFormField(
+              controller: _calendarNameController,
+              decoration: const InputDecoration(labelText: "Calendar Name"),
+              validator: (value) =>
+                  value == null || value.isEmpty ? "Please enter a calendar name" : null,
+            ),
+            TextFormField(
+              controller: _descriptionController,
+              decoration: const InputDecoration(labelText: "Description"),
+            ),
+            TextFormField(
+              controller: _timeZoneController,
+              decoration: const InputDecoration(labelText: "Time Zone"),
+              validator: (value) =>
+                  value == null || value.isEmpty ? "Please enter a time zone" : null,
+              // Optionally, you can use a dropdown for time zones
+            ),
+            const SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: () {
+                if (_formKey.currentState!.validate()) {
+                  widget.onSubmit(
+                    _calendarNameController.text,
+                    _descriptionController.text,
+                    _timeZoneController.text,
+                  );
+                }
+              },
+              child: const Text("Add Calendar"),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _SignInDemoState extends State<SignInDemo> {
   late final CalendarLogic _calendarLogic; // This is what we use to make the method calls
   String? selectedCalendar;
@@ -163,16 +232,73 @@ class _SignInDemoState extends State<SignInDemo> {
                 return DropdownButton<String>(
                   value: selectedCalendar,
                   hint: const Text("Select Calendar"),
-                  items: _calendarLogic.calendars.entries.map((entry) {
-                    final calendarId = entry.key;
-                    final calendarName = entry.value.toString();
-                    return DropdownMenuItem<String>(
-                      value: calendarId,
-                      child: Text(calendarName),
-                    );
-                  }).toList(),
+                  items: [
+                    ..._calendarLogic.calendars.entries.map((entry) {
+                      final calendarId = entry.key;
+                      final calendarName = entry.value.toString();
+                      return DropdownMenuItem<String>(
+                        value: calendarId,
+                        child: Text(calendarName),
+                      );
+                    }).toList(),
+                    DropdownMenuItem<String>(
+                      value: "add_calendar",
+                      child: const Text(
+                        "Add New Calendar",
+                        style: TextStyle(color: Colors.blue),
+                      ),
+                    ),
+                  ],
                   onChanged: (String? newValue) {
-                    if (newValue != null) {
+                    if (newValue == "add_calendar") {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true, // Allows full-screen modal for the form
+                        builder: (BuildContext context) {
+                          return Padding(
+                            padding: EdgeInsets.only(
+                              bottom: MediaQuery.of(context).viewInsets.bottom,
+                              top: 16.0,
+                              left: 16.0,
+                              right: 16.0,
+                            ),
+                            child: AddCalendarForm(
+                              onSubmit: (calendarName, description, timeZone) async {
+                                try {
+                                  final calendar = {
+                                    'summary': calendarName,
+                                    'description': description,
+                                    'timeZone': timeZone,
+                                  };
+                                  await _calendarLogic.createCalendar(
+                                    summary: "New Project Calendar",
+                                    description: "This is a calendar for tracking project milestones",
+                                    timeZone: "America/New_York",
+                                  );
+                                  Navigator.of(context).pop(); // Close the modal
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Calendar added successfully")),
+                                  );
+                                  // Refresh calendars after adding a new one
+                                  setState(() {
+                                    _calendarLogic.calendars = {}; // Clear and reload
+                                    _calendarLogic.createCalendarApiInstance().then(
+                                          (calendarApi) =>
+                                              getAllCalendars(calendarApi),
+                                        );
+                                  });
+                                } catch (error) {
+                                  Navigator.of(context).pop(); // Close the modal
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(content: Text("Failed to add calendar")),
+                                  );
+                                }
+                              },
+                            ),
+                          );
+                        },
+                      );
+                    } else if (newValue != null) {
                       setState(() {
                         selectedCalendar = newValue;
                       });
@@ -182,6 +308,7 @@ class _SignInDemoState extends State<SignInDemo> {
               },
             ),
           ),
+
           Expanded(
             child: SingleChildScrollView(
               scrollDirection: Axis.vertical,
@@ -269,3 +396,5 @@ class _SignInDemoState extends State<SignInDemo> {
           );
   }
 }
+
+
