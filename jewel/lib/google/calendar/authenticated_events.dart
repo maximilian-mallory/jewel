@@ -1,5 +1,9 @@
+import 'dart:io';
+import 'package:path/path.dart' as path;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:intl/intl.dart';
@@ -266,86 +270,295 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   /*
    * The actual dropdown list or 'DropdownButton' list of calendar entries, or available calendars
    */
-  Widget calendarSelectMenu(CalendarLogic calendarLogic) { 
-    return DropdownButton<String>(
-        value: selectedCalendar,
-        hint: const Text("Select Calendar"),
-        items: [
-          ...calendarLogic.calendars.entries.map((entry) {
-            final calendarId = entry.key;
-            final calendarName = entry.value.toString();
-            return DropdownMenuItem<String>(
-              value: calendarId,
-              child: Text(calendarName),
-            );
-          }),
-          DropdownMenuItem<String>(
-            value: "add_calendar",
-            child: const Text(
-              "Add New Calendar",
-              style: TextStyle(color: Colors.blue),
-            ),
-          ),
-        ],
-        onChanged: (String? newValue) {
-          if (newValue == "add_calendar") {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true, // Allows full-screen modal for the form
-              builder: (BuildContext context) {
-                return addCalendarForm(calendarLogic);
-              },
-            );
-          } else if (newValue != null) {
-            setState(() {
-              selectedCalendar = newValue;
-            });
-          }
-        },
-      );
-  }
+  Widget calendarSelectMenu(CalendarLogic calendarLogic) {
+  return FutureBuilder<List<String>>(
+    future: _getIcalFeeds(), // Call the async function to fetch calendar names
+    builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
+      if (snapshot.hasError) {
+        return Text('Error: ${snapshot.error}'); // Handle any error that occurred
+      } else if (snapshot.hasData) {
+        List<String> userCalendars = snapshot.data ?? []; // Get the list of calendars
 
-  /*
-   *  Map and card stack building of calendar events
-   */
-  Widget buildEventsList(List<gcal.Event> events) {
-    return Expanded(
-            child: Column(
-              children: List.generate(24, (hourIndex) {
-                return Container(
-                  height: 100.0,
-                  decoration: BoxDecoration(
-                    border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
-                  ),
-                  child: Stack(
-                    children: _calendarLogic.events.where((event) {
-                      final start = event.start?.dateTime;
-                      return start != null && start.hour == hourIndex;
-                    }).map((event) {
-                      return Positioned(
-                        top: 10,
-                        left: 60,
-                        right: 10,
-                        child: Card(
-                          color: Colors.blueAccent,
-                          child: ListTile(
-                            title: Text(
-                              event.summary ?? 'No Title',
-                              style: const TextStyle(color: Colors.white),
-                            ),
-                            subtitle: Text(
-                              '${event.start?.dateTime} - ${event.end?.dateTime}',
-                              style: const TextStyle(color: Colors.white70),
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
-                  ),
+        return DropdownButton<String>(
+          value: selectedCalendar,
+          hint: const Text("Select Calendar"),
+          items: [
+            // Existing calendars from calendarLogic
+            ...calendarLogic.calendars.entries.map((entry) {
+              final calendarId = entry.key;
+              final calendarName = entry.value.toString();
+              return DropdownMenuItem<String>(
+                value: calendarId,
+                child: Text(calendarName),
+              );
+            }),
+
+            // Add calendars owned by the current user (iCal feeds)
+            if (userCalendars.isNotEmpty) 
+              ...userCalendars.map((calendarName) {
+                return DropdownMenuItem<String>(
+                  value: calendarName,
+                  child: Text(calendarName),
                 );
               }),
+
+            // Add New Calendar option
+            DropdownMenuItem<String>(
+              value: "add_calendar",
+              child: const Text(
+                "Add New Calendar",
+                style: TextStyle(color: Colors.blue),
+              ),
+            ),
+          ],
+          onChanged: (String? newValue) {
+            if (newValue == "add_calendar") {
+              // Show modal with options: Google, External Calendar, or iCal Link
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true, // Allows full-screen modal for the form
+                builder: (BuildContext context) {
+                  return Column(
+                    children: <Widget>[
+                      ListTile(
+                        title: const Text("Add Google Calendar"),
+                        onTap: () {
+                          Navigator.pop(context);
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return addCalendarForm(calendarLogic); // Show Google calendar form
+                            },
+                          );
+                        },
+                      ),
+                      ListTile(
+                        title: const Text("Add External Calendar"),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _showFilePicker(); // Show file picker for external calendar
+                        },
+                      ),
+                      ListTile(
+                        title: const Text("Add iCal Feed Link"),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _showIcalFeedLinkForm(); // Show input form for iCal feed link
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            } else if (newValue != null) {
+              setState(() {
+                selectedCalendar = newValue;
+              });
+            }
+          },
+        );
+      } else {
+        return const Text('No calendars found.'); // Handle case where no calendars are found
+      }
+    },
+  );
+}
+
+void _showIcalFeedLinkForm() {
+  final TextEditingController linkController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (BuildContext context) {
+      return Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            // Header text
+            Text(
+              'Enter iCal Feed URL and Calendar Name',
+              style: Theme.of(context).textTheme.titleLarge, // Replace headline6 with titleLarge
+            ),
+            SizedBox(height: 8),
+            
+            // Calendar name input
+            TextField(
+              controller: nameController,
+              decoration: InputDecoration(
+                hintText: 'Enter calendar name',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 8),
+
+            // iCal feed URL input
+            TextField(
+              controller: linkController,
+              decoration: InputDecoration(
+                hintText: 'Enter the iCal feed URL',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            SizedBox(height: 16),
+            
+            // Submit button
+            ElevatedButton(
+              onPressed: () {
+                String name = nameController.text.trim();
+                String url = linkController.text.trim();
+
+                // Validate both fields
+                if (name.isNotEmpty && url.isNotEmpty && Uri.tryParse(url)?.hasAbsolutePath == true) {
+                  // Process iCal feed link here (e.g., save it to Firestore)
+                  _saveIcalFeedLink(name, url);
+                  Navigator.pop(context); // Close the bottom sheet
+                } else {
+                  // Show an error message if any field is invalid
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Please enter a valid name and iCal feed URL')),
+                  );
+                }
+              },
+              child: Text('Add iCal Feed'),
+            ),
+          ],
+        ),
+      );
+    },
+  );
+}
+
+// Function to save the iCal feed URL and name to Firestore
+void _saveIcalFeedLink(String name, String url) async {
+  try {
+    String? userEmail = _calendarLogic.currentUser?.email;
+
+    if (userEmail == null) {
+      // Handle the case where the user is not logged in
+      print('User is not logged in.');
+      return;
+    }
+
+    // Save the iCal feed link to Firestore
+    await FirebaseFirestore.instance.collection('ical_feeds').add({
+      'owner': userEmail,
+      'name': name,
+      'url': url,
+      'addedAt': Timestamp.now(),
+    });
+
+    // Trigger a rebuild by calling setState
+    setState(() {
+      // After adding the iCal feed, the list will refresh
+    });
+
+    // Optionally, show a success message to the user
+    print('iCal feed URL saved successfully!');
+  } catch (e) {
+    print('Error saving iCal feed URL: $e');
+  }
+}
+
+Future<List<String>> _getIcalFeeds() async {
+  try {
+    // Get the current user's email
+    String? userEmail = _calendarLogic.currentUser?.email;
+
+    if (userEmail == null) {
+      // Handle the case where the user is not logged in
+      print('User is not logged in.');
+      return [];
+    }
+
+    // Query the Firestore collection for documents with the userEmailPrefix field
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('ical_feeds')
+        .where('owner', isEqualTo: userEmail)
+        .get();
+
+    // Convert the query results to a list of maps
+    List<String> icalFeeds = querySnapshot.docs.map((doc) {
+      return doc['name'] as String;
+    }).toList();
+
+    return icalFeeds;
+  } catch (e) {
+    print('Error querying iCal feeds: $e');
+    return [];
+  }
+}
+
+// Function to show file picker for external calendar upload
+void _showFilePicker() async {
+  final result = await FilePicker.platform.pickFiles(
+    type: FileType.custom,
+    allowedExtensions: ['csv', 'ics'], // Allow both CSV and ICS (iCal) files
+  );
+  if (result != null && result.files.isNotEmpty) {
+    // Handle the selected file
+    final file = result.files.single;
+    File fileToUpload = File(file.path!);
+    String fileName = path.basename(fileToUpload.path);
+
+    // Upload to Firebase Storage (as described in previous steps)
+    final storageRef = FirebaseStorage.instance.ref().child('calendar_files/$fileName');
+    await storageRef.putFile(fileToUpload);
+    String fileUrl = await storageRef.getDownloadURL();
+
+    // Optionally save file URL to Firestore (metadata) if needed
+    await FirebaseFirestore.instance.collection('calendar_files').add({
+      'url': fileUrl,
+      'name': fileName,
+      'uploadedAt': Timestamp.now(),
+    });
+  }
+}
+
+/*
+*  Map and card stack building of calendar events
+*/
+  Widget buildEventsList(List<gcal.Event> events) {
+    return Expanded(
+      child: Column(
+        children: List.generate(24, (hourIndex) {
+          return Container(
+            height: 100.0,
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+            ),
+            child: Stack(
+              children: _calendarLogic.events.where((event) {
+                final start = event.start?.dateTime;
+                return start != null && start.hour == hourIndex;
+              }).map((event) {
+                return Positioned(
+                  top: 10,
+                  left: 60,
+                  right: 10,
+                  child: Card(
+                    color: Colors.blueAccent,
+                    child: ListTile(
+                      title: Text(
+                        event.summary ?? 'No Title',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                      subtitle: Text(
+                        '${event.start?.dateTime} - ${event.end?.dateTime}',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           );
+        }),
+      ),
+    );
   }
 
   /*
