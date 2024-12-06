@@ -15,13 +15,13 @@ class MapSampleState extends State<MapSample> {
       Completer<GoogleMapController>();
 
   static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
+    target: LatLng(44.879, -91.9193),
     zoom: 14.4746,
   );
 
   static const CameraPosition _kLake = CameraPosition(
       bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
+      target: LatLng(44.882, -91.9193),
       tilt: 59.440717697143555,
       zoom: 19.151926040649414);
 
@@ -34,6 +34,16 @@ class MapSampleState extends State<MapSample> {
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
         },
+        markers: {
+            const Marker(
+              markerId: MarkerId('test'),
+              position: LatLng(44.879, -91.9193),
+              infoWindow: InfoWindow(
+                title: 'Marker 1',
+                snippet: '',
+              ),
+            ),
+          }
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _goToTheLake,

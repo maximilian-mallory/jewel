@@ -4,11 +4,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 import 'package:universal_html/js.dart' as js;
-import '/google/maps/google_maps_injector.dart';
+import 'google_maps_injector(UNUSED).dart';
 import "package:universal_html/html.dart" as html; // For web only
 
 class MapScreen extends StatelessWidget {
-  final LatLng _center = const LatLng(45.521563, -122.677433);
+  final LatLng _center = const LatLng(44.879, -91.9193);
   late GoogleMapController mapController;
 
   MapScreen({super.key});
@@ -66,6 +66,16 @@ void _onMapCreated(GoogleMapController controller) {
             target: _center,
             zoom: 11.0,
           ),
+          markers: {
+            const Marker(
+              markerId: MarkerId('test'),
+              position: LatLng(44.879, -91.9193),
+              infoWindow: InfoWindow(
+                title: 'Marker 1',
+                snippet: '',
+              ),
+            ),
+          },
         ),
       ),
     );

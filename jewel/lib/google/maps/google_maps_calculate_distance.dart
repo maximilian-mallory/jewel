@@ -1,7 +1,7 @@
 
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:jewel/google/maps/google_maps_injector.dart';
+import 'package:jewel/google/maps/google_maps_injector(UNUSED).dart';
 
 import '../calendar/g_g_merge.dart';
 
