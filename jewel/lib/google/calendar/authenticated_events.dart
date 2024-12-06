@@ -143,7 +143,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
         children: [
           dateToggle(), // The actual switch that toggles day or month level view          
           loadCalendarMenu(), // The dropdown menu to toggle between calendar ids
-          calendarScrollView(), // The actual calendar event list, populated dynamically
+                             // The actual calendar event list, populated dynamically
         ],
       ),
     );
@@ -182,7 +182,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
 /*
 * Calendar scrolling list, sidebar timestamps
 */
-  Widget calendarScrollView() {
+  Widget calendarScrollView(CalendarLogic calendarLogic) {
     return Expanded(
       child: SingleChildScrollView(
         scrollDirection: Axis.vertical,
@@ -206,7 +206,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
                 }),
               ),
             ),
-            buildEventsList(_calendarLogic.events)
+            buildEventsList(calendarLogic.events)
           ],
         ),
       ),
@@ -607,20 +607,20 @@ void _showFilePicker() async {
 
   @override
   Widget build(BuildContext context) {
-    return _calendarLogic.currentUser != null
-        ? buildCalendarUI()
-        : Scaffold(
-            appBar: AppBar(title: const Text('Google Calendar Integration')),
-            body: Center(
-              child: ElevatedButton(
-                onPressed: () async {
-                  await _calendarLogic.handleSignIn();
-                  setState(() {});
-                },
-                child: const Text('Sign In with Google'),
-              ),
-            ),
-          );
+    return 
+        buildCalendarUI();
+        // : Scaffold(
+        //     // appBar: AppBar(title: const Text('Google Calendar Integration')),
+        //     body: Center(
+        //       child: ElevatedButton(
+        //         onPressed: () async {
+        //           await _calendarLogic.handleSignIn();
+        //           setState(() {});
+        //         },
+        //         child: const Text('Sign In with Google'),
+        //       ),
+        //     ),
+        //   );
   }
 }
 
