@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 // new
@@ -179,6 +181,7 @@ bool isLoading = true; // To show loading indicator
 
 
 Future<Map<String, dynamic>> createCalendarsList() async {
+  //get email address of current user
   final user =FirebaseAuth.instance.currentUser;
   var email_Address;
   if (user != null){
@@ -187,14 +190,39 @@ Future<Map<String, dynamic>> createCalendarsList() async {
     }    
   }
 
+  //database search set up
   final databaseSearch = await FirebaseFirestore.instance;
   final calendarsRef = databaseSearch.collection("calendar_prm");
   Map<String, dynamic> storedCalendars = {};
-  
+
+
+  // search through the docs for the document with the name of the user and store
+  // the data contained in the document
   await calendarsRef.doc(email_Address).get().then((DocumentSnapshot doc){
     storedCalendars = doc.data() as Map<String, dynamic>;
   },
 
   );
-  return storedCalendars;
+
+  // setup of the second database search
+  final CollectionReference<Map<String, dynamic>> calendarsTwoRef = databaseSearch.collection("calendar");
+  Map<String,dynamic> finalEvents = {};
+  Map<String,dynamic> storedEvents = {};
+  // for each map string dynamic search the "calendar" collection for files containing the correct id and email
+  // given from the previous search
+  storedCalendars.forEach(
+    (calendarId, emailName) => calendarsTwoRef.where("id" ,isEqualTo: calendarId)
+    .where("owner", isEqualTo:emailName).get().then((DocumentSnapshot doc){
+      //store the data from the snapshot in StoredEvents and add them to final events
+      storedEvents = doc.data() as Map<String,dynamic>;
+      finalEvents.addAll(storedEvents);
+    
+  
+    } as FutureOr Function(QuerySnapshot<Map<String, dynamic>> value)
+    )
+
+
+  );
+  
+  return finalEvents;
 }
