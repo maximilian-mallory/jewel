@@ -228,6 +228,27 @@ class CalendarLogic {
     }
   }
 
+  Future<void> createCalendar({
+    required String summary,
+    String? description,
+    required String timeZone,
+    required gcal.CalendarApi calendarApi,
+  }) async {
+    try {
+      var calendar = gcal.Calendar();
+      calendar.summary = summary;
+      calendar.description = description;
+      calendar.timeZone = timeZone;
+
+      await calendarApi.calendars.insert(calendar);
+      print("Calendar created: $summary");
+    } catch (e) {
+      print("Error creating calendar: $e");
+      throw e;
+    }
+  }
+
+
   // Method to increment or decrement the Day or Month value of the current date
   Future<void> changeDateBy(int daysOrMonths) async {
     if (isDayMode) {
