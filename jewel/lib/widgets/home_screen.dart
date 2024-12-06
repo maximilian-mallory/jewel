@@ -6,6 +6,7 @@ import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/screens/test_screen1.dart';
 
 import 'package:jewel/widgets/custom_nav.dart';
+import 'package:jewel/widgets/gmap_screen.dart';
 import 'package:jewel/widgets/settings.dart';
 
 
@@ -30,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
       Screen1(),//calendarLogic: widget.calendarLogic),
       calendarScrollView(widget.calendarLogic),
       //MapScreen(), // Pass CalendarLogic if needed
-      Screen1()
+      MapSample()
     ];
   }
 
@@ -157,11 +158,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       body: Column(
         children: [
-          Expanded(
-            child: AuthenticatedCalendar(
-              calendarLogic: widget.calendarLogic, // Pass required dependencies
-            ),
-          ),
+          SizedBox(
+      height: 150, // Set a specific height for the calendar UI
+      child: AuthenticatedCalendar(
+        calendarLogic: widget.calendarLogic, // Pass required dependencies
+      ),
+    ),
           Expanded(
             child: _screens[_selectedIndex], // Controlled by navigation bar
           ),
