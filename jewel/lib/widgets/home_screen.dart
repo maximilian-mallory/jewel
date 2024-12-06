@@ -3,17 +3,15 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:jewel/google/calendar/authenticated_events.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 //import 'package:jewel/google/maps/map_screen.dart';
-import 'package:jewel/screens/test_screen1.dart';
-
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/widgets/gmap_screen.dart';
 import 'package:jewel/widgets/settings.dart';
 
 
 class HomeScreen extends StatefulWidget {
-  final CalendarLogic calendarLogic;
+  final CalendarLogic calendarLogic; //have to have so that the page knows it exsists
 
-  const HomeScreen({super.key, required this.calendarLogic});
+  const HomeScreen({super.key, required this.calendarLogic}); //requires the calendarLogic used from main.dart
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -28,8 +26,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _screens = [
-      Screen1(),//calendarLogic: widget.calendarLogic),
-      calendarScrollView(widget.calendarLogic),
+      SettingsScreen(),//calendarLogic: widget.calendarLogic),
+      calendarScrollView(widget.calendarLogic), //takes callendar logic to use for the page
       //MapScreen(), // Pass CalendarLogic if needed
       MapSample()
     ];
@@ -41,7 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Widget buildEventsList() {
+  Widget buildEventsList() { //actuall widget that is returned
     return Expanded(
       child: Column(
         children: List.generate(24, (hourIndex) {
@@ -60,7 +58,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   left: 60,
                   right: 10,
                   child: Card(
-                    color: Colors.blueAccent,
+                    color: Colors.greenAccent,
                     child: ListTile(
                       title: Text(
                         event.summary ?? 'No Title',
@@ -81,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget calendarScrollView(CalendarLogic calendarLogic) {
+  Widget calendarScrollView(CalendarLogic calendarLogic) { //needs above method to function
     return Expanded(
       child: SingleChildScrollView(
         scrollDirection: Axis.vertical,
@@ -91,11 +89,11 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               width: 50,
               color: Colors.grey[200],
-              child: Column(
+              child: Column( 
                 children: List.generate(24, (index) {
                   String timeLabel = '${index.toString().padLeft(2, '0')}:00';
                   return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    padding: const EdgeInsets.symmetric(vertical: 41.5),
                     child: Text(
                       timeLabel,
                       style: const TextStyle(fontSize: 12, color: Colors.black54),
@@ -122,48 +120,34 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               children: [
-                Builder(
-                  builder: (BuildContext context) {
-                    return IconButton(
-                      icon: const Icon(Icons.settings),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => SettingsScreen(),
-                          ),
-                        );
-                      },
-                      tooltip: MaterialLocalizations.of(context).showMenuTooltip,
-                    );
-                  },
-                ),
-                IconButton(
-                  icon: const FaIcon(FontAwesomeIcons.google), // Path to your Google icon asset
+                TextButton.icon(
+                  style: TextButton.styleFrom(
+                  foregroundColor: Colors.green,
+                  textStyle: const TextStyle(fontSize: 20)),
+                  icon: const FaIcon(FontAwesomeIcons.google),
                   onPressed: () async {
                     await widget.calendarLogic.handleSignIn();
                     setState(() {});
                   },
-                  tooltip: 'Sign In with Google',
+                  label: const Text('Sign In'),
                 ),
               ],
             ),
-            const Expanded(
-              child: Center(
-                child: Text('Jewel'),
-              ),
-            ),
           ],
         ),
+        actions: [
+          Padding(padding: EdgeInsets.symmetric(horizontal: 8.0)),
+          Text('Jewel'),
+        ],
       ),
       body: Column(
         children: [
           SizedBox(
-      height: 150, // Set a specific height for the calendar UI
-      child: AuthenticatedCalendar(
-        calendarLogic: widget.calendarLogic, // Pass required dependencies
-      ),
-    ),
+            height: 100, // Set a specific height for the calendar UI
+            child: AuthenticatedCalendar(
+              calendarLogic: widget.calendarLogic, // Pass required dependencies
+            ),
+          ),
           Expanded(
             child: _screens[_selectedIndex], // Controlled by navigation bar
           ),

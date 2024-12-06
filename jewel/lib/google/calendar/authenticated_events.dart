@@ -133,15 +133,16 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   Widget buildCalendarUI() {
     return Scaffold( // Whatever returns a Scaffold is what we see on the screen
       appBar: AppBar(
-        title: const Text('Google Calendar Events'),
-        actions: [ // These buttons are the toggles for going forward and backward one day or month in the event query
+        actions: [ 
+          dateToggle(), // The actual switch that toggles day or month level view 
+          // These buttons are the toggles for going forward and backward one day or month in the event query
           daymonthBackButton(),
           daymonthForwardButton(),
         ],
       ),
-      body: Column(
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          dateToggle(), // The actual switch that toggles day or month level view          
           loadCalendarMenu(), // The dropdown menu to toggle between calendar ids
                              // The actual calendar event list, populated dynamically
         ],
@@ -156,9 +157,9 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
     return IconButton(
       icon: const Icon(Icons.arrow_back),
       onPressed: () async { // Update based on date query backward
-        await _calendarLogic.changeDateBy(_calendarLogic.isDayMode ? -1 : -1);
+        await widget.calendarLogic.changeDateBy(_calendarLogic.isDayMode ? -1 : -1);
         gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
-        await _calendarLogic.getAllEvents(calendarApi);
+        await widget.calendarLogic.getAllEvents(calendarApi);
         //getAllCalendars(_calendarLogic.currentUser);
         setState(() {});
       },
@@ -171,9 +172,9 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
     return IconButton(
       icon: const Icon(Icons.arrow_forward),
       onPressed: () async { // Update based on date query forward
-        await _calendarLogic.changeDateBy(_calendarLogic.isDayMode ? 1 : 1);
+        await widget.calendarLogic.changeDateBy(_calendarLogic.isDayMode ? 1 : 1);
         gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
-        await _calendarLogic.getAllEvents(calendarApi);
+        await widget.calendarLogic.getAllEvents(calendarApi);
         setState(() {});
       },
     );
@@ -247,7 +248,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: FutureBuilder<void>(
-        future: _calendarLogic.createCalendarApiInstance().then(
+        future: widget.calendarLogic.createCalendarApiInstance().then(
           (calendarApi) => getAllCalendars(calendarApi),
         ),
         builder: (context, snapshot) {
@@ -261,7 +262,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
             return const Text("No calendars found");
           }
 
-          return calendarSelectMenu(_calendarLogic); // The actual dropdown menu is here
+          return calendarSelectMenu(widget.calendarLogic); // The actual dropdown menu is here
         },
       ),
     );
