@@ -89,20 +89,27 @@ class _HomeScreenState extends State<HomeScreen> {
                   style: TextButton.styleFrom(
                   foregroundColor: Colors.green,
                   textStyle: const TextStyle(fontSize: 20)),
-                  icon: const FaIcon(FontAwesomeIcons.google),
+                  icon: const FaIcon(
+              FontAwesomeIcons.google,
+              size: 40, // Make the icon size match the image size
+            ),
                   onPressed: () async {
                     await widget.calendarLogic.handleSignIn();
                     setState(() {});
                   },
-                  label: const Text('Sign In'),
+                  label: const Text(''),
                 ),
               ],
             ),
           ],
         ),
         actions: [
-          Padding(padding: EdgeInsets.symmetric(horizontal: 8.0)),
-          Text('Jewel'),
+          Padding(padding: const EdgeInsets.symmetric(horizontal: 8.0)),
+          Image.asset(
+            'assets/images/jewel205.png', // Replace with your image path
+            height: 45, // Adjust size for AppBar
+            width: 45, // Adjust size for AppBar
+          ),
         ],
       ),
       body: Column(

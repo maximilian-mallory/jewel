@@ -76,6 +76,7 @@ dependency_overrides:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
+    - assets/images/jewel205.png
     - assets/.env
     - .env
 

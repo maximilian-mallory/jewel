@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
+import 'package:intl/intl.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 
 
@@ -58,7 +59,7 @@ class _CalendarEventsViewState extends State<CalendarEventsView> {
             ),
             child: Stack(
               children: events.where((event) {
-                final start = event.start?.dateTime;
+                final start = event.start?.dateTime!.toLocal();
                 return start != null && start.hour == hourIndex;
               }).map((event) {
                 return Positioned(
@@ -66,14 +67,15 @@ class _CalendarEventsViewState extends State<CalendarEventsView> {
                   left: 60,
                   right: 10,
                   child: Card(
-                    color: Colors.blueAccent,
+                    color: const Color.fromARGB(255, 57, 145, 102),
                     child: ListTile(
                       title: Text(
                         event.summary ?? 'No Title',
                         style: const TextStyle(color: Colors.white),
                       ),
                       subtitle: Text(
-                        '${event.start?.dateTime} - ${event.end?.dateTime}',
+                        '${event.start?.dateTime!.toLocal() != null ? DateFormat('hh:mm a').format(event.start!.dateTime!.toLocal()) : 'No Time'} - '
+                        '${event.end?.dateTime!.toLocal() != null ? DateFormat('hh:mm a').format(event.end!.dateTime!.toLocal()) : 'No Time'}',
                         style: const TextStyle(color: Colors.white70),
                       ),
                     ),

@@ -12,18 +12,35 @@ const List<String> scopes = <String>[
 ];
 
 Future<List<gcal.Event>> getGoogleEventsData(gcal.CalendarApi calendarApi) async {
+  // Get the current date at midnight local time
+  DateTime now = DateTime.now();
+  DateTime startOfDay = DateTime(now.year, now.month, now.day); // Midnight local time today
+  DateTime endOfDay = startOfDay.add(Duration(days: 1)); // Midnight local time tomorrow
 
+  // Convert to UTC for comparison with Google Calendar API times
+  DateTime startOfDayUtc = startOfDay.toUtc();
+  DateTime endOfDayUtc = endOfDay.toUtc();
+
+  // Fetch events from the calendar
   final gcal.Events calEvents = await calendarApi.events.list(
     "primary",
+    timeMin: startOfDayUtc, // Filter events starting from midnight today UTC
+    timeMax: endOfDayUtc,   // Filter events up to midnight tomorrow UTC
   );
+
   List<gcal.Event> appointments = <gcal.Event>[];
+
+  // If events are available and are within the time range, add them to the list
   if (calEvents != null && calEvents.items != null) {
     for (int i = 0; i < calEvents.items!.length; i++) {
       final gcal.Event event = calEvents.items![i];
       if (event.start == null) {
         continue;
       }
-      appointments.add(event);
+      DateTime eventStart = DateTime.parse(event.start!.dateTime.toString());
+      if (eventStart.isAfter(startOfDayUtc) && eventStart.isBefore(endOfDayUtc)) {
+        appointments.add(event);
+      }
     }
   }
   return appointments;
@@ -149,6 +166,7 @@ class CalendarLogic extends ChangeNotifier{
   // Method starts the signIn process externally with a Google Modal
   Future<void> handleSignIn() async {
     try {
+      await handleSignOut();
       await googleSignIn.signIn();
     } catch (error) {
       print('Sign-In failed: $error');

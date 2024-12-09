@@ -138,11 +138,17 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   Widget buildCalendarUI() {
     return Scaffold( // Whatever returns a Scaffold is what we see on the screen
       appBar: AppBar(
-        actions: [ 
-          dateToggle(), // The actual switch that toggles day or month level view 
-          // These buttons are the toggles for going forward and backward one day or month in the event query
-          daymonthBackButton(),
-          daymonthForwardButton(),
+        actions: [
+          Expanded(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Spread items evenly
+            children: [
+              daymonthBackButton(),
+              dateToggle(),
+              daymonthForwardButton(),
+            ],
+          ),
+        ),
         ],
       ),
       body: Row(
@@ -159,58 +165,110 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
  * The decrement button for date query
  */
   Widget daymonthBackButton() {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () async { // Update based on date query backward
-        await widget.calendarLogic.changeDateBy(_calendarLogic.isDayMode ? -1 : -1);
-        gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
-        await widget.calendarLogic.getAllEvents(calendarApi);
-        //getAllCalendars(_calendarLogic.currentUser);
-        setState(() {});
-      },
-    );
-  }
-/*
- * Increment button for date query
- */
-  Widget daymonthForwardButton() {
-    return IconButton(
-      icon: const Icon(Icons.arrow_forward),
-      onPressed: () async { // Update based on date query forward
-        await widget.calendarLogic.changeDateBy(_calendarLogic.isDayMode ? 1 : 1);
-        gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
-        await widget.calendarLogic.getAllEvents(calendarApi);
-        setState(() {});
-      },
-    );
-  }
+  return TextButton.icon(
+    onPressed: () async {
+      // Navigate backward
+      await widget.calendarLogic.changeDateBy(_calendarLogic.isDayMode ? -1 : -1);
+      gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
+      await widget.calendarLogic.getAllEvents(calendarApi);
+      setState(() {});
+    },
+    icon: Icon(
+      Icons.arrow_back,
+      color: Colors.green, // Add a color for visual emphasis
+      size: 24, // Adjust icon size
+    ),
+    label: const Text(
+      "",
+      style: TextStyle(color: Colors.green, fontSize: 16),
+    ),
+    style: TextButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      backgroundColor: Colors.green.withOpacity(0.1), // Light blue background
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+    ),
+  );
+}
+
+Widget daymonthForwardButton() {
+  return TextButton.icon(
+    onPressed: () async {
+      // Navigate forward
+      await widget.calendarLogic.changeDateBy(_calendarLogic.isDayMode ? 1 : 1);
+      gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
+      await widget.calendarLogic.getAllEvents(calendarApi);
+      setState(() {});
+    },
+    icon: Icon(
+      Icons.arrow_forward,
+      color: Colors.green, // Add a contrasting color
+      size: 24, // Adjust icon size
+    ),
+    label: const Text(
+      ''
+    ),
+    style: TextButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      backgroundColor: Colors.green.withOpacity(0.1), // Light green background
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+    ),
+  );
+}
   
 /*
  * Toggle switch for day / month mode
  */
   Widget dateToggle() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text( 
-            _calendarLogic.isDayMode
-                ? 'Day Mode: ${DateFormat('MM/dd/yyyy').format(_calendarLogic.currentDate)}'
-                : 'Month Mode: ${DateFormat('MM/yyyy').format(_calendarLogic.currentDate)}',
-            style: const TextStyle(fontSize: 18),
-          ),
-          Switch(
-            value: _calendarLogic.isDayMode,
-            onChanged: (bool value) async {
-              await _calendarLogic.toggleDayMode(value);
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        GestureDetector(
+          onTap: () async {
+            DateTime? selectedDate = await showDatePicker(
+              context: context,
+              initialDate: _calendarLogic.currentDate,
+              firstDate: DateTime(2000), // Earliest selectable date
+              lastDate: DateTime(2100), // Latest selectable date
+            );
+            if (selectedDate != null) {
+              // _calendarLogic.updateDate(selectedDate);
               setState(() {});
-            },
+            }
+          },
+          child: Stack(
+            alignment: Alignment.center, // Aligns the date text in the center
+            children: [
+              Icon(
+                Icons.calendar_today,
+                size: 30, // Adjust icon size
+                color: Colors.green,
+              ),
+              Positioned(
+                top: 8, // Adjust vertical position
+                child: Text(
+                  _calendarLogic.isDayMode
+                      ? '${DateFormat('MM/dd/yy').format(_calendarLogic.currentDate)}'
+                      : '${DateFormat('MM/yy').format(_calendarLogic.currentDate)}',
+                  style: const TextStyle(
+                    fontSize: 12, // Smaller text size for the date
+                    color: Colors.white, // White text color
+                    fontWeight: FontWeight.bold, // Make the text bold
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   /*
   * This widget handles asynchronous loading of the list of available calendars, but nothing more
