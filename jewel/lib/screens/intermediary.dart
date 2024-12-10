@@ -2,12 +2,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 // new
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/external_user.dart';
 import 'package:jewel/models/internal_user.dart';
+import 'package:jewel/widgets/home_screen.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
 
 class Intermediary extends StatefulWidget{
-  const Intermediary({super.key});
+  final CalendarLogic calendarLogic;
+  const Intermediary({super.key, required this.calendarLogic});
 
   @override
   _IntermediaryScreenState createState() => _IntermediaryScreenState();  
@@ -17,12 +22,28 @@ class _IntermediaryScreenState extends State<Intermediary> {
   
 bool isLoading = true; // To show loading indicator
 
-
-
  @override
   void initState() {
     super.initState();
+    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async { // Auth State listener
+      setState(() {
+        widget.calendarLogic.currentUser = account;
+        widget.calendarLogic.isAuthorized = account != null;
+      });
+    });
+    handleSignIn();
   }
+
+  Future<void> handleSignIn() async {
+  await widget.calendarLogic.handleSignIn();
+  // After signing in, navigate to the next screen
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(
+      builder: (context) => HomeScreen(calendarLogic: widget.calendarLogic), // Use named parameter
+    ),
+  );
+}
 
   Future<void> createExternalUser() async {
     User? user =FirebaseAuth.instance.currentUser;
@@ -48,12 +69,8 @@ bool isLoading = true; // To show loading indicator
     }
   }
   
-
-
   Future<void> createInternalUser() async {
     final user =FirebaseAuth.instance.currentUser;
-    
-
     
     StoreOpeningHoursPeriod dailyHours = StoreOpeningHoursPeriod();
 
@@ -63,7 +80,6 @@ bool isLoading = true; // To show loading indicator
     
     List<StoreOpeningHoursPeriod> hoursList = List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
 
-   
     StoreWeeklyOpeningHoursPeriod weeklyHours = StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
     
     if (user != null){
@@ -89,12 +105,16 @@ bool isLoading = true; // To show loading indicator
     return true;
   
   }
-
   
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-
-    );
-  }
+  Widget build(BuildContext context)  {
+  return Scaffold(
+    body: Center(
+      child: Image.asset(
+         'assets/images/jewel205.png', 
+        fit: BoxFit.contain,
+      ),
+    ),
+  );
+}
 }

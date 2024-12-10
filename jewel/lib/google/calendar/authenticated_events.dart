@@ -310,18 +310,18 @@ Widget daymonthForwardButton() {
         List<String> userCalendars = snapshot.data ?? []; // Get the list of calendars
 
         return DropdownButton<String>(
-  value: selectedCalendar,
-  hint: const Text("Select Calendar"),
-  items: [
-    // Existing calendars from calendarLogic
-    ...calendarLogic.calendars.entries.map((entry) {
-      final calendarId = entry.key;
-      final calendarName = entry.value.toString();
-      return DropdownMenuItem<String>(
-        value: calendarId,
-        child: Text(calendarName),
-      );
-    }),
+          value: selectedCalendar,
+          hint: const Text("Select Calendar"),
+          items: [
+            // Existing calendars from calendarLogic
+            ...calendarLogic.calendars.entries.map((entry) {
+              final calendarId = entry.key;
+              final calendarName = entry.value.toString();
+              return DropdownMenuItem<String>(
+                value: calendarId,
+                child: Text(calendarName),
+              );
+            }),
 
     // Add calendars owned by the current user (iCal feeds)
     if (userCalendars.isNotEmpty) 

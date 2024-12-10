@@ -2,6 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/screens/intermediary.dart';
 import 'firebase_options.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:jewel/notifications.dart';
@@ -52,7 +53,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: HomeScreen(calendarLogic: calendarLogic)
+      home: Intermediary(calendarLogic: calendarLogic)
       //MyHomePage(title: 'Flutter Demo Home Page'),
     );
   }

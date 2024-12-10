@@ -75,94 +75,7 @@ class CalendarLogic extends ChangeNotifier{
   Map<String, dynamic> calendars = {};
   
   // This list is a JSON List of events as Maps
-  List<Map<String, dynamic>> mapEvents(List<gcal.Event> events) {
-    return events.map((event) {
-      return {
-        'kind': event.kind,
-        'etag': event.etag,
-        'id': event.id,
-        'status': event.status,
-        'htmlLink': event.htmlLink,
-        'created': event.created?.toIso8601String(),
-        'updated': event.updated?.toIso8601String(),
-        'summary': event.summary,
-        'description': event.description,
-        'location': event.location,
-        'colorId': event.colorId,
-        'creator': {
-          'id': event.creator?.id,
-          'email': event.creator?.email,
-          'displayName': event.creator?.displayName,
-          'self': event.creator?.self,
-        },
-        'organizer': {
-          'id': event.organizer?.id,
-          'email': event.organizer?.email,
-          'displayName': event.organizer?.displayName,
-          'self': event.organizer?.self,
-        },
-        'start': event.start != null
-            ? {
-                'date': event.start?.date?.toIso8601String(),
-                'dateTime': event.start?.dateTime?.toIso8601String(),
-                'timeZone': event.start?.timeZone,
-              }
-            : null,
-        'end': event.end != null
-            ? {
-                'date': event.end?.date?.toIso8601String(),
-                'dateTime': event.end?.dateTime?.toIso8601String(),
-                'timeZone': event.end?.timeZone,
-              }
-            : null,
-        'endTimeUnspecified': event.endTimeUnspecified,
-        'recurrence': event.recurrence,
-        'recurringEventId': event.recurringEventId,
-        'originalStartTime': event.originalStartTime != null
-            ? {
-                'date': event.originalStartTime?.date?.toIso8601String(),
-                'dateTime': event.originalStartTime?.dateTime?.toIso8601String(),
-                'timeZone': event.originalStartTime?.timeZone,
-              }
-            : null,
-        'transparency': event.transparency,
-        'visibility': event.visibility,
-        'iCalUID': event.iCalUID,
-        'sequence': event.sequence,
-        'attendees': event.attendees?.map((attendee) {
-          return {
-            'id': attendee.id,
-            'email': attendee.email,
-            'displayName': attendee.displayName,
-            'organizer': attendee.organizer,
-            'self': attendee.self,
-            'resource': attendee.resource,
-            'optional': attendee.optional,
-            'responseStatus': attendee.responseStatus,
-            'comment': attendee.comment,
-            'additionalGuests': attendee.additionalGuests,
-          };
-        }).toList(),
-        'attendeesOmitted': event.attendeesOmitted,
-        'extendedProperties': {
-          'private': event.extendedProperties?.private,
-          'shared': event.extendedProperties?.shared,
-        },
-        'hangoutLink': event.hangoutLink,
-        'conferenceData': event.conferenceData != null
-            ? {
-                'createRequest': event.conferenceData?.createRequest,
-                'entryPoints': event.conferenceData?.entryPoints,
-                'conferenceSolution': event.conferenceData?.conferenceSolution,
-                'conferenceId': event.conferenceData?.conferenceId,
-                'signature': event.conferenceData?.signature,
-                'notes': event.conferenceData?.notes,
-              }
-            : null,
-      };
-    }).toList();
-  }
-
+  
   // Method starts the signIn process externally with a Google Modal
   Future<void> handleSignIn() async {
     try {
@@ -307,4 +220,93 @@ class CalendarLogic extends ChangeNotifier{
     isDayMode = value;
     await createCalendarApiInstance(); // Update events when mode changes.
   }
+
+  List<Map<String, dynamic>> mapEvents(List<gcal.Event> events) {
+    return events.map((event) {
+      return {
+        'kind': event.kind,
+        'etag': event.etag,
+        'id': event.id,
+        'status': event.status,
+        'htmlLink': event.htmlLink,
+        'created': event.created?.toIso8601String(),
+        'updated': event.updated?.toIso8601String(),
+        'summary': event.summary,
+        'description': event.description,
+        'location': event.location,
+        'colorId': event.colorId,
+        'creator': {
+          'id': event.creator?.id,
+          'email': event.creator?.email,
+          'displayName': event.creator?.displayName,
+          'self': event.creator?.self,
+        },
+        'organizer': {
+          'id': event.organizer?.id,
+          'email': event.organizer?.email,
+          'displayName': event.organizer?.displayName,
+          'self': event.organizer?.self,
+        },
+        'start': event.start != null
+            ? {
+                'date': event.start?.date?.toIso8601String(),
+                'dateTime': event.start?.dateTime?.toIso8601String(),
+                'timeZone': event.start?.timeZone,
+              }
+            : null,
+        'end': event.end != null
+            ? {
+                'date': event.end?.date?.toIso8601String(),
+                'dateTime': event.end?.dateTime?.toIso8601String(),
+                'timeZone': event.end?.timeZone,
+              }
+            : null,
+        'endTimeUnspecified': event.endTimeUnspecified,
+        'recurrence': event.recurrence,
+        'recurringEventId': event.recurringEventId,
+        'originalStartTime': event.originalStartTime != null
+            ? {
+                'date': event.originalStartTime?.date?.toIso8601String(),
+                'dateTime': event.originalStartTime?.dateTime?.toIso8601String(),
+                'timeZone': event.originalStartTime?.timeZone,
+              }
+            : null,
+        'transparency': event.transparency,
+        'visibility': event.visibility,
+        'iCalUID': event.iCalUID,
+        'sequence': event.sequence,
+        'attendees': event.attendees?.map((attendee) {
+          return {
+            'id': attendee.id,
+            'email': attendee.email,
+            'displayName': attendee.displayName,
+            'organizer': attendee.organizer,
+            'self': attendee.self,
+            'resource': attendee.resource,
+            'optional': attendee.optional,
+            'responseStatus': attendee.responseStatus,
+            'comment': attendee.comment,
+            'additionalGuests': attendee.additionalGuests,
+          };
+        }).toList(),
+        'attendeesOmitted': event.attendeesOmitted,
+        'extendedProperties': {
+          'private': event.extendedProperties?.private,
+          'shared': event.extendedProperties?.shared,
+        },
+        'hangoutLink': event.hangoutLink,
+        'conferenceData': event.conferenceData != null
+            ? {
+                'createRequest': event.conferenceData?.createRequest,
+                'entryPoints': event.conferenceData?.entryPoints,
+                'conferenceSolution': event.conferenceData?.conferenceSolution,
+                'conferenceId': event.conferenceData?.conferenceId,
+                'signature': event.conferenceData?.signature,
+                'notes': event.conferenceData?.notes,
+              }
+            : null,
+      };
+    }).toList();
+  }
+
 }
