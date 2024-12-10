@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 // new
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis/calendar/v3.dart' as gcal;
 
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/external_user.dart';
@@ -31,11 +32,12 @@ bool isLoading = true; // To show loading indicator
         widget.calendarLogic.isAuthorized = account != null;
       });
     });
-    handleSignIn();
+    signIn();
   }
 
-  Future<void> handleSignIn() async {
+  Future<void> signIn() async {
   await widget.calendarLogic.handleSignIn();
+  widget.calendarLogic.createCalendarApiInstance();
   // After signing in, navigate to the next screen
   Navigator.pushReplacement(
     context,

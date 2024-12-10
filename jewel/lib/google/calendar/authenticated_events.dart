@@ -9,15 +9,6 @@ import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:intl/intl.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 
-class AuthenticatedCalendar extends StatefulWidget {
-  final CalendarLogic calendarLogic;
-
-  const AuthenticatedCalendar({super.key, required this.calendarLogic});
-
-  @override
-  State createState() => _AuthenticatedCalendarState();
-}
-
 class AddCalendarForm extends StatefulWidget {
   final void Function(String calendarName, String description, String timeZone)
       onSubmit;
@@ -87,45 +78,50 @@ class _AddCalendarFormState extends State<AddCalendarForm> {
   }
 }
 
+class AuthenticatedCalendar extends StatefulWidget {
+  final CalendarLogic calendarLogic;
+
+  const AuthenticatedCalendar({super.key, required this.calendarLogic});
+
+  @override
+  State createState() => _AuthenticatedCalendarState();
+}
+
 class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
-  late final CalendarLogic _calendarLogic; // This is what we use to make the method calls
+// This is what we use to make the method calls
   String? selectedCalendar;
   late gcal.CalendarApi calendarApi;
   @override
   void initState() {
-    super.initState();
-    _calendarLogic = widget.calendarLogic; // widget. calls the Widget level object, which is the shared API instance from HomeScreen
+    super.initState();// widget. calls the Widget level object, which is the shared API instance from HomeScreen
     googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async { // Auth State listener
       setState(() {
-        _calendarLogic.currentUser = account;
-        _calendarLogic.isAuthorized = account != null;
+        widget.calendarLogic.currentUser = account;
+        widget.calendarLogic..isAuthorized = account != null;
       });
       if (account != null) {
-        print("creating api instance");        
-        calendarApi = await _calendarLogic.createCalendarApiInstance(); // This is the auth state we give to the API instance
+        // print("creating api instance");        
+        // calendarApi = await _calendarLogic.createCalendarApiInstance(); // This is the auth state we give to the API instance
         print("fetch init");
         widget.calendarLogic.events = await getGoogleEventsData(calendarApi);
         print(widget.calendarLogic.events); 
-        await _calendarLogic.getAllEvents(calendarApi);
-        //updateCalendar();
-        //getAllCalendars(calendarApi);
-        setState(() {});
+        setState(() async {
+        });
       }
     });
   }
 
-
   Future<void> getAllCalendars(gcal.CalendarApi calendarApi) async {
-    if (_calendarLogic.currentUser == null) {
-      _calendarLogic.calendars.clear();
+    if (widget.calendarLogic.currentUser == null) {
+      widget.calendarLogic.calendars.clear();
       return;
     }
 
     try {
       var calendarList = await calendarApi.calendarList.list();
-      _calendarLogic.calendars.clear(); // Clear any old data
+      widget.calendarLogic.calendars.clear(); // Clear any old data
       for (var calendarEntry in calendarList.items ?? []) {
-        _calendarLogic.calendars[calendarEntry.id ?? "unknown"] = calendarEntry.summary ?? "Unnamed Calendar";
+        widget.calendarLogic.calendars[calendarEntry.id ?? "unknown"] = calendarEntry.summary ?? "Unnamed Calendar";
       }
     } catch (e) {
       print("Error fetching calendars: $e");
@@ -168,9 +164,8 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   return TextButton.icon(
     onPressed: () async {
       // Navigate backward
-      await widget.calendarLogic.changeDateBy(_calendarLogic.isDayMode ? -1 : -1);
-      gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
-      await widget.calendarLogic.getAllEvents(calendarApi);
+      await widget.calendarLogic.changeDateBy(widget.calendarLogic.isDayMode ? -1 : -1);
+      await getGoogleEventsData(widget.calendarLogic.calendarApi);
       setState(() {});
     },
     icon: Icon(
@@ -196,9 +191,9 @@ Widget daymonthForwardButton() {
   return TextButton.icon(
     onPressed: () async {
       // Navigate forward
-      await widget.calendarLogic.changeDateBy(_calendarLogic.isDayMode ? 1 : 1);
-      gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
-      await widget.calendarLogic.getAllEvents(calendarApi);
+      await widget.calendarLogic.changeDateBy(widget.calendarLogic.isDayMode ? 1 : 1);
+      // gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
+      await widget.calendarLogic.getAllEvents(widget.calendarLogic.calendarApi);
       setState(() {});
     },
     icon: Icon(
@@ -232,7 +227,7 @@ Widget daymonthForwardButton() {
           onTap: () async {
             DateTime? selectedDate = await showDatePicker(
               context: context,
-              initialDate: _calendarLogic.currentDate,
+              initialDate: widget.calendarLogic.currentDate,
               firstDate: DateTime(2000), // Earliest selectable date
               lastDate: DateTime(2100), // Latest selectable date
             );
@@ -252,9 +247,9 @@ Widget daymonthForwardButton() {
               Positioned(
                 top: 8, // Adjust vertical position
                 child: Text(
-                  _calendarLogic.isDayMode
-                      ? '${DateFormat('MM/dd/yy').format(_calendarLogic.currentDate)}'
-                      : '${DateFormat('MM/yy').format(_calendarLogic.currentDate)}',
+                  widget.calendarLogic.isDayMode
+                      ? '${DateFormat('MM/dd/yy').format(widget.calendarLogic.currentDate)}'
+                      : '${DateFormat('MM/yy').format(widget.calendarLogic.currentDate)}',
                   style: const TextStyle(
                     fontSize: 12, // Smaller text size for the date
                     color: Colors.white, // White text color
@@ -278,7 +273,7 @@ Widget daymonthForwardButton() {
       padding: const EdgeInsets.all(8.0),
       child: FutureBuilder<void>(
         future: widget.calendarLogic.createCalendarApiInstance().then(
-          (calendarApi) => getAllCalendars(calendarApi),
+          (calendarApi) => getAllCalendars(widget.calendarLogic.calendarApi),
         ),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -287,7 +282,7 @@ Widget daymonthForwardButton() {
           if (snapshot.hasError) {
             return const Text("Error loading calendars");
           }
-          if (_calendarLogic.calendars.isEmpty) {
+          if (widget.calendarLogic.calendars.isEmpty) {
             return const Text("No calendars found");
           }
 
@@ -300,7 +295,7 @@ Widget daymonthForwardButton() {
   /*
    * The actual dropdown list or 'DropdownButton' list of calendar entries, or available calendars
    */
-  Widget calendarSelectMenu(CalendarLogic calendarLogic) {
+  Widget calendarSelectMenu(CalendarLogic calendarLogic) { 
   return FutureBuilder<List<String>>(
     future: _getIcalFeeds(), // Call the async function to fetch calendar names
     builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
@@ -388,13 +383,13 @@ Widget daymonthForwardButton() {
       });
 
       // Fetch the new events from the calendar API
-      final newEvents = await getGoogleEventsData(calendarApi);
+      final newEvents = await getGoogleEventsData(widget.calendarLogic.calendarApi);
 
       // Update the calendar events
       setState(() {
         print("setting event state");
         widget.calendarLogic.events = newEvents; 
-        widget.calendarLogic.notifyListeners();// Pass new events
+        // widget.calendarLogic.notifyListeners();// Pass new events
       });
 
       // Optionally notify listeners (if you're using ChangeNotifier in CalendarLogic
@@ -478,7 +473,7 @@ void _showIcalFeedLinkForm() {
 // Function to save the iCal feed URL and name to Firestore
 void _saveIcalFeedLink(String name, String url) async {
   try {
-    String? userEmail = _calendarLogic.currentUser?.email;
+    String? userEmail = widget.calendarLogic.currentUser?.email;
 
     if (userEmail == null) {
       // Handle the case where the user is not logged in
@@ -509,7 +504,7 @@ void _saveIcalFeedLink(String name, String url) async {
 Future<List<String>> _getIcalFeeds() async {
   try {
     // Get the current user's email
-    String? userEmail = _calendarLogic.currentUser?.email;
+    String? userEmail = widget.calendarLogic.currentUser?.email;
 
     if (userEmail == null) {
       // Handle the case where the user is not logged in
@@ -592,7 +587,7 @@ void _showFilePicker() async {
                 calendarLogic.calendars = {}; // Clear and reload
                 calendarLogic.createCalendarApiInstance().then(
                       (calendarApi) =>
-                          getAllCalendars(calendarApi),
+                          getAllCalendars(widget.calendarLogic.calendarApi),
                     );
               });
             } catch (error) {

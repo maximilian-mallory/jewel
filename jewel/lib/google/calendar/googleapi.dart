@@ -6,11 +6,6 @@ import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 
-// Define constants and scopes
-const List<String> scopes = <String>[
-  'https://www.googleapis.com/auth/calendar',
-];
-
 Future<List<gcal.Event>> getGoogleEventsData(gcal.CalendarApi calendarApi) async {
   // Get the current date at midnight local time
   DateTime now = DateTime.now();
@@ -46,6 +41,11 @@ Future<List<gcal.Event>> getGoogleEventsData(gcal.CalendarApi calendarApi) async
   return appointments;
 }
 
+// Define constants and scopes
+const List<String> scopes = <String>[
+  'https://www.googleapis.com/auth/calendar',
+];
+
 // Initialize GoogleSignIn instance
 final GoogleSignIn googleSignIn = GoogleSignIn(
   scopes: scopes,
@@ -68,11 +68,13 @@ class CalendarLogic extends ChangeNotifier{
 
   CalendarLogic._internal();
   GoogleSignInAccount? currentUser;
+  late gcal.CalendarApi calendarApi;
   String? selectedCalendar;
   bool isAuthorized = false;
   DateTime currentDate = DateTime.now();
   bool isDayMode = true;
   Map<String, dynamic> calendars = {};
+  
   
   // This list is a JSON List of events as Maps
   
@@ -95,7 +97,7 @@ class CalendarLogic extends ChangeNotifier{
   }
 
   // Method returns an instance of a calendar API for a users Gmail
-  Future<gcal.CalendarApi> createCalendarApiInstance() async {
+  Future<void> createCalendarApiInstance() async {
     if (currentUser == null) {
       print('No current user found.');
     }
@@ -117,7 +119,7 @@ class CalendarLogic extends ChangeNotifier{
       ),
     );
 
-    return gcal.CalendarApi(authClient); // This is used to make requests to the Google Calendar API
+    calendarApi = gcal.CalendarApi(authClient); // This is used to make requests to the Google Calendar API
   }
 
   // This method returns a Firebase-Stored list of Calendars belonging to a user

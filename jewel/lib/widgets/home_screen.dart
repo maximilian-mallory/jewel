@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
       });
       if (account != null) {
         print("creating api instance");        
-        calendarApi = await widget.calendarLogic.createCalendarApiInstance(); // This is the auth state we give to the API instance
+        // calendarApi = await widget.calendarLogic.createCalendarApiInstance(); // This is the auth state we give to the API instance
         print("fetch init");
         widget.calendarLogic.events = await getGoogleEventsData(calendarApi);
         print("initialEvents Print");
