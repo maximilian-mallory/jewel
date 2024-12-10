@@ -101,7 +101,11 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
         _calendarLogic.isAuthorized = account != null;
       });
       if (account != null) {
+        print("creating api instance");        
         calendarApi = await _calendarLogic.createCalendarApiInstance(); // This is the auth state we give to the API instance
+        print("fetch init");
+        widget.calendarLogic.events = await getGoogleEventsData(calendarApi);
+        print(widget.calendarLogic.events); 
         await _calendarLogic.getAllEvents(calendarApi);
         //updateCalendar();
         //getAllCalendars(calendarApi);
@@ -109,6 +113,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
       }
     });
   }
+
 
   Future<void> getAllCalendars(gcal.CalendarApi calendarApi) async {
     if (_calendarLogic.currentUser == null) {
@@ -133,15 +138,22 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   Widget buildCalendarUI() {
     return Scaffold( // Whatever returns a Scaffold is what we see on the screen
       appBar: AppBar(
-        title: const Text('Google Calendar Events'),
-        actions: [ // These buttons are the toggles for going forward and backward one day or month in the event query
-          daymonthBackButton(),
-          daymonthForwardButton(),
+        actions: [
+          Expanded(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Spread items evenly
+            children: [
+              daymonthBackButton(),
+              dateToggle(),
+              daymonthForwardButton(),
+            ],
+          ),
+        ),
         ],
       ),
-      body: Column(
+      body: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          dateToggle(), // The actual switch that toggles day or month level view          
           loadCalendarMenu(), // The dropdown menu to toggle between calendar ids
                              // The actual calendar event list, populated dynamically
         ],
@@ -153,92 +165,110 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
  * The decrement button for date query
  */
   Widget daymonthBackButton() {
-    return IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () async { // Update based on date query backward
-        await _calendarLogic.changeDateBy(_calendarLogic.isDayMode ? -1 : -1);
-        gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
-        await _calendarLogic.getAllEvents(calendarApi);
-        //getAllCalendars(_calendarLogic.currentUser);
-        setState(() {});
-      },
-    );
-  }
-/*
- * Increment button for date query
- */
-  Widget daymonthForwardButton() {
-    return IconButton(
-      icon: const Icon(Icons.arrow_forward),
-      onPressed: () async { // Update based on date query forward
-        await _calendarLogic.changeDateBy(_calendarLogic.isDayMode ? 1 : 1);
-        gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
-        await _calendarLogic.getAllEvents(calendarApi);
-        setState(() {});
-      },
-    );
-  }
-
-/*
-* Calendar scrolling list, sidebar timestamps
-*/
-  Widget calendarScrollView(CalendarLogic calendarLogic) {
-    return Expanded(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 50,
-              color: Colors.grey[200],
-              child: Column(
-                children: List.generate(24, (index) {
-                  String timeLabel = '${index.toString().padLeft(2, '0')}:00';
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 8.0),
-                    child: Text(
-                      timeLabel,
-                      style: const TextStyle(fontSize: 12, color: Colors.black54),
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }),
-              ),
-            ),
-            buildEventsList(calendarLogic.events)
-          ],
-        ),
+  return TextButton.icon(
+    onPressed: () async {
+      // Navigate backward
+      await widget.calendarLogic.changeDateBy(_calendarLogic.isDayMode ? -1 : -1);
+      gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
+      await widget.calendarLogic.getAllEvents(calendarApi);
+      setState(() {});
+    },
+    icon: Icon(
+      Icons.arrow_back,
+      color: Colors.green, // Add a color for visual emphasis
+      size: 24, // Adjust icon size
+    ),
+    label: const Text(
+      "",
+      style: TextStyle(color: Colors.green, fontSize: 16),
+    ),
+    style: TextButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      backgroundColor: Colors.green.withOpacity(0.1), // Light blue background
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.0),
       ),
-    );
-  }
+    ),
+  );
+}
 
+Widget daymonthForwardButton() {
+  return TextButton.icon(
+    onPressed: () async {
+      // Navigate forward
+      await widget.calendarLogic.changeDateBy(_calendarLogic.isDayMode ? 1 : 1);
+      gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
+      await widget.calendarLogic.getAllEvents(calendarApi);
+      setState(() {});
+    },
+    icon: Icon(
+      Icons.arrow_forward,
+      color: Colors.green, // Add a contrasting color
+      size: 24, // Adjust icon size
+    ),
+    label: const Text(
+      ''
+    ),
+    style: TextButton.styleFrom(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+      backgroundColor: Colors.green.withOpacity(0.1), // Light green background
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8.0),
+      ),
+    ),
+  );
+}
+  
 /*
  * Toggle switch for day / month mode
  */
   Widget dateToggle() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text( 
-            _calendarLogic.isDayMode
-                ? 'Day Mode: ${DateFormat('MM/dd/yyyy').format(_calendarLogic.currentDate)}'
-                : 'Month Mode: ${DateFormat('MM/yyyy').format(_calendarLogic.currentDate)}',
-            style: const TextStyle(fontSize: 18),
-          ),
-          Switch(
-            value: _calendarLogic.isDayMode,
-            onChanged: (bool value) async {
-              await _calendarLogic.toggleDayMode(value);
+  return Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        GestureDetector(
+          onTap: () async {
+            DateTime? selectedDate = await showDatePicker(
+              context: context,
+              initialDate: _calendarLogic.currentDate,
+              firstDate: DateTime(2000), // Earliest selectable date
+              lastDate: DateTime(2100), // Latest selectable date
+            );
+            if (selectedDate != null) {
+              // _calendarLogic.updateDate(selectedDate);
               setState(() {});
-            },
+            }
+          },
+          child: Stack(
+            alignment: Alignment.center, // Aligns the date text in the center
+            children: [
+              Icon(
+                Icons.calendar_today,
+                size: 30, // Adjust icon size
+                color: Colors.green,
+              ),
+              Positioned(
+                top: 8, // Adjust vertical position
+                child: Text(
+                  _calendarLogic.isDayMode
+                      ? '${DateFormat('MM/dd/yy').format(_calendarLogic.currentDate)}'
+                      : '${DateFormat('MM/yy').format(_calendarLogic.currentDate)}',
+                  style: const TextStyle(
+                    fontSize: 12, // Smaller text size for the date
+                    color: Colors.white, // White text color
+                    fontWeight: FontWeight.bold, // Make the text bold
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   /*
   * This widget handles asynchronous loading of the list of available calendars, but nothing more
@@ -247,7 +277,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: FutureBuilder<void>(
-        future: _calendarLogic.createCalendarApiInstance().then(
+        future: widget.calendarLogic.createCalendarApiInstance().then(
           (calendarApi) => getAllCalendars(calendarApi),
         ),
         builder: (context, snapshot) {
@@ -261,7 +291,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
             return const Text("No calendars found");
           }
 
-          return calendarSelectMenu(_calendarLogic); // The actual dropdown menu is here
+          return calendarSelectMenu(widget.calendarLogic); // The actual dropdown menu is here
         },
       ),
     );
@@ -280,84 +310,97 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
         List<String> userCalendars = snapshot.data ?? []; // Get the list of calendars
 
         return DropdownButton<String>(
-          value: selectedCalendar,
-          hint: const Text("Select Calendar"),
-          items: [
-            // Existing calendars from calendarLogic
-            ...calendarLogic.calendars.entries.map((entry) {
-              final calendarId = entry.key;
-              final calendarName = entry.value.toString();
-              return DropdownMenuItem<String>(
-                value: calendarId,
-                child: Text(calendarName),
-              );
-            }),
+  value: selectedCalendar,
+  hint: const Text("Select Calendar"),
+  items: [
+    // Existing calendars from calendarLogic
+    ...calendarLogic.calendars.entries.map((entry) {
+      final calendarId = entry.key;
+      final calendarName = entry.value.toString();
+      return DropdownMenuItem<String>(
+        value: calendarId,
+        child: Text(calendarName),
+      );
+    }),
 
-            // Add calendars owned by the current user (iCal feeds)
-            if (userCalendars.isNotEmpty) 
-              ...userCalendars.map((calendarName) {
-                return DropdownMenuItem<String>(
-                  value: calendarName,
-                  child: Text(calendarName),
-                );
-              }),
+    // Add calendars owned by the current user (iCal feeds)
+    if (userCalendars.isNotEmpty) 
+      ...userCalendars.map((calendarName) {
+        return DropdownMenuItem<String>(
+          value: calendarName,
+          child: Text(calendarName),
+        );
+      }),
 
-            // Add New Calendar option
-            DropdownMenuItem<String>(
-              value: "add_calendar",
-              child: const Text(
-                "Add New Calendar",
-                style: TextStyle(color: Colors.blue),
-              ),
-            ),
-          ],
-          onChanged: (String? newValue) {
-            if (newValue == "add_calendar") {
-              // Show modal with options: Google, External Calendar, or iCal Link
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true, // Allows full-screen modal for the form
-                builder: (BuildContext context) {
-                  return Column(
-                    children: <Widget>[
-                      ListTile(
-                        title: const Text("Add Google Calendar"),
-                        onTap: () {
-                          Navigator.pop(context);
-                          showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true,
-                            builder: (BuildContext context) {
-                              return addCalendarForm(calendarLogic); // Show Google calendar form
-                            },
-                          );
-                        },
-                      ),
-                      ListTile(
-                        title: const Text("Add External Calendar"),
-                        onTap: () {
-                          Navigator.pop(context);
-                          _showFilePicker(); // Show file picker for external calendar
-                        },
-                      ),
-                      ListTile(
-                        title: const Text("Add iCal Feed Link"),
-                        onTap: () {
-                          Navigator.pop(context);
-                          _showIcalFeedLinkForm(); // Show input form for iCal feed link
-                        },
-                      ),
-                    ],
+    // Add New Calendar option
+    DropdownMenuItem<String>(
+      value: "add_calendar",
+      child: const Text(
+        "Add New Calendar",
+        style: TextStyle(color: Colors.blue),
+      ),
+    ),
+  ],
+  onChanged: (String? newValue) async {
+    if (newValue == "add_calendar") {
+      // Handle add new calendar logic
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        builder: (BuildContext context) {
+          return Column(
+            children: <Widget>[
+              ListTile(
+                title: const Text("Add Google Calendar"),
+                onTap: () {
+                  Navigator.pop(context);
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (BuildContext context) {
+                      return addCalendarForm(calendarLogic); // Show Google calendar form
+                    },
                   );
                 },
-              );
-            } else if (newValue != null) {
-              setState(() {
-                selectedCalendar = newValue;
-              });
-            }
-          },
-        );
+              ),
+              ListTile(
+                title: const Text("Add External Calendar"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showFilePicker(); // Show file picker for external calendar
+                },
+              ),
+              ListTile(
+                title: const Text("Add iCal Feed Link"),
+                onTap: () {
+                  Navigator.pop(context);
+                  _showIcalFeedLinkForm(); // Show input form for iCal feed link
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else if (newValue != null) {
+      // Update selected calendar
+      setState(() {
+        selectedCalendar = newValue;
+      });
+
+      // Fetch the new events from the calendar API
+      final newEvents = await getGoogleEventsData(calendarApi);
+
+      // Update the calendar events
+      setState(() {
+        print("setting event state");
+        widget.calendarLogic.events = newEvents; 
+        widget.calendarLogic.notifyListeners();// Pass new events
+      });
+
+      // Optionally notify listeners (if you're using ChangeNotifier in CalendarLogic
+    }
+  },
+);
       } else {
         return const Text('No calendars found.'); // Handle case where no calendars are found
       }
@@ -518,48 +561,6 @@ void _showFilePicker() async {
   }
 }
 
-/*
-*  Map and card stack building of calendar events
-*/
-  Widget buildEventsList(List<gcal.Event> events) {
-    return Expanded(
-      child: Column(
-        children: List.generate(24, (hourIndex) {
-          return Container(
-            height: 100.0,
-            decoration: BoxDecoration(
-              border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
-            ),
-            child: Stack(
-              children: _calendarLogic.events.where((event) {
-                final start = event.start?.dateTime;
-                return start != null && start.hour == hourIndex;
-              }).map((event) {
-                return Positioned(
-                  top: 10,
-                  left: 60,
-                  right: 10,
-                  child: Card(
-                    color: Colors.blueAccent,
-                    child: ListTile(
-                      title: Text(
-                        event.summary ?? 'No Title',
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      subtitle: Text(
-                        '${event.start?.dateTime} - ${event.end?.dateTime}',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          );
-        }),
-      ),
-    );
-  }
 
   /*
   * Add calendar dropdown option, calls the modal widget and handles onsubmit action to create the calendar

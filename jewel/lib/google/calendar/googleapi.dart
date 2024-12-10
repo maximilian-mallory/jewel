@@ -11,23 +11,65 @@ const List<String> scopes = <String>[
   'https://www.googleapis.com/auth/calendar',
 ];
 
+Future<List<gcal.Event>> getGoogleEventsData(gcal.CalendarApi calendarApi) async {
+  // Get the current date at midnight local time
+  DateTime now = DateTime.now();
+  DateTime startOfDay = DateTime(now.year, now.month, now.day); // Midnight local time today
+  DateTime endOfDay = startOfDay.add(Duration(days: 1)); // Midnight local time tomorrow
+
+  // Convert to UTC for comparison with Google Calendar API times
+  DateTime startOfDayUtc = startOfDay.toUtc();
+  DateTime endOfDayUtc = endOfDay.toUtc();
+
+  // Fetch events from the calendar
+  final gcal.Events calEvents = await calendarApi.events.list(
+    "primary",
+    timeMin: startOfDayUtc, // Filter events starting from midnight today UTC
+    timeMax: endOfDayUtc,   // Filter events up to midnight tomorrow UTC
+  );
+
+  List<gcal.Event> appointments = <gcal.Event>[];
+
+  // If events are available and are within the time range, add them to the list
+  if (calEvents != null && calEvents.items != null) {
+    for (int i = 0; i < calEvents.items!.length; i++) {
+      final gcal.Event event = calEvents.items![i];
+      if (event.start == null) {
+        continue;
+      }
+      DateTime eventStart = DateTime.parse(event.start!.dateTime.toString());
+      if (eventStart.isAfter(startOfDayUtc) && eventStart.isBefore(endOfDayUtc)) {
+        appointments.add(event);
+      }
+    }
+  }
+  return appointments;
+}
+
 // Initialize GoogleSignIn instance
 final GoogleSignIn googleSignIn = GoogleSignIn(
   scopes: scopes,
   clientId: kIsWeb ? "954035696925-p4j9gbmpjknoc04qjd701r2h5ah190ug.apps.googleusercontent.com" : null,
 );
 
-class CalendarLogic {
+class CalendarLogic extends ChangeNotifier{
   static final CalendarLogic _instance = CalendarLogic._internal();
+  List<gcal.Event> _events = [];
 
+  List<gcal.Event> get events => _events;
+
+  set events(List<gcal.Event> newEvents) {
+    _events = newEvents;
+    notifyListeners(); // Notify listeners whenever events are updated
+  }
   factory CalendarLogic() {
     return _instance;
   }
 
   CalendarLogic._internal();
   GoogleSignInAccount? currentUser;
+  String? selectedCalendar;
   bool isAuthorized = false;
-  List<gcal.Event> events = [];
   DateTime currentDate = DateTime.now();
   bool isDayMode = true;
   Map<String, dynamic> calendars = {};
@@ -124,6 +166,7 @@ class CalendarLogic {
   // Method starts the signIn process externally with a Google Modal
   Future<void> handleSignIn() async {
     try {
+      await handleSignOut();
       await googleSignIn.signIn();
     } catch (error) {
       print('Sign-In failed: $error');
@@ -141,7 +184,7 @@ class CalendarLogic {
   // Method returns an instance of a calendar API for a users Gmail
   Future<gcal.CalendarApi> createCalendarApiInstance() async {
     if (currentUser == null) {
-      throw Exception('No current user found.');
+      print('No current user found.');
     }
 
     final auth = await currentUser!.authentication; // Authenticated against the active user
