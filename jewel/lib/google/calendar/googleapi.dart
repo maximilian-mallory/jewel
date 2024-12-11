@@ -31,7 +31,7 @@ Future<List<gcal.Event>> getGoogleEventsData(gcal.CalendarApi calendarApi) async
   List<gcal.Event> appointments = <gcal.Event>[];
 
   // If events are available and are within the time range, add them to the list
-  if (calEvents != null && calEvents.items != null) {
+  if (calEvents.items != null) {
     for (int i = 0; i < calEvents.items!.length; i++) {
       final gcal.Event event = calEvents.items![i];
       if (event.start == null) {
@@ -200,7 +200,7 @@ class CalendarLogic extends ChangeNotifier{
       print("Calendar created: $summary");
     } catch (e) {
       print("Error creating calendar: $e");
-      throw e;
+      rethrow;
     }
   }
 

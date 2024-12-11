@@ -22,7 +22,7 @@ class AddCalendarForm extends StatefulWidget {
   final void Function(String calendarName, String description, String timeZone)
       onSubmit;
 
-  const AddCalendarForm({Key? key, required this.onSubmit}) : super(key: key);
+  const AddCalendarForm({super.key, required this.onSubmit});
 
   @override
   _AddCalendarFormState createState() => _AddCalendarFormState();
@@ -253,8 +253,8 @@ Widget daymonthForwardButton() {
                 top: 8, // Adjust vertical position
                 child: Text(
                   _calendarLogic.isDayMode
-                      ? '${DateFormat('MM/dd/yy').format(_calendarLogic.currentDate)}'
-                      : '${DateFormat('MM/yy').format(_calendarLogic.currentDate)}',
+                      ? DateFormat('MM/dd/yy').format(_calendarLogic.currentDate)
+                      : DateFormat('MM/yy').format(_calendarLogic.currentDate),
                   style: const TextStyle(
                     fontSize: 12, // Smaller text size for the date
                     color: Colors.white, // White text color

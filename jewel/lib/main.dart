@@ -4,7 +4,6 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/screens/intermediary.dart';
 import 'firebase_options.dart';
-import 'package:jewel/widgets/home_screen.dart';
 import 'package:jewel/notifications.dart';
 import 'package:flutter/foundation.dart';
 import '/utils/fake_ui.dart' if (dart.library.html) '/utils/real_ui.dart' as ui;

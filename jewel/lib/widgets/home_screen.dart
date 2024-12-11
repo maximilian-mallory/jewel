@@ -9,7 +9,6 @@ import 'package:jewel/widgets/events_view.dart';
 import 'package:jewel/widgets/gmap_screen.dart';
 import 'package:jewel/widgets/settings.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
-import 'package:provider/provider.dart';
 
 
 class HomeScreen extends StatefulWidget {

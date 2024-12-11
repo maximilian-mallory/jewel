@@ -8,7 +8,7 @@ import 'package:jewel/google/calendar/googleapi.dart';
 class CalendarEventsView extends StatefulWidget {
   final CalendarLogic calendarLogic;
 
-  const CalendarEventsView({Key? key, required this.calendarLogic}) : super(key: key);
+  const CalendarEventsView({super.key, required this.calendarLogic});
 
   @override
   _CalendarEventsViewState createState() => _CalendarEventsViewState();

@@ -41,19 +41,19 @@ class MapSampleState extends State<MapSample> {
         },
         markers: {
          const Marker(
-               markerId: const MarkerId("Here"),
+               markerId: MarkerId("Here"),
                position: LatLng(44.8794, -91.9093),
             ),
             const Marker(
-               markerId: const MarkerId("There"),
+               markerId: MarkerId("There"),
                position:LatLng(44.869, -91.923),
             ), 
             const Marker(
-               markerId: const MarkerId("Anywhere"),
+               markerId: MarkerId("Anywhere"),
                position: LatLng(44.871, -91.9110)
             ),  // Marker
             const Marker(
-               markerId: const MarkerId("Now"),
+               markerId: MarkerId("Now"),
                position: LatLng(44.9005, -91.9177)
             ),  // Marker
       }
