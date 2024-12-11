@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -62,13 +63,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
  @override
 Widget build(BuildContext context) {
+  bool isWeb = kIsWeb;
   return Scaffold(
     body: Column(
       children: [
         // AppBar content as a child, now full width
         Container(
           width: double.infinity, // Make the container take up the entire width
-          padding: const EdgeInsets.all(10),
+          padding: EdgeInsets.all(isWeb ? 10 : 5),
           decoration: BoxDecoration(
             color: Theme.of(context).primaryColor, // Set the background color
             boxShadow: [
@@ -85,11 +87,11 @@ Widget build(BuildContext context) {
               TextButton.icon(
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.green,
-                  textStyle: const TextStyle(fontSize: 20),
+                  textStyle: const TextStyle(fontSize: 1),
                 ),
-                icon: const FaIcon(
+                icon: FaIcon(
                   FontAwesomeIcons.google,
-                  size: 50,
+                  size: isWeb ? 50 : 25,
                 ),
                 onPressed: () async {
                   await handleSignOut();
@@ -98,7 +100,7 @@ Widget build(BuildContext context) {
                 },
                 label: const Text(''),
               ),
-              const SizedBox(width: 10), // Add spacing between widgets
+              SizedBox(width: isWeb ? 10 : 5), // Add spacing between widgets
               Flexible(
                 child: Container(
                   decoration: BoxDecoration(
@@ -114,7 +116,7 @@ Widget build(BuildContext context) {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12), // Ensure rounding is applied to the child
                     child: SizedBox(
-                      height: 75, // Constrain height
+                      height: isWeb ? 75 : 55, // Constrain height
                       child: AuthenticatedCalendar(
                         calendarLogic: widget.calendarLogic,
                       ),
@@ -139,8 +141,8 @@ Widget build(BuildContext context) {
                   borderRadius: BorderRadius.circular(12), // Ensure the image corners are rounded
                   child: Image.asset(
                     'assets/images/jewel205.png',
-                    height: 75,
-                    width: 65,
+                    height: isWeb ? 75 : 35,
+                    width: isWeb ? 75 : 25,
                   ),
                 ),
               ),

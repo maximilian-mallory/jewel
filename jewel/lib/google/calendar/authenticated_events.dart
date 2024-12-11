@@ -9,6 +9,7 @@ import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:intl/intl.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter/foundation.dart';
 
 class AddCalendarForm extends StatefulWidget {
   final void Function(String calendarName, String description, String timeZone)
@@ -177,6 +178,8 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
  */
   
   Widget daymonthBackButton() {
+  bool isWeb = kIsWeb; // Check if the app is on the web
+
   return TextButton.icon(
     onPressed: () async {
       // Navigate backward
@@ -184,28 +187,29 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
       print(widget.calendarLogic.selectedDate);
       widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic);
       print(widget.calendarLogic.events.toList());
-      
     },
     icon: Icon(
       Icons.arrow_back,
       color: Colors.green, // Add a color for visual emphasis
-      size: 45, // Adjust icon size
+      size: isWeb ? 45 : 25, // Adjust icon size for web vs mobile
     ),
     label: const Text(
       "",
-      style: TextStyle(color: Colors.green, fontSize: 16),
+      style: TextStyle(color: Colors.green, fontSize: 1),
     ),
     style: TextButton.styleFrom(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-      backgroundColor: Colors.green.withOpacity(0.1), // Light blue background
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
+      padding: EdgeInsets.symmetric(
+        horizontal: isWeb ? 12.0 : 2.0, // Adjust padding for web vs mobile
+        vertical: isWeb ? 8.0 : 1.0, // Adjust padding for web vs mobile
       ),
+      backgroundColor: Colors.green.withOpacity(0.1), // Light green background
+      
     ),
   );
 }
 
 Widget daymonthForwardButton() {
+  bool isWeb = kIsWeb;
   return TextButton.icon(
     onPressed: () async {
       // Navigate forward
@@ -219,7 +223,7 @@ Widget daymonthForwardButton() {
     icon: Icon(
       Icons.arrow_forward,
       color: Colors.green, // Add a contrasting color
-      size: 45, // Adjust icon size
+      size: isWeb ? 75 : 25, // Adjust icon size
     ),
     label: const Text(
       ''
@@ -238,8 +242,9 @@ Widget daymonthForwardButton() {
  * Toggle switch for day / month mode
  */
   Widget dateToggle() {
+  bool isWeb = kIsWeb;
   return Padding(
-    padding: const EdgeInsets.all(8.0),
+    padding: EdgeInsets.all(isWeb ? 8.0 : 4.0),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -261,7 +266,7 @@ Widget daymonthForwardButton() {
             children: [
               Icon(
                 Icons.calendar_today,
-                size: 45, // Adjust icon size
+                size: isWeb ? 45: 20, // Adjust icon size
                 color: Colors.green,
               ),
               
@@ -277,8 +282,9 @@ Widget daymonthForwardButton() {
   * This widget handles asynchronous loading of the list of available calendars, but nothing more
   */
   Widget loadCalendarMenu() {
+    bool isWeb = kIsWeb;
   return Padding(
-    padding: const EdgeInsets.all(16.0),
+    padding:  EdgeInsets.all(isWeb ?16.0 : 4.0),
     child: ClipRRect(
       borderRadius: BorderRadius.circular(12.0), // Round corners of child content
       child: FutureBuilder<void>(
@@ -302,6 +308,7 @@ Widget daymonthForwardButton() {
    * The actual dropdown list or 'DropdownButton' list of calendar entries, or available calendars
    */
  Widget calendarSelectMenu(CalendarLogic calendarLogic) {
+  bool isWeb = kIsWeb;
   return FutureBuilder<List<String>>(
     future: _getIcalFeeds(), // Call the async function to fetch calendar names
     builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
@@ -311,7 +318,7 @@ Widget daymonthForwardButton() {
         List<String> userCalendars = snapshot.data ?? []; // Get the list of calendars
 
         return Padding(
-          padding: const EdgeInsets.all(16.0), // Add padding around the entire widget
+          padding: EdgeInsets.all(isWeb ?16.0:4.0), // Add padding around the entire widget
           child: Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12.0), // Add rounded corners
