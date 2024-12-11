@@ -10,6 +10,8 @@ import 'package:jewel/notifications.dart';
 import 'package:flutter/foundation.dart';
 import '/utils/fake_ui.dart' if (dart.library.html) '/utils/real_ui.dart' as ui;
 import "package:universal_html/html.dart" as html;
+import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
+import 'package:jewel/google/calendar/g_g_merge.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +39,12 @@ Future<void> main() async {
     });
   }
 
+  // Fetch sorted events and convert addresses to coordinates
+  Map<String, dynamic> sortedEvents = await fetchEventData();
+  List<LatLon> coordinates = await convertAddressesToCoords(sortedEvents);
+  for (var coord in coordinates) {
+    print('Coordinates: (${coord.lat}, ${coord.lon})');
+  }
 
   runApp(
     ChangeNotifierProvider(
