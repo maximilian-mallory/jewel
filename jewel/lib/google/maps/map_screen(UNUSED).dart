@@ -95,6 +95,6 @@ void _onMapCreated(GoogleMapController controller) {
       final mapConstructor = maps['Map'] as js.JsFunction;
       final map = js.JsObject(mapConstructor, [html.document.getElementById('map'), mapOptions]);
       //isStreetAddress();
-      calculateDistance();
+      // calculateDistance();
   }
 }
