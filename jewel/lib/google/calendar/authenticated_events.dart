@@ -97,7 +97,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
     googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async { // Auth State listener
       setState(() {
         widget.calendarLogic.currentUser = account;
-        widget.calendarLogic..isAuthorized = account != null;
+        widget.calendarLogic.isAuthorized = account != null;
       });
       if (account != null) {
         // print("creating api instance");        
@@ -164,7 +164,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   return TextButton.icon(
     onPressed: () async {
       // Navigate backward
-      await widget.calendarLogic.changeDateBy(widget.calendarLogic.isDayMode ? -1 : -1);
+      await widget.calendarLogic.changeDateBy(widget.calendarLogic.isDayMode ? -1 : -1, widget.calendarLogic);
       await getGoogleEventsData(widget.calendarLogic.calendarApi);
       setState(() {});
     },
@@ -191,7 +191,7 @@ Widget daymonthForwardButton() {
   return TextButton.icon(
     onPressed: () async {
       // Navigate forward
-      await widget.calendarLogic.changeDateBy(widget.calendarLogic.isDayMode ? 1 : 1);
+      await widget.calendarLogic.changeDateBy(widget.calendarLogic.isDayMode ? 1 : 1, widget.calendarLogic);
       // gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
       await widget.calendarLogic.getAllEvents(widget.calendarLogic.calendarApi);
       setState(() {});
@@ -272,9 +272,7 @@ Widget daymonthForwardButton() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: FutureBuilder<void>(
-        future: widget.calendarLogic.createCalendarApiInstance().then(
-          (calendarApi) => getAllCalendars(widget.calendarLogic.calendarApi),
-        ),
+        future: getAllCalendars(widget.calendarLogic.calendarApi),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const CircularProgressIndicator();
@@ -585,10 +583,9 @@ void _showFilePicker() async {
               // Refresh calendars after adding a new one
               setState(() {
                 calendarLogic.calendars = {}; // Clear and reload
-                calendarLogic.createCalendarApiInstance().then(
-                      (calendarApi) =>
-                          getAllCalendars(widget.calendarLogic.calendarApi),
-                    );
+
+                          getAllCalendars(widget.calendarLogic.calendarApi);
+
               });
             } catch (error) {
               Navigator.of(context).pop(); // Close the modal

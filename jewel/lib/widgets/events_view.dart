@@ -40,7 +40,21 @@ class _CalendarEventsViewState extends State<CalendarEventsView> {
                 }),
               ),
             ),
-            buildEventsList(widget.calendarLogic.events),
+            // Use FutureBuilder to handle async event loading
+            FutureBuilder<List<gcal.Event>>(
+              future: getGoogleEventsData(widget.calendarLogic.calendarApi),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator(); // Show loading spinner while fetching
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else if (snapshot.hasData) {
+                  return buildEventsList(snapshot.data!);
+                } else {
+                  return Text('No events found');
+                }
+              },
+            ),
           ],
         ),
       ),
@@ -48,7 +62,6 @@ class _CalendarEventsViewState extends State<CalendarEventsView> {
   }
 
   Widget buildEventsList(List<gcal.Event> events) {
-    print('Number of events: ${events.length}'); // Debug print
     return Expanded(
       child: Column(
         children: List.generate(24, (hourIndex) {

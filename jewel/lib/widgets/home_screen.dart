@@ -34,24 +34,8 @@ class _HomeScreenState extends State<HomeScreen> {
         widget.calendarLogic.currentUser = account;
         widget.calendarLogic.isAuthorized = account != null;
       });
-      if (account != null) {
-        print("creating api instance");        
-        // calendarApi = await widget.calendarLogic.createCalendarApiInstance(); // This is the auth state we give to the API instance
-        print("fetch init");
-        widget.calendarLogic.events = await getGoogleEventsData(calendarApi);
-        print("initialEvents Print");
-        for (var event in widget.calendarLogic.events) {
-                  print("Event Title: ${event.summary}");
-                  print("Start Time: ${event.start?.dateTime ?? event.start?.date}");
-                  print("End Time: ${event.end?.dateTime ?? event.end?.date}");
-                  print("Description: ${event.description}");
-                  print("-----------------------------------");
-                }
-        // await widget.calendarLogic.getAllEvents(calendarApi);
-        //updateCalendar();
-        //getAllCalendars(calendarApi);
-        setState(() async {widget.calendarLogic.events = await getGoogleEventsData(calendarApi);});
-      }
+      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic.calendarApi);
+      
     });
     _screens = [
       SettingsScreen(),//calendarLogic: widget.calendarLogic),
@@ -94,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
               size: 40, // Make the icon size match the image size
             ),
                   onPressed: () async {
-                    await widget.calendarLogic.handleSignIn();
+                    await handleSignIn();
                     setState(() {});
                   },
                   label: const Text(''),

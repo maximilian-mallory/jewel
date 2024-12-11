@@ -26,18 +26,18 @@ bool isLoading = true; // To show loading indicator
  @override
   void initState() {
     super.initState();
-    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async { // Auth State listener
-      setState(() {
-        widget.calendarLogic.currentUser = account;
-        widget.calendarLogic.isAuthorized = account != null;
-      });
-    });
+    // googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async { // Auth State listener
+    //   setState(() {
+    //     widget.calendarLogic.currentUser = account;
+    //     widget.calendarLogic.isAuthorized = account != null;
+    //   });
+    // });
     signIn();
   }
 
   Future<void> signIn() async {
-  await widget.calendarLogic.handleSignIn();
-  widget.calendarLogic.createCalendarApiInstance();
+  widget.calendarLogic.currentUser = await handleSignIn();
+  widget.calendarLogic.calendarApi = await createCalendarApiInstance(widget.calendarLogic);
   // After signing in, navigate to the next screen
   Navigator.pushReplacement(
     context,
