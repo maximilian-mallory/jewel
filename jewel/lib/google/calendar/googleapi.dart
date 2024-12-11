@@ -6,10 +6,11 @@ import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 
-Future<List<gcal.Event>> getGoogleEventsData(gcal.CalendarApi calendarApi) async {
+Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic) async {
   // Get the current date at midnight local time
-  DateTime now = DateTime.now();
-  DateTime startOfDay = DateTime(now.year, now.month, now.day); // Midnight local time today
+  DateTime now = calendarLogic.selectedDate;
+  DateTime startOfDay = DateTime(now.year, now.month, now.day); 
+  // Midnight local time today
   DateTime endOfDay = startOfDay.add(Duration(days: 1)); // Midnight local time tomorrow
 
   // Convert to UTC for comparison with Google Calendar API times
@@ -17,7 +18,7 @@ Future<List<gcal.Event>> getGoogleEventsData(gcal.CalendarApi calendarApi) async
   DateTime endOfDayUtc = endOfDay.toUtc();
 
   // Fetch events from the calendar
-  final gcal.Events calEvents = await calendarApi.events.list(
+  final gcal.Events calEvents = await calendarLogic.calendarApi.events.list(
     "primary",
     timeMin: startOfDayUtc, // Filter events starting from midnight today UTC
     timeMax: endOfDayUtc,   // Filter events up to midnight tomorrow UTC
@@ -41,6 +42,15 @@ Future<List<gcal.Event>> getGoogleEventsData(gcal.CalendarApi calendarApi) async
   return appointments;
 }
 
+DateTime changeDateBy(int days, CalendarLogic calendarLogic){
+    
+      return calendarLogic.selectedDate.add(Duration(days: days));
+      
+      // currentDate = DateTime(currentDate.year, currentDate.month + daysOrMonths, 1);
+ 
+     // Update events when date changes.
+  }
+
 // Define constants and scopes
 const List<String> scopes = <String>[
   'https://www.googleapis.com/auth/calendar',
@@ -56,7 +66,7 @@ GoogleSignInAccount? currentUser;
 
 Future<GoogleSignInAccount?> handleSignIn() async {
     try {
-      await handleSignOut();
+      // await handleSignOut();
       return await googleSignIn.signIn();
     } catch (error) {
       print('Sign-In failed: $error');
@@ -97,6 +107,20 @@ Future<GoogleSignInAccount?> handleSignIn() async {
   }
 
 class CalendarLogic extends ChangeNotifier{
+
+  DateTime _selectedDate = DateTime.now();
+
+  DateTime get selectedDate => _selectedDate;
+
+  set selectedDate(DateTime newDate) {
+    _selectedDate = newDate;
+    notifyListeners(); // Notify listeners when the date changes
+  }
+
+  Future<void> changeDateBy(int days) async {
+    selectedDate = _selectedDate.add(Duration(days: days));
+  }
+
   static final CalendarLogic _instance = CalendarLogic._internal();
   List<gcal.Event> _events = [];
 
@@ -114,6 +138,7 @@ class CalendarLogic extends ChangeNotifier{
   GoogleSignInAccount? currentUser;
   late gcal.CalendarApi calendarApi;
   String? selectedCalendar;
+  // DateTime selectedDate = DateTime.now();
   bool isAuthorized = false;
   DateTime currentDate = DateTime.now();
   bool isDayMode = true;
@@ -209,14 +234,7 @@ class CalendarLogic extends ChangeNotifier{
 
 
   // Method to increment or decrement the Day or Month value of the current date
-  Future<void> changeDateBy(int daysOrMonths, CalendarLogic calendarLogic) async {
-    if (isDayMode) {
-      currentDate = currentDate.add(Duration(days: daysOrMonths));
-    } else {
-      currentDate = DateTime(currentDate.year, currentDate.month + daysOrMonths, 1);
-    }
-    await createCalendarApiInstance(calendarLogic); // Update events when date changes.
-  }
+
 
   // Method to toggle between Day and Month on calendar
   Future<void> toggleDayMode(bool value, CalendarLogic calendarLogic) async {

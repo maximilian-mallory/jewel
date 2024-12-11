@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:intl/intl.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:provider/provider.dart';
 
 
 
@@ -16,50 +17,53 @@ class CalendarEventsView extends StatefulWidget {
 
 class _CalendarEventsViewState extends State<CalendarEventsView> {
   @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: 50,
-              color: Colors.grey[200],
-              child: Column(
-                children: List.generate(24, (index) {
-                  String timeLabel = '${index.toString().padLeft(2, '0')}:00';
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 41.5),
-                    child: Text(
-                      timeLabel,
-                      style: const TextStyle(fontSize: 12, color: Colors.black54),
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }),
-              ),
+Widget build(BuildContext context) {
+  final calendarLogic = Provider.of<CalendarLogic>(context);
+
+  return Expanded(
+    child: SingleChildScrollView(
+      scrollDirection: Axis.vertical,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Time column
+          Container(
+            width: 50,
+            color: Colors.grey[200],
+            child: Column(
+              children: List.generate(24, (index) {
+                String timeLabel = '${index.toString().padLeft(2, '0')}:00';
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 41.5),
+                  child: Text(
+                    timeLabel,
+                    style: const TextStyle(fontSize: 12, color: Colors.black54),
+                    textAlign: TextAlign.center,
+                  ),
+                );
+              }),
             ),
-            // Use FutureBuilder to handle async event loading
-            FutureBuilder<List<gcal.Event>>(
-              future: getGoogleEventsData(widget.calendarLogic.calendarApi),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator(); // Show loading spinner while fetching
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else if (snapshot.hasData) {
-                  return buildEventsList(snapshot.data!);
-                } else {
-                  return Text('No events found');
-                }
-              },
-            ),
-          ],
-        ),
+          ),
+          // Events column
+          FutureBuilder<List<gcal.Event>>(
+            future: getGoogleEventsData(calendarLogic),
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                return CircularProgressIndicator(); // Show loading spinner while fetching
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else if (snapshot.hasData) {
+                return buildEventsList(snapshot.data!);
+              } else {
+                return Text('No events found');
+              }
+            },
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   Widget buildEventsList(List<gcal.Event> events) {
     return Expanded(

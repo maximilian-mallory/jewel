@@ -34,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
         widget.calendarLogic.currentUser = account;
         widget.calendarLogic.isAuthorized = account != null;
       });
-      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic.calendarApi);
+      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic);
       
     });
     _screens = [
@@ -55,65 +55,108 @@ class _HomeScreenState extends State<HomeScreen> {
   void updateSelectedCalendar(String? calendarId) {
     setState(() async {
       widget.calendarLogic.selectedCalendar = calendarId;
-      widget.calendarLogic.events = await getGoogleEventsData(calendarApi);
+      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic);
     });
   }
 
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                TextButton.icon(
-                  style: TextButton.styleFrom(
+ @override
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: Column(
+      children: [
+        // AppBar content as a child, now full width
+        Container(
+          width: double.infinity, // Make the container take up the entire width
+          padding: const EdgeInsets.all(10),
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor, // Set the background color
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 5,
+                offset: Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min, // Prevent Row from taking infinite space
+            children: [
+              TextButton.icon(
+                style: TextButton.styleFrom(
                   foregroundColor: Colors.green,
-                  textStyle: const TextStyle(fontSize: 20)),
-                  icon: const FaIcon(
-              FontAwesomeIcons.google,
-              size: 40, // Make the icon size match the image size
-            ),
-                  onPressed: () async {
-                    await handleSignIn();
-                    setState(() {});
-                  },
-                  label: const Text(''),
+                  textStyle: const TextStyle(fontSize: 20),
                 ),
-              ],
-            ),
-          ],
+                icon: const FaIcon(
+                  FontAwesomeIcons.google,
+                  size: 50,
+                ),
+                onPressed: () async {
+                  await handleSignOut();
+                  await handleSignIn();
+                  setState(() {});
+                },
+                label: const Text(''),
+              ),
+              const SizedBox(width: 10), // Add spacing between widgets
+              Flexible(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12), // Set the radius for rounded corners
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 5,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12), // Ensure rounding is applied to the child
+                    child: SizedBox(
+                      height: 75, // Constrain height
+                      child: AuthenticatedCalendar(
+                        calendarLogic: widget.calendarLogic,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10), // Add spacing between widgets
+              // Wrapping the image in a container
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12), // Set rounded corners for the image container
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 5,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12), // Ensure the image corners are rounded
+                  child: Image.asset(
+                    'assets/images/jewel205.png',
+                    height: 75,
+                    width: 65,
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        actions: [
-          Padding(padding: const EdgeInsets.symmetric(horizontal: 8.0)),
-          Image.asset(
-            'assets/images/jewel205.png', // Replace with your image path
-            height: 45, // Adjust size for AppBar
-            width: 45, // Adjust size for AppBar
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 100, // Set a specific height for the calendar UI
-            child: AuthenticatedCalendar(
-              calendarLogic: widget.calendarLogic, // Pass required dependencies
-            ),
-          ),
-          Expanded(
-            child: _screens[_selectedIndex], // Controlled by navigation bar
-          ),
-          
-        ],
-      ),
-      bottomNavigationBar: CustomNavBar(
-        currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
-      ),
-    );
-  }
+        // Main body content
+        Expanded(
+          child: _screens[_selectedIndex], // Controlled by navigation bar
+        ),
+      ],
+    ),
+    bottomNavigationBar: CustomNavBar(
+      currentIndex: _selectedIndex,
+      onTap: _onItemTapped,
+    ),
+  );
+}
 }

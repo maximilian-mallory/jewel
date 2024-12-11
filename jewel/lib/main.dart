@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/screens/intermediary.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:jewel/notifications.dart';
@@ -37,7 +38,12 @@ Future<void> main() async {
   }
 
 
-  runApp(MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => CalendarLogic(),
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
