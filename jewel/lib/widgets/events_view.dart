@@ -21,46 +21,68 @@ Widget build(BuildContext context) {
   final calendarLogic = Provider.of<CalendarLogic>(context);
 
   return Expanded(
-    child: SingleChildScrollView(
-      scrollDirection: Axis.vertical,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Time column
-          Container(
-            width: 50,
-            color: Colors.grey[200],
-            child: Column(
-              children: List.generate(24, (index) {
-                String timeLabel = '${index.toString().padLeft(2, '0')}:00';
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 41.5),
-                  child: Text(
-                    timeLabel,
-                    style: const TextStyle(fontSize: 12, color: Colors.black54),
-                    textAlign: TextAlign.center,
+    child: Column(
+      children: [
+        // Time and events wrapped in an Expanded widget to ensure full height usage
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.vertical,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Time column
+                Container(
+                  width: 50,
+                  color: Colors.grey[200],
+                  child: Column(
+                    children: List.generate(24, (index) {
+                      String timeLabel = '${index.toString().padLeft(2, '0')}:00';
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 41.5),
+                        child: Text(
+                          timeLabel,
+                          style: const TextStyle(fontSize: 12, color: Colors.black54),
+                          textAlign: TextAlign.center,
+                        ),
+                      );
+                    }),
                   ),
-                );
-              }),
+                ),
+                // Events column
+                Expanded(
+                  child: FutureBuilder<List<gcal.Event>>(
+                    future: getGoogleEventsData(calendarLogic),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(
+                          child: CircularProgressIndicator(), // Centered loading spinner
+                        );
+                      } else if (snapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            'Error: ${snapshot.error}',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                        );
+                      } else if (snapshot.hasData) {
+                        return buildEventsList(snapshot.data!);
+                      } else {
+                        return const Center(
+                          child: Text(
+                            'No events found',
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
             ),
           ),
-          // Events column
-          FutureBuilder<List<gcal.Event>>(
-            future: getGoogleEventsData(calendarLogic),
-            builder: (context, snapshot) {
-              if (snapshot.connectionState == ConnectionState.waiting) {
-                return CircularProgressIndicator(); // Show loading spinner while fetching
-              } else if (snapshot.hasError) {
-                return Text('Error: ${snapshot.error}');
-              } else if (snapshot.hasData) {
-                return buildEventsList(snapshot.data!);
-              } else {
-                return Text('No events found');
-              }
-            },
-          ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }

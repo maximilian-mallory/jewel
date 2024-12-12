@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 1;
   late gcal.CalendarApi calendarApi;
   late final List<Widget> _screens;
-
+  bool isWeb = kIsWeb;
   @override
   void initState() {
     super.initState();
@@ -61,16 +61,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
 
- @override
+@override
 Widget build(BuildContext context) {
-  bool isWeb = kIsWeb;
   return Scaffold(
     body: Column(
       children: [
+        if (!kIsWeb) SizedBox(height: 24),
         // AppBar content as a child, now full width
         Container(
           width: double.infinity, // Make the container take up the entire width
-          padding: EdgeInsets.all(isWeb ? 10 : 5),
+          padding: EdgeInsets.all(kIsWeb ? 10 : 5),
           decoration: BoxDecoration(
             color: Theme.of(context).primaryColor, // Set the background color
             boxShadow: [
@@ -82,7 +82,6 @@ Widget build(BuildContext context) {
             ],
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min, // Prevent Row from taking infinite space
             children: [
               TextButton.icon(
                 style: TextButton.styleFrom(
@@ -91,7 +90,7 @@ Widget build(BuildContext context) {
                 ),
                 icon: FaIcon(
                   FontAwesomeIcons.google,
-                  size: isWeb ? 50 : 25,
+                  size: kIsWeb ? 50 : 28,
                 ),
                 onPressed: () async {
                   await handleSignOut();
@@ -100,35 +99,14 @@ Widget build(BuildContext context) {
                 },
                 label: const Text(''),
               ),
-              SizedBox(width: isWeb ? 10 : 5), // Add spacing between widgets
-              Flexible(
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12), // Set the radius for rounded corners
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 5,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12), // Ensure rounding is applied to the child
-                    child: SizedBox(
-                      height: isWeb ? 75 : 55, // Constrain height
-                      child: AuthenticatedCalendar(
-                        calendarLogic: widget.calendarLogic,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
+              SizedBox(width: kIsWeb ? 10 : 5), // Add spacing between widgets
+              kIsWeb
+                  ? Flexible(child: calTools())
+                  : Flexible(child: SizedBox(width: 280)),
               const SizedBox(width: 10), // Add spacing between widgets
-              // Wrapping the image in a container
               Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12), // Set rounded corners for the image container
+                  borderRadius: BorderRadius.circular(12), // Rounded corners
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
@@ -138,26 +116,53 @@ Widget build(BuildContext context) {
                   ],
                 ),
                 child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12), // Ensure the image corners are rounded
+                  borderRadius: BorderRadius.circular(12), // Rounded image corners
                   child: Image.asset(
                     'assets/images/jewel205.png',
-                    height: isWeb ? 75 : 35,
-                    width: isWeb ? 75 : 25,
+                    height: kIsWeb ? 75 : 40,
+                    width: kIsWeb ? 75 : 34,
                   ),
                 ),
               ),
             ],
           ),
         ),
-        // Main body content
-        Expanded(
-          child: _screens[_selectedIndex], // Controlled by navigation bar
-        ),
+        if (!kIsWeb) Flexible(child: calTools()),
+        // Main content area, expanded to take remaining space
+         SizedBox( height: kIsWeb ? 536 : 675, child: _screens[_selectedIndex]), // Controlled by the bottom navigation bar
+        
       ],
     ),
     bottomNavigationBar: CustomNavBar(
       currentIndex: _selectedIndex,
       onTap: _onItemTapped,
+    ),
+  );
+}
+
+Widget calTools() {
+  return Container(
+    decoration: BoxDecoration(
+      borderRadius: BorderRadius.circular(12), // Set the radius for rounded corners
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withOpacity(0.1),
+          blurRadius: 5,
+          offset: Offset(0, 2),
+        ),
+      ],
+    ),
+    child: ClipRRect(
+      borderRadius: BorderRadius.circular(12), // Ensure rounding is applied to the child
+      child: SizedBox(
+        height: isWeb ? 75 : 55, // Constrain height
+        child: Align(
+  alignment: Alignment.center, // Vertically and horizontally centers the child
+  child: AuthenticatedCalendar(
+    calendarLogic: widget.calendarLogic,
+  ),
+),
+      ),
     ),
   );
 }

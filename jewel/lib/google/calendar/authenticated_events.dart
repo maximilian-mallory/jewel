@@ -136,12 +136,14 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   Widget buildCalendarUI() {
   return Scaffold(
     appBar: AppBar(
+      // toolbarHeight: 20.0,
       title: Row(
-        mainAxisAlignment: MainAxisAlignment.center, // Center the elements in the AppBar
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Evenly space all elements
         children: [
-          daymonthBackButton(),
-          loadCalendarMenu(),
-           // Small spacing between elements
+          daymonthBackButton(), // Left arrow button
+
+          loadCalendarMenu(), // Calendar menu dropdown
+
           Column(
             children: [
               // Text widget for the date
@@ -150,25 +152,20 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
                   return Text(
                     DateFormat('MM/dd/yyyy').format(calendarLogic.selectedDate),
                     style: TextStyle(
-                      fontSize: 16, // Adjust font size if needed
+                      fontSize: kIsWeb ? 16 : 13, // Adjust font size if needed
                       fontWeight: FontWeight.bold, // Optional: Set font weight
                     ),
                   );
                 },
-              ),],),
-          SizedBox(width: 8),
-          dateToggle(),
-          SizedBox(width: 8),
-          daymonthForwardButton(),
+              ),
+            ],
+          ),
+
+          dateToggle(), // Toggle button for changing the view (day/month)
+
+          daymonthForwardButton(), // Right arrow button
         ],
       ),
-    ),
-    body: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        
-        // The actual calendar event list, populated dynamically
-      ],
     ),
   );
 }
@@ -191,7 +188,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
     icon: Icon(
       Icons.arrow_back,
       color: Colors.green, // Add a color for visual emphasis
-      size: isWeb ? 45 : 25, // Adjust icon size for web vs mobile
+      size: isWeb ? 45 : 20, // Adjust icon size for web vs mobile
     ),
     label: const Text(
       "",
@@ -209,31 +206,32 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
 }
 
 Widget daymonthForwardButton() {
-  bool isWeb = kIsWeb;
+  bool isWeb = kIsWeb; // Check if the app is on the web
+
   return TextButton.icon(
     onPressed: () async {
-      // Navigate forward
+      // Navigate backward
       widget.calendarLogic.selectedDate = changeDateBy(1, widget.calendarLogic);
       print(widget.calendarLogic.selectedDate);
-      // gcal.CalendarApi calendarApi = await _calendarLogic.createCalendarApiInstance();
       widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic);
       print(widget.calendarLogic.events.toList());
-      
     },
     icon: Icon(
       Icons.arrow_forward,
-      color: Colors.green, // Add a contrasting color
-      size: isWeb ? 75 : 25, // Adjust icon size
+      color: Colors.green, // Add a color for visual emphasis
+      size: isWeb ? 45 : 20, // Adjust icon size for web vs mobile
     ),
     label: const Text(
-      ''
+      "",
+      style: TextStyle(color: Colors.green, fontSize: 1),
     ),
     style: TextButton.styleFrom(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
-      backgroundColor: Colors.green.withOpacity(0.1), // Light green background
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8.0),
+      padding: EdgeInsets.symmetric(
+        horizontal: isWeb ? 12.0 : 2.0, // Adjust padding for web vs mobile
+        vertical: isWeb ? 8.0 : 1.0, // Adjust padding for web vs mobile
       ),
+      backgroundColor: Colors.green.withOpacity(0.1), // Light green background
+      
     ),
   );
 }
@@ -292,7 +290,12 @@ Widget daymonthForwardButton() {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             // Instead of CircularProgressIndicator, return an empty list or widget
-            return ListView(); // Empty list when data is loading
+           return SizedBox(
+              height: 100, // Set an appropriate height to reserve space
+              child: Center(
+                child: CircularProgressIndicator(), // Optional spinner
+              ),
+            ); // Empty list when data is loading
           } else if (snapshot.hasError) {
             return const Text("Error loading calendars");
           }
@@ -317,143 +320,151 @@ Widget daymonthForwardButton() {
       } else if (snapshot.hasData) {
         List<String> userCalendars = snapshot.data ?? []; // Get the list of calendars
 
-        return Padding(
-          padding: EdgeInsets.all(isWeb ?16.0:4.0), // Add padding around the entire widget
-          child: Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12.0), // Add rounded corners
-              color: Colors.white, // Set background color of the container
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey.withOpacity(0.2),
-                  spreadRadius: 2,
-                  blurRadius: 5,
+        return Container(
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(12.0), // Add rounded corners
+    color: Colors.white, // Set background color of the container
+    boxShadow: [
+      BoxShadow(
+        color: Colors.grey.withOpacity(0.2),
+        spreadRadius: 2,
+        blurRadius: 5,
+      ),
+    ], // Optional shadow for the dropdown
+  ),
+  child: ClipRect( // Ensures content respects the container boundaries
+    child: SizedBox(
+      width: kIsWeb ? 250:130, // Set a fixed width for the dropdown
+      child: FittedBox( // Prevents overflow by resizing
+        child: DropdownButton<String>(
+          value: selectedCalendar,
+          hint: const Text("Select Calendar"),
+          dropdownColor: Colors.white, // Set background color of the dropdown
+          iconEnabledColor: Colors.green, // Set color of the dropdown icon
+          iconSize: kIsWeb ? 30 : 12, // Set size of the dropdown icon
+          style: const TextStyle(
+            color: Colors.black, // Set text color
+            fontSize: 16, // Set text size
+            fontWeight: FontWeight.bold, // Optional: Set font weight
+          ),
+          underline: Container(
+            height: 2,
+            color: Colors.green, // Color of the underline (border beneath the button)
+          ),
+          items: [
+            ...calendarLogic.calendars.entries.map((entry) {
+              final calendarId = entry.key;
+              final calendarName = entry.value.toString();
+              return DropdownMenuItem<String>(
+                value: calendarId,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 15.0),
+                  child: Text(
+                    calendarName,
+                    overflow: TextOverflow.ellipsis, // Add ellipsis for long text
+                    maxLines: 1, // Ensure text remains on a single line
+                    style: TextStyle(fontSize: 16),
+                  ),
                 ),
-              ], // Optional shadow for the dropdown
-            ),
-            child: DropdownButton<String>(
-              value: selectedCalendar,
-              hint: const Text("Select Calendar"),
-              dropdownColor: Colors.white, // Set background color of the dropdown
-              iconEnabledColor: Colors.green, // Set color of the dropdown icon
-              iconSize: 30, // Set size of the dropdown icon
-              style: const TextStyle(
-                color: Colors.black, // Set text color
-                fontSize: 16, // Set text size
-                fontWeight: FontWeight.bold, // Optional: Set font weight
-              ),
-              underline: Container(
-                height: 2,
-                color: Colors.green, // Color of the underline (border beneath the button)
-              ),
-              items: [
-                // Existing calendars from calendarLogic
-                ...calendarLogic.calendars.entries.map((entry) {
-                  final calendarId = entry.key;
-                  final calendarName = entry.value.toString();
-                  return DropdownMenuItem<String>(
-                    value: calendarId,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 15.0),
-                      child: Text(calendarName, style: TextStyle(fontSize: 16)),
-                    ),
-                  );
-                }),
+              );
+            }),
 
-                // Add calendars owned by the current user (iCal feeds)
-                if (userCalendars.isNotEmpty)
-                  ...userCalendars.map((calendarName) {
-                    return DropdownMenuItem<String>(
-                      value: calendarName,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 15.0),
-                        child: Text(
-                          calendarName,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black, // Text color for user calendars
-                          ),
-                        ),
-                      ),
-                    );
-                  }),
-
-                // Add New Calendar option
-                DropdownMenuItem<String>(
-                  value: "add_calendar",
+            if (userCalendars.isNotEmpty)
+              ...userCalendars.map((calendarName) {
+                return DropdownMenuItem<String>(
+                  value: calendarName,
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 15.0),
                     child: Text(
-                      "Add New Calendar",
+                      calendarName,
+                      overflow: TextOverflow.ellipsis, // Add ellipsis for long text
+                      maxLines: 1, // Ensure text remains on a single line
                       style: TextStyle(
-                        color: Colors.blue, // Add new calendar option text color
                         fontSize: 16,
-                        fontWeight: FontWeight.w600, // Bold style for emphasis
+                        color: Colors.black, // Text color for user calendars
                       ),
                     ),
                   ),
+                );
+              }),
+            DropdownMenuItem<String>(
+              value: "add_calendar",
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 15.0),
+                child: Text(
+                  "Add New Calendar",
+                  overflow: TextOverflow.ellipsis, // Add ellipsis for long text
+                  maxLines: 1, // Ensure text remains on a single line
+                  style: TextStyle(
+                    color: Colors.blue, // Add new calendar option text color
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600, // Bold style for emphasis
+                  ),
                 ),
-              ],
-              onChanged: (String? newValue) async {
-                if (newValue == "add_calendar") {
-                  // Handle add new calendar logic
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    builder: (BuildContext context) {
-                      return Column(
-                        children: <Widget>[
-                          ListTile(
-                            title: const Text("Add Google Calendar"),
-                            onTap: () {
-                              Navigator.pop(context);
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                builder: (BuildContext context) {
-                                  return addCalendarForm(calendarLogic); // Show Google calendar form
-                                },
-                              );
-                            },
-                          ),
-                          ListTile(
-                            title: const Text("Add External Calendar"),
-                            onTap: () {
-                              Navigator.pop(context);
-                              _showFilePicker(); // Show file picker for external calendar
-                            },
-                          ),
-                          ListTile(
-                            title: const Text("Add iCal Feed Link"),
-                            onTap: () {
-                              Navigator.pop(context);
-                              _showIcalFeedLinkForm(); // Show input form for iCal feed link
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                } else if (newValue != null) {
-                  // Update selected calendar
-                  setState(() {
-                    selectedCalendar = newValue;
-                  });
-
-                  // Fetch the new events from the calendar API
-                  final newEvents = await getGoogleEventsData(widget.calendarLogic);
-
-                  // Update the calendar events
-                  setState(() {
-                    print("setting event state");
-                    widget.calendarLogic.events = newEvents;
-                    // widget.calendarLogic.notifyListeners();// Pass new events
-                  });
-                }
-              },
+              ),
             ),
-          ),
-        );
+          ],
+          onChanged: (String? newValue) async {
+            if (newValue == "add_calendar") {
+              // Handle add new calendar logic
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                builder: (BuildContext context) {
+                  return Column(
+                    children: <Widget>[
+                      ListTile(
+                        title: const Text("Add Google Calendar"),
+                        onTap: () {
+                          Navigator.pop(context);
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true,
+                            builder: (BuildContext context) {
+                              return addCalendarForm(calendarLogic); // Show Google calendar form
+                            },
+                          );
+                        },
+                      ),
+                      ListTile(
+                        title: const Text("Add External Calendar"),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _showFilePicker(); // Show file picker for external calendar
+                        },
+                      ),
+                      ListTile(
+                        title: const Text("Add iCal Feed Link"),
+                        onTap: () {
+                          Navigator.pop(context);
+                          _showIcalFeedLinkForm(); // Show input form for iCal feed link
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            } else if (newValue != null) {
+              // Update selected calendar
+              setState(() {
+                selectedCalendar = newValue;
+              });
+
+              // Fetch the new events from the calendar API
+              final newEvents = await getGoogleEventsData(widget.calendarLogic);
+
+              // Update the calendar events
+              setState(() {
+                print("setting event state");
+                widget.calendarLogic.events = newEvents;
+              });
+            }
+          },
+        ),
+      ),
+    ),
+  ),
+);
       } else {
         return const Text('No calendars found.'); // Handle case where no calendars are found
       }
