@@ -6,6 +6,10 @@ import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:provider/provider.dart';
 
 class MapSample extends StatefulWidget {
+
+
+  const MapSample({super.key});
+
   @override
   State<MapSample> createState() => MapSampleState();
 }
@@ -29,6 +33,7 @@ class MapSampleState extends State<MapSample> {
   @override
   Widget build(BuildContext context) {
     final calendarLogic = Provider.of<CalendarLogic>(context);
+    
 
     return Scaffold(
       body: GoogleMap(

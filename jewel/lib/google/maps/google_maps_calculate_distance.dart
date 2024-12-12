@@ -1,7 +1,11 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_geocoding/google_geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
+import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/widgets/home_screen.dart';
+import 'package:provider/provider.dart';
 import '../calendar/g_g_merge.dart';
 
 Future<List<String>> getStreetAddresses() async {
@@ -49,18 +53,32 @@ Future<LatLng> convertAddressToCoords(gcal.Event event) async {
   return coordinate;
 }
 
-Future<Marker> makeMarker(gcal.Event event) async {
+Future<Marker> makeMarker(gcal.Event event, CalendarLogic calendarLogic, BuildContext context) async {
+  // Access the SelectedIndexNotifier via Provider
+  final selectedIndexNotifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
 
-    Marker marker = Marker
-        (
-          markerId: MarkerId(event.summary!),
-          position: await convertAddressToCoords(event)
-        );  
+  // Create a Marker
+  Marker marker = Marker(
+    markerId: MarkerId(event.id!),
+    position: await convertAddressToCoords(event), // Convert address to coordinates
+    infoWindow: InfoWindow(
+      title: event.summary, // Display the event summary
+      snippet: event.description, // Display additional details (optional)
+      onTap: () {
+        print("Info window tapped for: ${event.summary}");
+        
+        // Update the selected index using the notifier's setter
+        selectedIndexNotifier.selectedIndex = 1; // Change to the appropriate index
 
-    print(marker.position);
+        // Optionally, if you need to trigger a UI update, you can call setState here:
+        // setState(() {
+        //   selectedIndex = 1;
+        // }); // This can be used if you need the selected index in the widget itself
+      },
+    ),
+  );
 
   return marker;
-  
 }
 
 

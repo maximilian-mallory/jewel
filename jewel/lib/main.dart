@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/screens/intermediary.dart';
+import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:jewel/notifications.dart';
@@ -47,11 +48,18 @@ Future<void> main() async {
   // }
 
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => CalendarLogic(),
-      child: MyApp(),
-    ),
-  );
+  MultiProvider(
+    providers: [
+      ChangeNotifierProvider(
+        create: (_) => CalendarLogic(),
+      ),
+      ChangeNotifierProvider(
+        create: (_) => SelectedIndexNotifier(1, ), // Initialize with a default index, e.g., 0
+      ),
+    ],
+    child: MyApp(),
+  ),
+);
 }
 
 class MyApp extends StatelessWidget {

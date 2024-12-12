@@ -42,7 +42,7 @@ bool isLoading = true; // To show loading indicator
   Navigator.pushReplacement(
     context,
     MaterialPageRoute(
-      builder: (context) => HomeScreen(calendarLogic: widget.calendarLogic), // Use named parameter
+      builder: (context) => HomeScreen(calendarLogic: widget.calendarLogic, initialIndex: 1,), // Use named parameter
     ),
   );
 }

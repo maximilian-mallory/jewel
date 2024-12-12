@@ -105,7 +105,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
         // print("creating api instance");        
         // calendarApi = await _calendarLogic.createCalendarApiInstance(); // This is the auth state we give to the API instance
         print("fetch init");
-        widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic);
+        widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
         print(widget.calendarLogic.events); 
         setState(() async {
         });
@@ -182,7 +182,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
       // Navigate backward
       widget.calendarLogic.selectedDate = changeDateBy(-1, widget.calendarLogic);
       print(widget.calendarLogic.selectedDate);
-      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic);
+      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
       print(widget.calendarLogic.events.toList());
     },
     icon: Icon(
@@ -213,7 +213,7 @@ Widget daymonthForwardButton() {
       // Navigate backward
       widget.calendarLogic.selectedDate = changeDateBy(1, widget.calendarLogic);
       print(widget.calendarLogic.selectedDate);
-      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic);
+      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
       print(widget.calendarLogic.events.toList());
     },
     icon: Icon(
@@ -451,7 +451,7 @@ Widget daymonthForwardButton() {
               });
 
               // Fetch the new events from the calendar API
-              final newEvents = await getGoogleEventsData(widget.calendarLogic);
+              final newEvents = await getGoogleEventsData(widget.calendarLogic, context);
 
               // Update the calendar events
               setState(() {

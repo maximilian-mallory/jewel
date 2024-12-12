@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
@@ -8,7 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 
-Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic) async {
+Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic, BuildContext context) async {
   // Get the current date at midnight local time
   DateTime now = calendarLogic.selectedDate;
   DateTime startOfDay = DateTime(now.year, now.month, now.day); 
@@ -38,7 +39,7 @@ Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic) async 
       DateTime eventStart = DateTime.parse(event.start!.dateTime.toString());
       if (eventStart.isAfter(startOfDayUtc) && eventStart.isBefore(endOfDayUtc)) {
         appointments.add(event);
-        Marker marker = await makeMarker(event);
+        Marker marker = await makeMarker(event, calendarLogic, context);
          calendarLogic.markers.add(marker);
       }
     }
@@ -142,6 +143,22 @@ class CalendarLogic extends ChangeNotifier{
 
   set markers(List<Marker> newMarkers) {
     _markers = newMarkers;
+    notifyListeners(); // Notify listeners whenever events are updated
+  }
+
+  int _selectedScreen = 1;
+  int get selectedScreen => _selectedScreen;
+
+  set selectedScreen(int selectedScreen) {
+    _selectedScreen = selectedScreen;
+    notifyListeners(); // Notify listeners whenever events are updated
+  }
+
+  double _scrollPos = 0.0;
+  double get scrollPos => _scrollPos;
+
+  set scrollPos(double scrollPos) {
+    _scrollPos = scrollPos;
     notifyListeners(); // Notify listeners whenever events are updated
   }
 

@@ -12,51 +12,79 @@ import 'package:jewel/widgets/settings.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:provider/provider.dart';
 
+class SelectedIndexNotifier extends ChangeNotifier {
+  int _selectedIndex;
+  Map<int, double> _scrollPositions = {}; // Map to store scroll positions for each index
+
+  SelectedIndexNotifier(this._selectedIndex);
+
+  int get selectedIndex => _selectedIndex;
+
+  set selectedIndex(int newIndex) {
+    _selectedIndex = newIndex;
+    notifyListeners();
+  }
+
+  double getScrollPosition(int index) {
+    return _scrollPositions[index] ?? 0.0; // Return the stored scroll position or 0.0 if not found
+  }
+
+  setScrollPosition(int index, double position) {
+    _scrollPositions[index] = position;
+    notifyListeners();
+  }
+}
+
 
 class HomeScreen extends StatefulWidget {
   final CalendarLogic calendarLogic; //have to have so that the page knows it exsists
+  final int initialIndex;
 
-  const HomeScreen({super.key, required this.calendarLogic}); //requires the calendarLogic used from main.dart
+  const HomeScreen({super.key, required this.calendarLogic, required this.initialIndex}); //requires the calendarLogic used from main.dart
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 1;
+  
+  late int _selectedIndex = widget.initialIndex;
   late gcal.CalendarApi calendarApi;
   late final List<Widget> _screens;
   bool isWeb = kIsWeb;
   @override
   void initState() {
     super.initState();
+    final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
+    _selectedIndex = widget.initialIndex;
     googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async { // Auth State listener
       setState(() {
         widget.calendarLogic.currentUser = account;
         widget.calendarLogic.isAuthorized = account != null;
       });
-      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic);
+      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
       
     });
     _screens = [
       SettingsScreen(),//calendarLogic: widget.calendarLogic),
-      CalendarEventsView(calendarLogic: widget.calendarLogic),
+      CalendarEventsView(),
        //takes callendar logic to use for the page
       //MapScreen(), // Pass CalendarLogic if needed
-      MapSample()
+      MapSample(),
     ];
   }
 
   void _onItemTapped(int index) {
+    final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     setState(() {
-      _selectedIndex = index;
+      notifier.selectedIndex = index;
     });
   }
 
   void updateSelectedCalendar(String calendarId) {
     setState(() async {
       widget.calendarLogic.selectedCalendar = calendarId;
-      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic);
+      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
     });
   }
 
@@ -129,14 +157,23 @@ Widget build(BuildContext context) {
         ),
         if (!kIsWeb) Flexible(child: calTools()),
         // Main content area, expanded to take remaining space
-         SizedBox( height: kIsWeb ? 536 : 675, child: _screens[_selectedIndex]), // Controlled by the bottom navigation bar
-        
+         // Controlled by the bottom navigation bar
+        Consumer<SelectedIndexNotifier>(
+            builder: (context, selectedIndexNotifier, _) {
+              return SizedBox(
+                height: kIsWeb ? 536 : 675,
+                child: _screens[selectedIndexNotifier.selectedIndex],
+              );
+            },
+          ),
       ],
     ),
     bottomNavigationBar: CustomNavBar(
-      currentIndex: _selectedIndex,
-      onTap: _onItemTapped,
-    ),
+        currentIndex: context.watch<SelectedIndexNotifier>().selectedIndex,
+        onTap: (index) {
+          context.read<SelectedIndexNotifier>().selectedIndex = index;
+        },
+      ),
   );
 }
 
