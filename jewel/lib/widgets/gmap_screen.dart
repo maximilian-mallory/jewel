@@ -44,10 +44,10 @@ class MapSampleState extends State<MapSample> {
         },
         markers: calendarLogic.markers.toSet(), // React to changes in markers
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _goToTheLake,
-        child: const Icon(Icons.directions_boat),
-      ),
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: _goToTheLake,
+      //   child: const Icon(Icons.directions_boat),
+      // ),
     );
   }
 
