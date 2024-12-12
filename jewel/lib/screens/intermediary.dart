@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 // new
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:googleapis/calendar/v3.dart' as gcal;
 
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/external_user.dart';
@@ -25,22 +26,23 @@ bool isLoading = true; // To show loading indicator
  @override
   void initState() {
     super.initState();
-    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async { // Auth State listener
-      setState(() {
-        widget.calendarLogic.currentUser = account;
-        widget.calendarLogic.isAuthorized = account != null;
-      });
-    });
-    handleSignIn();
+    // googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async { // Auth State listener
+    //   setState(() {
+    //     widget.calendarLogic.currentUser = account;
+    //     widget.calendarLogic.isAuthorized = account != null;
+    //   });
+    // });
+    signIn();
   }
 
-  Future<void> handleSignIn() async {
-  await widget.calendarLogic.handleSignIn();
+  Future<void> signIn() async {
+  widget.calendarLogic.currentUser = await handleSignIn();
+  widget.calendarLogic.calendarApi = await createCalendarApiInstance(widget.calendarLogic);
   // After signing in, navigate to the next screen
   Navigator.pushReplacement(
     context,
     MaterialPageRoute(
-      builder: (context) => HomeScreen(calendarLogic: widget.calendarLogic), // Use named parameter
+      builder: (context) => HomeScreen(calendarLogic: widget.calendarLogic, initialIndex: 1,), // Use named parameter
     ),
   );
 }

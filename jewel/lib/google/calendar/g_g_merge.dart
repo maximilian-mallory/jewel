@@ -219,6 +219,3 @@ Future<List<Map<String, dynamic>>> identifyConflict(Map<String, dynamic> sortedE
 
   return conflicts; // Return the list of conflicts
 }
-
-
-

@@ -2,8 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:provider/provider.dart';
 
 class MapSample extends StatefulWidget {
+
+
   const MapSample({super.key});
 
   @override
@@ -14,56 +18,36 @@ class MapSampleState extends State<MapSample> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
 
-  static const CameraPosition _kGooglePlex = CameraPosition(
-    target: LatLng(37.42796133580664, -122.085749655962),
-    zoom: 14.4746,
-  );
-
   static const CameraPosition _statPos = CameraPosition(
     target: LatLng(44.8742, -91.9195),
     zoom: 14.4746,
   );
 
   static const CameraPosition _kLake = CameraPosition(
-      bearing: 192.8334901395799,
-      target: LatLng(37.43296265331129, -122.08832357078792),
-      tilt: 59.440717697143555,
-      zoom: 19.151926040649414);
+    bearing: 192.8334901395799,
+    target: LatLng(44.882, -91.9193),
+    tilt: 59.440717697143555,
+    zoom: 19.151926040649414,
+  );
 
   @override
   Widget build(BuildContext context) {
+    final calendarLogic = Provider.of<CalendarLogic>(context);
+    
+
     return Scaffold(
       body: GoogleMap(
         mapType: MapType.hybrid,
-        initialCameraPosition: _statPos, // initial position
+        initialCameraPosition: _statPos,
         onMapCreated: (GoogleMapController controller) {
           _controller.complete(controller);
         },
-        markers: {
-         const Marker(
-               markerId: MarkerId("Here"),
-               position: LatLng(44.8794, -91.9093),
-            ),
-            const Marker(
-               markerId: MarkerId("There"),
-               position:LatLng(44.869, -91.923),
-            ), 
-            const Marker(
-               markerId: MarkerId("Anywhere"),
-               position: LatLng(44.871, -91.9110)
-            ),  // Marker
-            const Marker(
-               markerId: MarkerId("Now"),
-               position: LatLng(44.9005, -91.9177)
-            ),  // Marker
-      }
+        markers: calendarLogic.markers.toSet(), // React to changes in markers
       ),
-      
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: _goToTheLake,
-      //   label: const Text('To the lake!'),
-      //   icon: const Icon(Icons.directions_boat),
-      // ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _goToTheLake,
+        child: const Icon(Icons.directions_boat),
+      ),
     );
   }
 

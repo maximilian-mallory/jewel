@@ -1,13 +1,18 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/screens/intermediary.dart';
+import 'package:jewel/widgets/home_screen.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:jewel/notifications.dart';
 import 'package:flutter/foundation.dart';
 import '/utils/fake_ui.dart' if (dart.library.html) '/utils/real_ui.dart' as ui;
 import "package:universal_html/html.dart" as html;
+import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
+import 'package:jewel/google/calendar/g_g_merge.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,8 +40,26 @@ Future<void> main() async {
     });
   }
 
+  // Fetch sorted events and convert addresses to coordinates
+  // Map<String, dynamic> sortedEvents = await fetchEventData();
+  // List<LatLng> coordinates = await convertAddressesToCoords(sortedEvents);
+  // for (var coord in coordinates) {
+  //   print('Coordinates: (${coord.latitude}, ${coord.longitude})');
+  // }
 
-  runApp(MyApp());
+  runApp(
+  MultiProvider(
+    providers: [
+      ChangeNotifierProvider(
+        create: (_) => CalendarLogic(),
+      ),
+      ChangeNotifierProvider(
+        create: (_) => SelectedIndexNotifier(1), // Initialize with a default index, e.g., 0
+      ),
+    ],
+    child: MyApp(),
+  ),
+);
 }
 
 class MyApp extends StatelessWidget {
