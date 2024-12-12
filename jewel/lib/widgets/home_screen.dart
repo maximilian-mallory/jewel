@@ -53,7 +53,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void updateSelectedCalendar(String? calendarId) {
+  void updateSelectedCalendar(String calendarId) {
     setState(() async {
       widget.calendarLogic.selectedCalendar = calendarId;
       widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic);

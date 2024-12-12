@@ -1,6 +1,7 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_geocoding/google_geocoding.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:googleapis/calendar/v3.dart' as gcal;
 import '../calendar/g_g_merge.dart';
 
 Future<List<String>> getStreetAddresses() async {
@@ -24,7 +25,7 @@ Future<List<String>> getStreetAddresses() async {
   return locations;
 }
 
-Future<List<LatLng>> convertAddressesToCoords(Map<String, dynamic> sortedEvents) async {
+Future<LatLng> convertAddressToCoords(gcal.Event event) async {
   String? apiKey = dotenv.env['GOOGLE_GEO_KEY'];
   print('API Key: $apiKey');
   if (apiKey == null) {
@@ -32,24 +33,34 @@ Future<List<LatLng>> convertAddressesToCoords(Map<String, dynamic> sortedEvents)
   }
 
   GoogleGeocoding googleGeocoding = GoogleGeocoding(apiKey);
-  List<LatLng> coordinates = [];
+  late LatLng coordinate;
 
-  for (var value in sortedEvents.values) {
-    if (value.containsKey('location')) {
-      String address = value['location'];
-      var response = await googleGeocoding.geocoding.get(address, []);
+      String? address = event.location;
+      var response = await googleGeocoding.geocoding.get(address!, []);
       if (response != null && response.results != null && response.results!.isNotEmpty) {
         var location = response.results!.first.geometry?.location;
         if (location != null) {
-          LatLng coord = LatLng(location.lat!, location.lng!);
-          coordinates.add(coord);
-          print('Address: $address, Coordinates: (${coord.latitude}, ${coord.longitude})');
-        }
-      }
-    }
-  }
+          coordinate = LatLng(location.lat!, location.lng!);
 
-  return coordinates;
+          print('Address: $address, Coordinates: (${coordinate.latitude}, ${coordinate.longitude})');
+        }
+    }
+
+  return coordinate;
+}
+
+Future<Marker> makeMarker(gcal.Event event) async {
+
+    Marker marker = Marker
+        (
+          markerId: MarkerId(event.summary!),
+          position: await convertAddressToCoords(event)
+        );  
+
+    print(marker.position);
+
+  return marker;
+  
 }
 
 

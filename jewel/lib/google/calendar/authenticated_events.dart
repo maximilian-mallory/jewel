@@ -338,7 +338,7 @@ Widget daymonthForwardButton() {
       child: FittedBox( // Prevents overflow by resizing
         child: DropdownButton<String>(
           value: selectedCalendar,
-          hint: const Text("Select Calendar"),
+          hint: Text(widget.calendarLogic.selectedCalendar),
           dropdownColor: Colors.white, // Set background color of the dropdown
           iconEnabledColor: Colors.green, // Set color of the dropdown icon
           iconSize: kIsWeb ? 30 : 12, // Set size of the dropdown icon
@@ -447,7 +447,7 @@ Widget daymonthForwardButton() {
             } else if (newValue != null) {
               // Update selected calendar
               setState(() {
-                selectedCalendar = newValue;
+                calendarLogic.selectedCalendar = newValue;
               });
 
               // Fetch the new events from the calendar API

@@ -40,11 +40,11 @@ Future<void> main() async {
   }
 
   // Fetch sorted events and convert addresses to coordinates
-  Map<String, dynamic> sortedEvents = await fetchEventData();
-  List<LatLng> coordinates = await convertAddressesToCoords(sortedEvents);
-  for (var coord in coordinates) {
-    print('Coordinates: (${coord.latitude}, ${coord.longitude})');
-  }
+  // Map<String, dynamic> sortedEvents = await fetchEventData();
+  // List<LatLng> coordinates = await convertAddressesToCoords(sortedEvents);
+  // for (var coord in coordinates) {
+  //   print('Coordinates: (${coord.latitude}, ${coord.longitude})');
+  // }
 
   runApp(
     ChangeNotifierProvider(

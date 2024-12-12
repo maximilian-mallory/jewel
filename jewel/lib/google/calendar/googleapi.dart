@@ -1,10 +1,12 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 
 Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic) async {
   // Get the current date at midnight local time
@@ -19,15 +21,15 @@ Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic) async 
 
   // Fetch events from the calendar
   final gcal.Events calEvents = await calendarLogic.calendarApi.events.list(
-    "primary",
+    calendarLogic.selectedCalendar,
     timeMin: startOfDayUtc, // Filter events starting from midnight today UTC
     timeMax: endOfDayUtc,   // Filter events up to midnight tomorrow UTC
   );
 
   List<gcal.Event> appointments = <gcal.Event>[];
-
+  calendarLogic.markers.clear();
   // If events are available and are within the time range, add them to the list
-  if (calEvents != null && calEvents.items != null) {
+  if (calEvents.items != null) {
     for (int i = 0; i < calEvents.items!.length; i++) {
       final gcal.Event event = calEvents.items![i];
       if (event.start == null) {
@@ -36,6 +38,8 @@ Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic) async 
       DateTime eventStart = DateTime.parse(event.start!.dateTime.toString());
       if (eventStart.isAfter(startOfDayUtc) && eventStart.isBefore(endOfDayUtc)) {
         appointments.add(event);
+        Marker marker = await makeMarker(event);
+         calendarLogic.markers.add(marker);
       }
     }
   }
@@ -122,6 +126,7 @@ class CalendarLogic extends ChangeNotifier{
   }
 
   static final CalendarLogic _instance = CalendarLogic._internal();
+
   List<gcal.Event> _events = [];
 
   List<gcal.Event> get events => _events;
@@ -130,6 +135,16 @@ class CalendarLogic extends ChangeNotifier{
     _events = newEvents;
     notifyListeners(); // Notify listeners whenever events are updated
   }
+
+  List<Marker> _markers = [];
+
+  List<Marker> get markers => _markers;
+
+  set markers(List<Marker> newMarkers) {
+    _markers = newMarkers;
+    notifyListeners(); // Notify listeners whenever events are updated
+  }
+
   factory CalendarLogic() {
     return _instance;
   }
@@ -137,7 +152,7 @@ class CalendarLogic extends ChangeNotifier{
   CalendarLogic._internal();
   GoogleSignInAccount? currentUser;
   late gcal.CalendarApi calendarApi;
-  String? selectedCalendar;
+  String selectedCalendar = 'primary';
   // DateTime selectedDate = DateTime.now();
   bool isAuthorized = false;
   DateTime currentDate = DateTime.now();
