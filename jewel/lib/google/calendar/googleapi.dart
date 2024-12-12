@@ -260,7 +260,7 @@ class CalendarLogic extends ChangeNotifier{
       print("Calendar created: $summary");
     } catch (e) {
       print("Error creating calendar: $e");
-      throw e;
+      rethrow;
     }
   }
 

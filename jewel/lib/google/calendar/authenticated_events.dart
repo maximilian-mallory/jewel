@@ -15,7 +15,7 @@ class AddCalendarForm extends StatefulWidget {
   final void Function(String calendarName, String description, String timeZone)
       onSubmit;
 
-  const AddCalendarForm({Key? key, required this.onSubmit}) : super(key: key);
+  const AddCalendarForm({super.key, required this.onSubmit});
 
   @override
   _AddCalendarFormState createState() => _AddCalendarFormState();

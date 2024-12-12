@@ -54,7 +54,7 @@ Future<void> main() async {
         create: (_) => CalendarLogic(),
       ),
       ChangeNotifierProvider(
-        create: (_) => SelectedIndexNotifier(1, ), // Initialize with a default index, e.g., 0
+        create: (_) => SelectedIndexNotifier(1), // Initialize with a default index, e.g., 0
       ),
     ],
     child: MyApp(),
