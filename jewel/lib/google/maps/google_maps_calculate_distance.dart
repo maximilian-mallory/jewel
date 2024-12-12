@@ -1,5 +1,6 @@
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_geocoding/google_geocoding.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../calendar/g_g_merge.dart';
 
 Future<List<String>> getStreetAddresses() async {
@@ -21,6 +22,34 @@ Future<List<String>> getStreetAddresses() async {
     }
   }
   return locations;
+}
+
+Future<List<LatLng>> convertAddressesToCoords(Map<String, dynamic> sortedEvents) async {
+  String? apiKey = dotenv.env['GOOGLE_GEO_KEY'];
+  print('API Key: $apiKey');
+  if (apiKey == null) {
+    throw Exception('Google Maps API key is null');
+  }
+
+  GoogleGeocoding googleGeocoding = GoogleGeocoding(apiKey);
+  List<LatLng> coordinates = [];
+
+  for (var value in sortedEvents.values) {
+    if (value.containsKey('location')) {
+      String address = value['location'];
+      var response = await googleGeocoding.geocoding.get(address, []);
+      if (response != null && response.results != null && response.results!.isNotEmpty) {
+        var location = response.results!.first.geometry?.location;
+        if (location != null) {
+          LatLng coord = LatLng(location.lat!, location.lng!);
+          coordinates.add(coord);
+          print('Address: $address, Coordinates: (${coord.latitude}, ${coord.longitude})');
+        }
+      }
+    }
+  }
+
+  return coordinates;
 }
 
 
@@ -55,37 +84,11 @@ return 'unable to calculate distance';
 
 }*/
 
-Future<List<LatLon>> convertAddressesToCoords(Map<String, dynamic> sortedEvents) async {
-  String? apiKey = dotenv.env['GOOGLE_GEO_KEY'];
-  print('API Key: $apiKey');
-  if (apiKey == null) {
-    throw Exception('Google Maps API key is null');
-  }
 
-  GoogleGeocoding googleGeocoding = GoogleGeocoding(apiKey);
-  List<LatLon> coordinates = [];
 
-  for (var value in sortedEvents.values) {
-    if (value.containsKey('location')) {
-      String address = value['location'];
-      var response = await googleGeocoding.geocoding.get(address, []);
-      if (response != null && response.results != null && response.results!.isNotEmpty) {
-        var location = response.results!.first.geometry?.location;
-        if (location != null) {
-          LatLon coord = LatLon(location.lat!, location.lng!);
-          coordinates.add(coord);
-          print('Address: $address, Coordinates: (${coord.lat}, ${coord.lon})');
-        }
-      }
-    }
-  }
+// class LatLon {
+//   final double lat;
+//   final double lon;
 
-  return coordinates;
-}
-
-class LatLon {
-  final double lat;
-  final double lon;
-
-  LatLon(this.lat, this.lon);
-}
+//   LatLon(this.lat, this.lon);
+// }
