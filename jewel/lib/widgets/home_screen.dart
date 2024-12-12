@@ -161,7 +161,7 @@ Widget build(BuildContext context) {
         Consumer<SelectedIndexNotifier>(
             builder: (context, selectedIndexNotifier, _) {
               return SizedBox(
-                height: kIsWeb ? 536 : 675,
+                height: kIsWeb ? 468 : 675,
                 child: _screens[selectedIndexNotifier.selectedIndex],
               );
             },
