@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:google_geocoding/google_geocoding.dart';
+import 'package:google_geocoding_api/google_geocoding_api.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:jewel/google/calendar/googleapi.dart';
@@ -36,15 +36,15 @@ Future<LatLng> convertAddressToCoords(gcal.Event event) async {
     throw Exception('Google Maps API key is null');
   }
 
-  GoogleGeocoding googleGeocoding = GoogleGeocoding(apiKey);
+  GoogleGeocodingApi googleGeocoding = GoogleGeocodingApi(apiKey);
   late LatLng coordinate;
 
       String? address = event.location;
-      var response = await googleGeocoding.geocoding.get(address!, []);
-      if (response != null && response.results != null && response.results!.isNotEmpty) {
-        var location = response.results!.first.geometry?.location;
+      var response = await googleGeocoding.search(address!);
+      if (response.results.isNotEmpty) {
+        var location = response.results.first.geometry?.location;
         if (location != null) {
-          coordinate = LatLng(location.lat!, location.lng!);
+          coordinate = LatLng(location.lat, location.lng);
 
           print('Address: $address, Coordinates: (${coordinate.latitude}, ${coordinate.longitude})');
         }
@@ -124,9 +124,3 @@ return 'unable to calculate distance';
 
 
 
-// class LatLon {
-//   final double lat;
-//   final double lon;
-
-//   LatLon(this.lat, this.lon);
-// }

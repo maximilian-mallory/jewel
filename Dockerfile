@@ -1,32 +1,15 @@
 # Use the official Ubuntu image as a base
 FROM ubuntu:latest
 
-# Install necessary dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    git \
-    unzip \
-    zip \
-    openjdk-8-jdk \
-    wget \
-    xz-utils \
-    cmake \
-    clang \
-    ninja-build \
-    build-essential \
-    pkg-config \
-    libgtk-3-dev \
-    libglib2.0-dev \
-    libgdk-pixbuf2.0-dev \
-    libxcursor-dev \
-    libxrandr-dev \
-    libx11-dev \
-    libxi-dev \
-    libxss-dev \
-    libasound2-dev \
-    xvfb \ 
-    && \
-    apt-get clean
+ENV DEBIAN_FRONTEND=noninteractive \
+    TZ=Etc/UTC
+
+# Install dependencies including Nginx
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl git unzip zip wget xz-utils cmake clang ninja-build build-essential \
+    openjdk-8-jdk pkg-config libgtk-3-dev libglib2.0-dev libgdk-pixbuf2.0-dev \
+    libxcursor-dev libxrandr-dev libx11-dev libxi-dev libxss-dev libasound2-dev xvfb \
+    && rm -rf /var/lib/apt/lists/*
 
 # Install Flutter
 RUN wget -qO- https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.24.3-stable.tar.xz | tar -xJ -C /opt
@@ -36,21 +19,11 @@ ENV ANDROID_HOME=/opt/android-sdk
 ENV FLUTTER_HOME=/opt/flutter
 ENV PATH="$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools:$FLUTTER_HOME/bin"
 
-# Create a non-root user
-RUN useradd -m developer
+# # Create a non-root user
+# RUN useradd -m developer
 
-# Switch to the non-root user
-#USER developer
-
-# Configure Git to trust the Flutter directory
+# # Configure Git to trust the Flutter directory
 RUN git config --global --add safe.directory /opt/flutter
-
-# Check Flutter installation and version
-RUN echo "Listing Flutter bin directory:" && ls /opt/flutter/bin && \
-    echo "Flutter version:" && flutter --version
-
-# Run flutter upgrade
-RUN flutter upgrade
 
 # Install Android SDK tools
 RUN mkdir -p ${ANDROID_HOME} && \
@@ -69,12 +42,17 @@ WORKDIR /jewel
 # Copy the app directory into the container
 COPY ./jewel /jewel
 
+
 # Run Flutter commands
 RUN flutter pub get
 RUN flutter doctor
 RUN flutter build web
 
-# Command to run your app (optional)
-CMD ["flutter", "run", "-d", "web-server", "--web-port=80", "--web-hostname=0.0.0.0"]
+# Set up Nginx configuration
+# COPY nginx.conf /etc/nginx/nginx.conf
 
+# Expose ports
+ EXPOSE 80 443 3000
 
+# Command to start Nginx and Flutter server
+CMD flutter run -d web-server --web-port=3000--web-hostname=project-emerald-jewel.eastus.azurecontainer.io
