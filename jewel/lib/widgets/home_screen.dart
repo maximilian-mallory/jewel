@@ -97,6 +97,7 @@ Widget build(BuildContext context) {
         if (!kIsWeb) SizedBox(height: 24),
         // AppBar content as a child, now full width
         Container(
+          height: MediaQuery.of(context).size.height * 0.1325,
           width: double.infinity, // Make the container take up the entire width
           padding: EdgeInsets.all(kIsWeb ? 10 : 5),
           decoration: BoxDecoration(
@@ -159,21 +160,26 @@ Widget build(BuildContext context) {
         // Main content area, expanded to take remaining space
          // Controlled by the bottom navigation bar
         Consumer<SelectedIndexNotifier>(
-            builder: (context, selectedIndexNotifier, _) {
-              return SizedBox(
-                height: kIsWeb ? 536 : 675,
-                child: _screens[selectedIndexNotifier.selectedIndex],
-              );
-            },
-          ),
+  builder: (context, selectedIndexNotifier, _) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.735,
+      child: 
+          _screens[selectedIndexNotifier.selectedIndex],
+
+    );
+  },
+)
       ],
     ),
-    bottomNavigationBar: CustomNavBar(
-        currentIndex: context.watch<SelectedIndexNotifier>().selectedIndex,
-        onTap: (index) {
-          context.read<SelectedIndexNotifier>().selectedIndex = index;
-        },
-      ),
+    bottomNavigationBar: Container(
+    height: MediaQuery.of(context).size.height * 0.1325, // Set your desired height here
+    child: CustomNavBar(
+      currentIndex: context.watch<SelectedIndexNotifier>().selectedIndex,
+      onTap: (index) {
+        context.read<SelectedIndexNotifier>().selectedIndex = index;
+      },
+    ),
+  ),
   );
 }
 
