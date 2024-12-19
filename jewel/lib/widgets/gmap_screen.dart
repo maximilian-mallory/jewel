@@ -35,19 +35,23 @@ class MapSampleState extends State<MapSample> {
     final calendarLogic = Provider.of<CalendarLogic>(context);
     
 
-    return Scaffold(
-      body: GoogleMap(
-        mapType: MapType.hybrid,
-        initialCameraPosition: _statPos,
-        onMapCreated: (GoogleMapController controller) {
-          _controller.complete(controller);
-        },
-        markers: calendarLogic.markers.toSet(), // React to changes in markers
+     return Scaffold(
+      body: Column(
+        children: [
+          // Define a fixed height for the Google Map
+          SizedBox(
+            height: MediaQuery.of(context).size.height * 0.735, // 50% of the screen height
+            child: GoogleMap(
+              mapType: MapType.hybrid,
+              initialCameraPosition: _statPos,
+              onMapCreated: (GoogleMapController controller) {
+                _controller.complete(controller);
+              },
+              markers: calendarLogic.markers.toSet(),
+            ),
+          ),
+        ],
       ),
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: _goToTheLake,
-      //   child: const Icon(Icons.directions_boat),
-      // ),
     );
   }
 

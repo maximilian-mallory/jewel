@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  ubuntu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./jewel:/jewel
+    command: >
+      /bin/sh -c "
+      flutter pub get &&
+      flutter build web"
+    working_dir: /jewel
+    environment:
+      - FLUTTER_HOME=/opt/flutter
+
+  nginx:
+    image: nginx:latest
+    container_name: jewel-nginx
+    ports:
+      - "3000:80"
+    volumes:
+      - ./jewel/build/web:/usr/share/nginx/html:ro
