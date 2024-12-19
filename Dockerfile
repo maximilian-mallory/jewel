@@ -55,4 +55,4 @@ RUN flutter build web
  EXPOSE 80 443 3000
 
 # Command to start Nginx and Flutter server
-CMD flutter run -d web-server --web-port=3000--web-hostname=project-emerald-jewel.eastus.azurecontainer.io
+CMD flutter run -d web-server --web-port=3000 --web-hostname=0.0.0.0
