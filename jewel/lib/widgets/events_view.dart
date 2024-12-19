@@ -26,8 +26,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
 Widget build(BuildContext context) {
   final calendarLogic = Provider.of<CalendarLogic>(context);
 
-  return Expanded(
-    child: Column(
+  return Column(
       children: [
         Expanded(
           child: SingleChildScrollView(
@@ -89,7 +88,6 @@ Widget build(BuildContext context) {
           ),
         ),
       ],
-    ),
   );
 }
 
@@ -149,12 +147,19 @@ Widget buildEventsList(List<gcal.Event> events) {
   );
 }
 
-   @override
-  void dispose() {
-    // Save the current scroll position before disposing the controller
-    final scrollNotifier = Provider.of<SelectedIndexNotifier>(context, listen: false); // Renamed variable
-    scrollNotifier.setScrollPosition(1, _scrollController.offset); // Save scroll position
-    _scrollController.dispose();
-    super.dispose();
-  }
+// @override
+//   void didChangeDependencies() {
+//     super.didChangeDependencies();
+//     // Save reference to the notifier here to avoid accessing context in dispose
+//     final scrollNotifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
+//   }
+
+//    @override
+//   void dispose() {
+//     // Save the current scroll position before disposing the controller
+//     final scrollNotifier = Provider.of<SelectedIndexNotifier>(context, listen: false); // Renamed variable
+//     scrollNotifier.setScrollPosition(1, _scrollController.offset); // Save scroll position
+//     _scrollController.dispose();
+//     super.dispose();
+//   }
 }
