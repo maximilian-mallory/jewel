@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:jewel/google/calendar/authenticated_events.dart';
+import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 //import 'package:jewel/google/maps/map_screen.dart';
 import 'package:jewel/widgets/custom_nav.dart';
@@ -48,7 +48,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   
-  late int _selectedIndex = widget.initialIndex;
+  late int _selectedIndex = widget.initialIndex; // would be used to track cached page index
   late gcal.CalendarApi calendarApi;
   late final List<Widget> _screens;
   bool isWeb = kIsWeb;
@@ -65,23 +65,21 @@ class _HomeScreenState extends State<HomeScreen> {
       widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
       
     });
-    _screens = [
-      SettingsScreen(),//calendarLogic: widget.calendarLogic),
+    _screens = [ // widgets available in the nav bar
+      SettingsScreen(),
       CalendarEventsView(),
-       //takes callendar logic to use for the page
-      //MapScreen(), // Pass CalendarLogic if needed
       MapSample(),
     ];
   }
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index) { // updates the index notifier
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     setState(() {
       notifier.selectedIndex = index;
     });
   }
 
-  void updateSelectedCalendar(String calendarId) {
+  void updateSelectedCalendar(String calendarId) { // updates the calendar selected from the dropdown menu
     setState(() async {
       widget.calendarLogic.selectedCalendar = calendarId;
       widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
@@ -94,9 +92,9 @@ Widget build(BuildContext context) {
   return Scaffold(
     body: Column(
       children: [
-        if (!kIsWeb) SizedBox(height: 24),
+        if (!kIsWeb) SizedBox(height: 24), // some difference in header space on the mobile devices
         // AppBar content as a child, now full width
-        Container(
+        Container( // this is the whole top section of the screen. if its a web app caltools is part of is container. if anything else, its a separate element
           height: MediaQuery.of(context).size.height * 0.1325,
           width: double.infinity, // Make the container take up the entire width
           padding: EdgeInsets.all(kIsWeb ? 10 : 5),
@@ -110,9 +108,9 @@ Widget build(BuildContext context) {
               ),
             ],
           ),
-          child: Row(
+          child: Row( 
             children: [
-              TextButton.icon(
+              TextButton.icon( // google icon in the corner, is also the logout button and logs right back in
                 style: TextButton.styleFrom(
                   foregroundColor: Colors.green,
                   textStyle: const TextStyle(fontSize: 1),
@@ -156,23 +154,21 @@ Widget build(BuildContext context) {
             ],
           ),
         ),
-        if (!kIsWeb) Flexible(child: calTools()),
-        // Main content area, expanded to take remaining space
-         // Controlled by the bottom navigation bar
-        Consumer<SelectedIndexNotifier>(
-  builder: (context, selectedIndexNotifier, _) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.735,
-      child: 
-          _screens[selectedIndexNotifier.selectedIndex],
+        if (!kIsWeb) Flexible(child: calTools()), // if not web app, caltools is separate
+        Consumer<SelectedIndexNotifier>( // this recieves a message from the IndexNotifier and decides what screen to load based on the nav bar index
+          builder: (context, selectedIndexNotifier, _) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.735,
+              child: 
+                  _screens[selectedIndexNotifier.selectedIndex],
 
-    );
-  },
-)
+            );
+          },
+        )
       ],
     ),
-    bottomNavigationBar: Container(
-    height: MediaQuery.of(context).size.height * 0.1325, // Set your desired height here
+    bottomNavigationBar: Container( // this is the actual nav bar
+    height: MediaQuery.of(context).size.height * 0.1325,
     child: CustomNavBar(
       currentIndex: context.watch<SelectedIndexNotifier>().selectedIndex,
       onTap: (index) {
@@ -198,13 +194,13 @@ Widget calTools() {
     child: ClipRRect(
       borderRadius: BorderRadius.circular(12), // Ensure rounding is applied to the child
       child: SizedBox(
-        height: isWeb ? 75 : 55, // Constrain height
+        height: isWeb ? 75 : 55, 
         child: Align(
-  alignment: Alignment.center, // Vertically and horizontally centers the child
-  child: AuthenticatedCalendar(
-    calendarLogic: widget.calendarLogic,
-  ),
-),
+          alignment: Alignment.center, // Vertically and horizontally centers the child
+          child: AuthenticatedCalendar(
+            calendarLogic: widget.calendarLogic,
+          ),
+        ),
       ),
     ),
   );

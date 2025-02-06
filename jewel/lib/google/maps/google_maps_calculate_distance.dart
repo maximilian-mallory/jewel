@@ -56,7 +56,7 @@ Future<LatLng> convertAddressToCoords(gcal.Event event) async {
 Future<Marker> makeMarker(gcal.Event event, CalendarLogic calendarLogic, BuildContext context) async {
   // Access the SelectedIndexNotifier via Provider
   final selectedIndexNotifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
- String address = event.location ?? "No address provided"; // Use a fallback if address is null
+  String address = event.location ?? "No address provided"; // Use a fallback if address is null
   List<String> addressParts = address.split(", "); // Split the address into parts
   String streetAddress = addressParts.isNotEmpty ? addressParts[0] : "No street address available";
   String cityStateZip = addressParts.length > 1 ? addressParts.sublist(1).join(", ") : "No city/state/ZIP provided";

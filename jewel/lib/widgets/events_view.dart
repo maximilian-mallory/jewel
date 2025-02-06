@@ -6,7 +6,10 @@ import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 
 
-
+/*
+  This widget class builds a Calendar widget
+  It does not create the controls
+*/
 class CalendarEventsView extends StatefulWidget {
   @override
   _CalendarEventsView createState() => _CalendarEventsView();
@@ -24,7 +27,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
 
   @override
 Widget build(BuildContext context) {
-  final calendarLogic = Provider.of<CalendarLogic>(context);
+  final calendarLogic = Provider.of<CalendarLogic>(context); // provider gives us app level access to the same CalendarLogic object
 
   return Column(
       children: [
@@ -32,11 +35,10 @@ Widget build(BuildContext context) {
           child: SingleChildScrollView(
             controller: _scrollController,
             scrollDirection: Axis.vertical,
-            child: Row(
+            child: Row( // this is the actual widget with the calendar in it
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Time column
-                Container(
+                Container( // Lefthand time column
                   width: 50,
                   color: Colors.grey[200],
                   child: Column(
@@ -53,9 +55,9 @@ Widget build(BuildContext context) {
                     }),
                   ),
                 ),
-                // Events column
+                // Calendar Events column
                 Expanded(
-                  child: FutureBuilder<List<gcal.Event>>(
+                  child: FutureBuilder<List<gcal.Event>>( // FutureBuilders lets us make asyncronous calls to methods that return lists of widgets with the asynchronously retrieved data
                     future: getGoogleEventsData(calendarLogic, context),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
@@ -71,7 +73,7 @@ Widget build(BuildContext context) {
                           ),
                         );
                       } else if (snapshot.hasData) {
-                        return buildEventsList(snapshot.data!);
+                        return buildEventsList(snapshot.data!); // this is our list of widgets that we pass the list building method, which returns our second column
                       } else {
                         return const Center(
                           child: Text(
@@ -91,27 +93,27 @@ Widget build(BuildContext context) {
   );
 }
 
-Widget buildEventsList(List<gcal.Event> events) {
+Widget buildEventsList(List<gcal.Event> events) { // notice that the events list is no longer of type Future<List>
   return Column(
-    children: List.generate(24, (hourIndex) {
+    children: List.generate(24, (hourIndex) { // hourIndex lets us place the events with a startTime of hourIndex and at the corresponding index in the list
       return Container(
         height: 100.0,
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
         ),
-        child: Stack(
-          children: events.where((event) {
+        child: Stack( 
+          children: events.where((event) { // this determines what events we are stacking
             final start = event.start?.dateTime?.toLocal();
             final end = event.end?.dateTime?.toLocal();
             return start != null &&
                 end != null &&
                 start.hour <= hourIndex &&
                 end.hour > hourIndex;
-          }).map((event) {
+          }).map((event) { // this takes the determined events and processes the cards, then turns them into a list down at .toList()
             final start = event.start?.dateTime?.toLocal();
             final end = event.end?.dateTime?.toLocal();
 
-            // Calculate the duration of the event
+            // Calculate the duration of the event to determine how many cards to build
             final durationInHours = end != null && start != null
                 ? end.difference(start).inHours
                 : 1;
@@ -121,7 +123,7 @@ Widget buildEventsList(List<gcal.Event> events) {
                 ? 100.0 * durationInHours
                 : 100.0; // Ensure single-hour events fill the block fully
 
-            return Positioned.fill(
+            return Positioned.fill( // builds the actual card that will be added to the list
               child: Card(
                 margin: const EdgeInsets.all(0),
                 color: const Color.fromARGB(255, 57, 145, 102),
