@@ -17,7 +17,7 @@ import 'package:jewel/google/calendar/g_g_merge.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Load environment variables
+  // Load environment variables, web app needs to have an assets folder
   if (kIsWeb) {
     await dotenv.load(fileName: "assets/.env");
   } else {
@@ -48,26 +48,26 @@ Future<void> main() async {
   // }
 
   runApp(
-  MultiProvider(
-    providers: [
-      ChangeNotifierProvider(
-        create: (_) => CalendarLogic(),
-      ),
-      ChangeNotifierProvider(
-        create: (_) => SelectedIndexNotifier(1), // Initialize with a default index, e.g., 0
-      ),
-    ],
-    child: MyApp(),
-  ),
-);
+    MultiProvider( // providers allow us to have app level access to objects
+      providers: [
+        ChangeNotifierProvider( // for the auth object
+          create: (_) => CalendarLogic(),
+        ),
+        ChangeNotifierProvider( // keeps track of what screen the user is on
+          create: (_) => SelectedIndexNotifier(1), // Initialize with a default index, e.g., 0
+        ),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
-  final CalendarLogic calendarLogic = CalendarLogic();  //listener for API calls
+  final CalendarLogic calendarLogic = CalendarLogic();  // listener for API calls
   MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context) { // if we can use BuildContext instead of Providers that would be cool
     return MaterialApp(
       debugShowCheckedModeBanner: false, //turns off the "dubug" banner in the top right corner
       title: 'Jewel',
@@ -75,8 +75,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         useMaterial3: true,
       ),
-      home: Intermediary(calendarLogic: calendarLogic)
-      //MyHomePage(title: 'Flutter Demo Home Page'),
+      home: Intermediary(calendarLogic: calendarLogic) // we immediately force the user to the loading screen, which makes the app unusable without a login
     );
   }
 }

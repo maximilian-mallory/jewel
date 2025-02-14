@@ -11,6 +11,9 @@ import 'package:jewel/models/internal_user.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
 
+/*
+  This widget class returns the loading screen. The loading screen opens when the app launches, forcing the user to log in
+*/
 class Intermediary extends StatefulWidget{
   final CalendarLogic calendarLogic;
   const Intermediary({super.key, required this.calendarLogic});
@@ -18,7 +21,6 @@ class Intermediary extends StatefulWidget{
   @override
   _IntermediaryScreenState createState() => _IntermediaryScreenState();  
 }
-
 class _IntermediaryScreenState extends State<Intermediary> {
   
 bool isLoading = true; // To show loading indicator
@@ -32,20 +34,20 @@ bool isLoading = true; // To show loading indicator
     //     widget.calendarLogic.isAuthorized = account != null;
     //   });
     // });
-    signIn();
+    signIn(); //force signin
   }
 
   Future<void> signIn() async {
-  widget.calendarLogic.currentUser = await handleSignIn();
-  widget.calendarLogic.calendarApi = await createCalendarApiInstance(widget.calendarLogic);
+  widget.calendarLogic.currentUser = await handleSignIn(); // googleapi.dart
+  widget.calendarLogic.calendarApi = await createCalendarApiInstance(widget.calendarLogic); // create api instance associated with the account
   // After signing in, navigate to the next screen
-  Navigator.pushReplacement(
-    context,
-    MaterialPageRoute(
-      builder: (context) => HomeScreen(calendarLogic: widget.calendarLogic, initialIndex: 1,), // Use named parameter
-    ),
-  );
-}
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (context) => HomeScreen(calendarLogic: widget.calendarLogic, initialIndex: 1,), // Use named parameter
+      ),
+    );
+  }
 
   Future<void> createExternalUser() async {
     User? user =FirebaseAuth.instance.currentUser;
@@ -109,7 +111,7 @@ bool isLoading = true; // To show loading indicator
   }
   
   @override
-  Widget build(BuildContext context)  {
+  Widget build(BuildContext context)  { // logo
   return Scaffold(
     body: Center(
       child: Image.asset(
