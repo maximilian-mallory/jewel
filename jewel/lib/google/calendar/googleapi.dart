@@ -39,8 +39,10 @@ Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic, BuildC
       DateTime eventStart = DateTime.parse(event.start!.dateTime.toString());
       if (eventStart.isAfter(startOfDayUtc) && eventStart.isBefore(endOfDayUtc)) {
         appointments.add(event);
-        Marker marker = await makeMarker(event, calendarLogic, context);
-         calendarLogic.markers.add(marker);
+        Marker? marker = await makeMarker(event, calendarLogic, context);
+        if(marker != null){
+          calendarLogic.markers.add(marker);
+        } 
       }
     }
   }

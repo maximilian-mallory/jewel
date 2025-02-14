@@ -316,7 +316,7 @@ Widget daymonthForwardButton() {
     future: _getIcalFeeds(), // Call the async function to fetch calendar names
     builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
       if (snapshot.hasError) {
-        return Text('Error: ${snapshot.error}'); // Handle any error that occurred
+        return Text('CalendarSelect Error: ${snapshot.error}'); // Handle any error that occurred
       } else if (snapshot.hasData) {
         List<String> userCalendars = snapshot.data ?? []; // Get the list of calendars
 
