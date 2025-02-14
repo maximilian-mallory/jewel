@@ -53,41 +53,44 @@ Future<LatLng> convertAddressToCoords(gcal.Event event) async {
   return coordinate;
 }
 
-Future<Marker> makeMarker(gcal.Event event, CalendarLogic calendarLogic, BuildContext context) async {
+Future<Marker?> makeMarker(gcal.Event event, CalendarLogic calendarLogic, BuildContext context) async {
   // Access the SelectedIndexNotifier via Provider
   final selectedIndexNotifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
- String address = event.location ?? "No address provided"; // Use a fallback if address is null
-  List<String> addressParts = address.split(", "); // Split the address into parts
-  String streetAddress = addressParts.isNotEmpty ? addressParts[0] : "No street address available";
-  String cityStateZip = addressParts.length > 1 ? addressParts.sublist(1).join(", ") : "No city/state/ZIP provided";
+  if (event.location != null){
+    String address = event.location ?? "No address provided"; // Use a fallback if address is null
+    List<String> addressParts = address.split(", "); // Split the address into parts
+    String streetAddress = addressParts.isNotEmpty ? addressParts[0] : "No street address available";
+    String cityStateZip = addressParts.length > 1 ? addressParts.sublist(1).join(", ") : "No city/state/ZIP provided";
 
-  // Extract the description
-  String description = event.description ?? "No description available";
+    // Extract the description
+    String description = event.description ?? "No description available";
 
-  // Combine everything into the snippet
-  String snippet = "$streetAddress\n$cityStateZip";
-  // Create a Marker
-  Marker marker = Marker(
-    markerId: MarkerId(event.id!),
-    position: await convertAddressToCoords(event), // Convert address to coordinates
-    infoWindow: InfoWindow(
-      title: event.summary, // Display the event summary
-      snippet: snippet, // Display additional details (optional)
-      onTap: () {
-        print("Info window tapped for: ${event.summary}");
-        
-        // Update the selected index using the notifier's setter
-        selectedIndexNotifier.selectedIndex = 1; // Change to the appropriate index
+    // Combine everything into the snippet
+    String snippet = "$streetAddress\n$cityStateZip";
+    // Create a Marker
+    Marker marker = Marker(
+      markerId: MarkerId(event.id!),
+      position: await convertAddressToCoords(event), // Convert address to coordinates
+      infoWindow: InfoWindow(
+        title: event.summary, // Display the event summary
+        snippet: snippet, // Display additional details (optional)
+        onTap: () {
+          print("Info window tapped for: ${event.summary}");
+          
+          // Update the selected index using the notifier's setter
+          selectedIndexNotifier.selectedIndex = 1; // Change to the appropriate index
 
-        // Optionally, if you need to trigger a UI update, you can call setState here:
-        // setState(() {
-        //   selectedIndex = 1;
-        // }); // This can be used if you need the selected index in the widget itself
-      },
-    ),
-  );
+          // Optionally, if you need to trigger a UI update, you can call setState here:
+          // setState(() {
+          //   selectedIndex = 1;
+          // }); // This can be used if you need the selected index in the widget itself
+        },
+      ),
+    );
 
-  return marker;
+    return marker;
+  }
+  return null;
 }
 
 

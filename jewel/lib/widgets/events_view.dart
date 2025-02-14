@@ -65,7 +65,7 @@ Widget build(BuildContext context) {
                       } else if (snapshot.hasError) {
                         return Center(
                           child: Text(
-                            'Error: ${snapshot.error}',
+                            'EventsViewError: ${snapshot.error}',
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Colors.red),
                           ),
