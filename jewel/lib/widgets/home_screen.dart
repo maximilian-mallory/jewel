@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/models/jewel_user.dart';
 //import 'package:jewel/google/maps/map_screen.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/widgets/events_view.dart';
@@ -39,8 +40,9 @@ class SelectedIndexNotifier extends ChangeNotifier {
 class HomeScreen extends StatefulWidget {
   final CalendarLogic calendarLogic; //have to have so that the page knows it exsists
   final int initialIndex;
+  final JewelUser? jewelUser;
 
-  const HomeScreen({super.key, required this.calendarLogic, required this.initialIndex}); //requires the calendarLogic used from main.dart
+  const HomeScreen({super.key, required this.jewelUser, required this.calendarLogic, required this.initialIndex}); //requires the calendarLogic used from main.dart
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -66,7 +68,7 @@ class _HomeScreenState extends State<HomeScreen> {
       
     });
     _screens = [ // widgets available in the nav bar
-      SettingsScreen(),
+      SettingsScreen(jewelUser: widget.jewelUser,),
       CalendarEventsView(),
       MapSample(),
     ];
