@@ -4,9 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:provider/provider.dart';
+import 'package:google_maps_routes/google_maps_routes.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
+import 'package:jewel/google/maps/google_routes.dart';
+import 'package:jewel/google/calendar/g_g_merge.dart';
+import 'package:googleapis/calendar/v3.dart' as gcal;
 
 class MapSample extends StatefulWidget {
-
+  
 
   const MapSample({super.key});
 
@@ -17,7 +23,8 @@ class MapSample extends StatefulWidget {
 class MapSampleState extends State<MapSample> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
-
+  MapsRoutes route = new MapsRoutes();
+  
   static const CameraPosition _statPos = CameraPosition(
     target: LatLng(44.8742, -91.9195),
     zoom: 14.4746,
@@ -44,10 +51,17 @@ class MapSampleState extends State<MapSample> {
             child: GoogleMap(
               mapType: MapType.hybrid,
               initialCameraPosition: _statPos,
-              onMapCreated: (GoogleMapController controller) {
+              onMapCreated: (GoogleMapController controller) async {
                 _controller.complete(controller);
+                //<LatLng> coords = await convertAddressToCoords(calendarLogic.events);
+                //for (int marker = 0; marker < calendarLogic.markers.length; marker++) {
+                 drawRouteOnMap(calendarLogic.markers.toList());
+          
+                
               },
+              polylines: route.routes,
               markers: calendarLogic.markers.toSet(),
+              
             ),
           ),
         ],
@@ -59,4 +73,5 @@ class MapSampleState extends State<MapSample> {
     final GoogleMapController controller = await _controller.future;
     await controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));
   }
+
 }
