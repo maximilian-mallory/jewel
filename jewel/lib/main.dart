@@ -13,6 +13,7 @@ import '/utils/fake_ui.dart' if (dart.library.html) '/utils/real_ui.dart' as ui;
 import "package:universal_html/html.dart" as html;
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 import 'package:jewel/google/calendar/g_g_merge.dart';
+import 'package:jewel/utils/app_themes.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -73,25 +74,8 @@ class MyApp extends StatelessWidget {
       title: 'Jewel',
       theme: MyAppThemes.lightTheme,
       darkTheme: MyAppThemes.darkTheme,
-    themeMode: ThemeMode.system,
+      themeMode: ThemeMode.system,
       home: Intermediary(calendarLogic: calendarLogic) // we immediately force the user to the loading screen, which makes the app unusable without a login
     );
   }
-}
-
-class MyAppColors {
-  static final darkGreen = Color.fromARGB(255, 22, 61, 23);
-  static final lightGreen =Color.fromARGB(255, 68, 192, 72);
-}
-
-class MyAppThemes {
-  static final lightTheme = ThemeData(
-    primaryColor: MyAppColors.lightGreen,
-    brightness: Brightness.light,
-  );
-
-  static final darkTheme = ThemeData(
-    primaryColor: MyAppColors.darkGreen,
-    brightness: Brightness.dark,
-  );
 }
