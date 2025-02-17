@@ -71,11 +71,27 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false, //turns off the "dubug" banner in the top right corner
       title: 'Jewel',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
+      theme: MyAppThemes.lightTheme,
+      darkTheme: MyAppThemes.darkTheme,
+    themeMode: ThemeMode.system,
       home: Intermediary(calendarLogic: calendarLogic) // we immediately force the user to the loading screen, which makes the app unusable without a login
     );
   }
+}
+
+class MyAppColors {
+  static final darkGreen = Color.fromARGB(255, 22, 61, 23);
+  static final lightGreen =Color.fromARGB(255, 68, 192, 72);
+}
+
+class MyAppThemes {
+  static final lightTheme = ThemeData(
+    primaryColor: MyAppColors.lightGreen,
+    brightness: Brightness.light,
+  );
+
+  static final darkTheme = ThemeData(
+    primaryColor: MyAppColors.darkGreen,
+    brightness: Brightness.dark,
+  );
 }
