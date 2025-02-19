@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "954035696925-heja74cqsi9he5812asrd9j3gtjonncn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jewel.app",
+            "certificate_hash": "eeeba4cc88f0de8e5501d537769df69d3c363c2d"
+          }
+        },
+        {
           "client_id": "954035696925-p4j9gbmpjknoc04qjd701r2h5ah190ug.apps.googleusercontent.com",
           "client_type": 3
         }

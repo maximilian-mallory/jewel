@@ -316,21 +316,14 @@ Widget daymonthForwardButton() {
     future: _getIcalFeeds(), // Call the async function to fetch calendar names
     builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
       if (snapshot.hasError) {
-        return Text('Error: ${snapshot.error}'); // Handle any error that occurred
+        return Text('CalendarSelect Error: ${snapshot.error}'); // Handle any error that occurred
       } else if (snapshot.hasData) {
         List<String> userCalendars = snapshot.data ?? []; // Get the list of calendars
 
         return Container(
   decoration: BoxDecoration(
     borderRadius: BorderRadius.circular(12.0), // Add rounded corners
-    color: Colors.white, // Set background color of the container
-    boxShadow: [
-      BoxShadow(
-        color: Colors.grey.withOpacity(0.2),
-        spreadRadius: 2,
-        blurRadius: 5,
-      ),
-    ], // Optional shadow for the dropdown
+    color: Theme.of(context).scaffoldBackgroundColor, // Set background color of the container
   ),
   child: ClipRect( // Ensures content respects the container boundaries
     child: SizedBox(

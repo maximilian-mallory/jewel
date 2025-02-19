@@ -3,6 +3,7 @@ import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:http/http.dart';
 import 'package:intl/intl.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 
@@ -11,6 +12,8 @@ import 'package:provider/provider.dart';
   It does not create the controls
 */
 class CalendarEventsView extends StatefulWidget {
+
+  const CalendarEventsView({super.key});
   @override
   _CalendarEventsView createState() => _CalendarEventsView();
 }
@@ -74,7 +77,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                       } else if (snapshot.hasError) {
                         return Center(
                           child: Text(
-                            'Error: ${snapshot.error}',
+                            'EventsViewError: ${snapshot.error}',
                             textAlign: TextAlign.center,
                             style: const TextStyle(color: Colors.red),
                           ),
