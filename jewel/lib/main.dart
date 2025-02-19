@@ -79,7 +79,7 @@ class MyApp extends StatelessWidget {
       theme: MyAppThemes.lightTheme,
       darkTheme: MyAppThemes.darkTheme,
       themeMode: ThemeMode.system,
-      home: Intermediary(calendarLogic: calendarLogic) // we immediately force the user to the loading screen, which makes the app unusable without a login
+      home: AuthGate(calendarLogic: calendarLogic) // we immediately force the user to the loading screen, which makes the app unusable without a login
     );
   }
 }
