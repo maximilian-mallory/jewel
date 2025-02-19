@@ -112,22 +112,7 @@ Widget build(BuildContext context) {
           ),
           child: Row( 
             children: [
-              TextButton.icon( // google icon in the corner, is also the logout button and logs right back in
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.green,
-                  textStyle: const TextStyle(fontSize: 1),
-                ),
-                icon: FaIcon(
-                  FontAwesomeIcons.google,
-                  size: kIsWeb ? 50 : 28,
-                ),
-                onPressed: () async {
-                  await handleSignOut();
-                  await handleSignIn();
-                  setState(() {});
-                },
-                label: const Text(''),
-              ),
+              logicList(),
               SizedBox(width: kIsWeb ? 10 : 5), // Add spacing between widgets
               kIsWeb
                   ? Flexible(child: calTools())
@@ -179,6 +164,59 @@ Widget build(BuildContext context) {
     ),
   ),
   );
+}
+
+PopupMenuButton<int> logicList()
+{
+  return PopupMenuButton<int>(
+      icon: FaIcon(
+        FontAwesomeIcons.google,
+        size: 28,
+        color: Colors.green,
+      ),
+      onSelected: (value) async {
+        if (value == 1) {
+          // Handle Add Account
+          await handleSignIn();
+        } else if (value == 2) {
+          // Handle Sign Out
+          await handleSignOut();
+        }
+      },
+      itemBuilder: (context) {
+        List<PopupMenuEntry<int>> menuItems = [];
+
+        // Add menu items for calendarLogics
+        if (widget.jewelUser?.calendarLogicList != null) {
+          for (var calendarLogic in widget.jewelUser!.calendarLogicList!) {
+            menuItems.add(
+              PopupMenuItem<int>(
+                value: 0,
+                child: Text(calendarLogic.currentUser!.email),
+              ),
+            );
+          }
+        }
+
+        // Add "Add Account" button at the bottom
+        menuItems.add(
+          PopupMenuItem<int>(
+            value: 1,
+            child: Text('Add Account'),
+          ),
+        );
+
+        // Add "Sign Out" button at the bottom
+        menuItems.add(
+          PopupMenuItem<int>(
+            value: 2,
+            child: Text('Sign Out'),
+          ),
+        );
+
+        return menuItems;
+      },
+    );
 }
 
 Widget calTools() {

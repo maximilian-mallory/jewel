@@ -9,25 +9,30 @@ class JewelUser {
   final String email;
   final String? displayName;
   final String? photoUrl;
-  // final CalendarLogic? calendarLogic;
+  List<CalendarLogic>? calendarLogicList;
 
   JewelUser({
     required this.uid,
     required this.email,
     this.displayName,
     this.photoUrl,
-    // this.calendarLogic
+    this.calendarLogicList
   });
 
   // Factory constructor to create JewelUser from Firebase User
-  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, CalendarLogic? calendarLogic}) {
+  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList}) {
     return JewelUser(
       uid: user.uid,
       email: user.email!,
       displayName: user.displayName,
       photoUrl: user.photoURL,
-      // calendarLogic: calendarLogic,
+      calendarLogicList: calendarLogicList ?? [],
     );
+  }
+
+  void addCalendarLogic(CalendarLogic logic) async {
+    calendarLogicList ??= [];
+    calendarLogicList!.add(logic);
   }
 
   // Convert to JSON (useful for Firestore storage)
@@ -37,7 +42,7 @@ class JewelUser {
       'email': email,
       'displayName': displayName,
       'photoUrl': photoUrl,
-      // 'calendarLogic': jsonEncode(calendarLogic)
+      'calendarLogic': jsonEncode(calendarLogicList)
     };
   }
 
@@ -48,7 +53,7 @@ class JewelUser {
       email: json['email'],
       displayName: json['displayName'],
       photoUrl: json['photoUrl'],
-      // calendarLogic: jsonDecode(json['calendarLogic'])
+      calendarLogicList: jsonDecode(json['calendarLogic'])
     );
   }
 
