@@ -11,9 +11,9 @@ import '../calendar/g_g_merge.dart';
 import 'package:google_maps_routes/google_maps_routes.dart';
 
 
-Future<void> drawRouteOnMap(List<Marker> eventList) async {
+Future<void> drawRouteOnMap(List<Marker> eventList, MapsRoutes route) async {
   //print("TESTING: $eventList");
-  MapsRoutes route = new MapsRoutes();
+  //MapsRoutes route = new MapsRoutes();
   String apiKey = dotenv.env['GOOGLE_MAPS_KEY']!;
   List<LatLng> coords = [];
 

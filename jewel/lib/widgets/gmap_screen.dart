@@ -23,7 +23,7 @@ class MapSample extends StatefulWidget {
 class MapSampleState extends State<MapSample> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
-  MapsRoutes route = new MapsRoutes();
+  MapsRoutes route = MapsRoutes();
   
   static const CameraPosition _statPos = CameraPosition(
     target: LatLng(44.8742, -91.9195),
@@ -55,7 +55,7 @@ class MapSampleState extends State<MapSample> {
                 _controller.complete(controller);
                 //<LatLng> coords = await convertAddressToCoords(calendarLogic.events);
                 //for (int marker = 0; marker < calendarLogic.markers.length; marker++) {
-                 drawRouteOnMap(calendarLogic.markers.toList());
+                 drawRouteOnMap(calendarLogic.markers.toList(), route);
           
                 
               },
