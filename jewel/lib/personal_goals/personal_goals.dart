@@ -1,10 +1,10 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 /*
 Personal Goals Class:
 -Creates the information needed for the personal goals
 -Stores data in FireBase bassed off the current user
 */
-
-abstract class PersonalGoals{
+class PersonalGoals{
   //private variables
   String _title = ""; //title of the goal the user sets
   String _description = ""; //description of the goal the user sets
@@ -27,15 +27,19 @@ abstract class PersonalGoals{
   //constructor(s)
   PersonalGoals(this._title,this._description,this._category,this._completed,this._duration);
 
-  //Tretunrs a Map<String, dynamic> to be put into firebase
-  Map<String, dynamic> getMap(){
-    Map<String, dynamic> data = {
+  //Puts Map<String, dynamic> into firebase
+  Future<void> storeGoal() async{
+    await FirebaseFirestore.instance.collection('goals').doc().set(toJson());
+  }
+
+  //decouples the code
+  Map<String, dynamic> toJson(){
+    return {
       'title': _title,
       'description': _description,
       'duration': _duration,
       'completed': _completed,
       'category': _completed
     };
-    return data;
   }
 }

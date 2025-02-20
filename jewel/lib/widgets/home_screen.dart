@@ -4,6 +4,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/screens/test_screen1.dart';
 //import 'package:jewel/google/maps/map_screen.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/widgets/events_view.dart';
@@ -69,6 +70,7 @@ class _HomeScreenState extends State<HomeScreen> {
       SettingsScreen(),
       CalendarEventsView(),
       MapSample(),
+      Screen1(),
     ];
   }
 
