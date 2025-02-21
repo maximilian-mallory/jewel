@@ -43,7 +43,14 @@ Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic, BuildC
       if (eventStart.isAfter(startOfDayUtc) && eventStart.isBefore(endOfDayUtc)) {
         appointments.add(event);
         
-        JewelEvent.fromGoogleEvent(event).store();
+        if(await checkDocExists('jewelevents', event.id))
+        {
+          print('[FIREBASE PART REFRESH]: ${event.id}');
+        }
+        else
+        {
+          JewelEvent.fromGoogleEvent(event).store();
+        }
         Marker? marker = await makeMarker(event, calendarLogic, context);
         if(marker != null){
           calendarLogic.markers.add(marker);
@@ -52,6 +59,18 @@ Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic, BuildC
     }
   }
   return appointments;
+}
+
+Future<bool> checkDocExists(String collectionPath, String? docId) async {
+  try {
+    DocumentSnapshot docSnapshot =
+        await FirebaseFirestore.instance.collection(collectionPath).doc(docId).get();
+
+    return docSnapshot.exists;
+  } catch (e) {
+    print('Error checking document existence: $e');
+    return false;
+  }
 }
 
 DateTime changeDateBy(int days, CalendarLogic calendarLogic){
