@@ -6,13 +6,13 @@ import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 
 /*
   This widget class builds a Calendar widget
   It does not create the controls
 */
 class CalendarEventsView extends StatefulWidget {
-
   const CalendarEventsView({super.key});
   @override
   _CalendarEventsView createState() => _CalendarEventsView();
@@ -137,11 +137,20 @@ class _CalendarEventsView extends State<CalendarEventsView> {
               final height = durationInHours > 1
                   ? 100.0 * durationInHours
                   : 100.0; // Ensure single-hour events fill the block fully
+
+              final colorString =
+                  event.extendedProperties?.private?['color'] ?? '57, 145, 102';
+              final colorValues = colorString
+                  .split(',')
+                  .map((e) => int.parse(e.trim()))
+                  .toList();
+              final eventColor = Color.fromARGB(
+                  255, colorValues[0], colorValues[1], colorValues[2]);
               return Positioned.fill(
                 // builds the actual card that will be added to the list
                 child: Card(
                     margin: const EdgeInsets.all(0),
-                    color: const Color.fromARGB(255, 57, 145, 102),
+                    color: eventColor,
                     child: (hourIndex == start!.hour)
                         ? ListTile(
                             title: Text(
@@ -183,6 +192,13 @@ class _CalendarEventsView extends State<CalendarEventsView> {
     DateTime endTime =
         event.end?.dateTime ?? DateTime.now().add(Duration(hours: 1));
 
+    final colorString =
+        event.extendedProperties?.private?['color'] ?? '57, 145, 102';
+    final colorValues =
+        colorString.split(',').map((e) => int.parse(e.trim())).toList();
+    Color eventColor =
+        Color.fromARGB(255, colorValues[0], colorValues[1], colorValues[2]);
+
     await showDialog(
       context: context,
       builder: (context) {
@@ -223,6 +239,20 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                   }
                 },
               ),
+              ListTile(
+                title: Text("Event Color"),
+                trailing: Icon(Icons.color_lens),
+                onTap: () async {
+                  Color? pickedColor = await showDialog(
+                    context: context,
+                    builder: (context) =>
+                        ColorPickerDialog(initialColor: eventColor),
+                  );
+                  if (pickedColor != null) {
+                    eventColor = pickedColor;
+                  }
+                },
+              ),
             ],
           ),
           actions: [
@@ -242,6 +272,13 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                 updatedEvent.end?.dateTime = endTime.toUtc();
                 updatedEvent.end?.timeZone = "UTC";
 
+                updatedEvent.extendedProperties =
+                    gcal.EventExtendedProperties();
+                updatedEvent.extendedProperties!.private = {
+                  'color':
+                      '${eventColor.red}, ${eventColor.green}, ${eventColor.blue}'
+                };
+
                 final calendarLogic =
                     Provider.of<CalendarLogic>(context, listen: false);
 
@@ -251,6 +288,11 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                     "Title: $oldSummary → $newSummary\n"
                     "Start: ${formatDateTime(event.start?.dateTime?.toLocal())} → ${formatDateTime(updatedEvent.start?.dateTime?.toLocal())}\n"
                     "End: ${formatDateTime(event.end?.dateTime?.toLocal())} → ${formatDateTime(updatedEvent.end?.dateTime?.toLocal())}";
+
+                if (colorString !=
+                    '${eventColor.red}, ${eventColor.green}, ${eventColor.blue}') {
+                  changeLog += "\nColor Changed";
+                }
 
                 calendarLogic.addToHistory(event.id!, changeLog);
 
@@ -367,4 +409,50 @@ class _CalendarEventsView extends State<CalendarEventsView> {
 //     _scrollController.dispose();
 //     super.dispose();
 //   }
+}
+
+class ColorPickerDialog extends StatefulWidget {
+  final Color initialColor;
+
+  const ColorPickerDialog({required this.initialColor});
+
+  @override
+  _ColorPickerDialogState createState() => _ColorPickerDialogState();
+}
+
+class _ColorPickerDialogState extends State<ColorPickerDialog> {
+  Color _selectedColor = Colors.white;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedColor = widget.initialColor;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text('Pick a color'),
+      content: SingleChildScrollView(
+        child: BlockPicker(
+          pickerColor: _selectedColor,
+          onColorChanged: (color) {
+            setState(() {
+              _selectedColor = color;
+            });
+          },
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context, null),
+          child: Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () => Navigator.pop(context, _selectedColor),
+          child: Text('Select'),
+        ),
+      ],
+    );
+  }
 }
