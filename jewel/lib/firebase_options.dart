@@ -64,7 +64,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '954035696925',
     projectId: 'jewel-b2dcd',
     storageBucket: 'jewel-b2dcd.firebasestorage.app',
-    androidClientId: '954035696925-2v1n6ep4v89rl58mju2ol9a23k7i4qdi.apps.googleusercontent.com',
+    androidClientId: '954035696925-2s76jqka5p7dvqtgcra71d356rjvhdl1.apps.googleusercontent.com',
     iosClientId: '954035696925-lccrf4i2o0je8ab7afva92uo5n1q0oqi.apps.googleusercontent.com',
     iosBundleId: 'com.example.jewel',
   );
@@ -75,7 +75,7 @@ class DefaultFirebaseOptions {
     messagingSenderId: '954035696925',
     projectId: 'jewel-b2dcd',
     storageBucket: 'jewel-b2dcd.firebasestorage.app',
-    androidClientId: '954035696925-2v1n6ep4v89rl58mju2ol9a23k7i4qdi.apps.googleusercontent.com',
+    androidClientId: '954035696925-2s76jqka5p7dvqtgcra71d356rjvhdl1.apps.googleusercontent.com',
     iosClientId: '954035696925-lccrf4i2o0je8ab7afva92uo5n1q0oqi.apps.googleusercontent.com',
     iosBundleId: 'com.example.jewel',
   );
