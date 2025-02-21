@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:provider/provider.dart';
@@ -24,7 +25,6 @@ class MapSampleState extends State<MapSample> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
   MapsRoutes route = MapsRoutes();
-  final Set<Polyline> _polylines = {};
   
   static const CameraPosition _statPos = CameraPosition(
     target: LatLng(44.8742, -91.9195),
@@ -38,11 +38,66 @@ class MapSampleState extends State<MapSample> {
     zoom: 19.151926040649414,
   );
 
+
+
+  final Set<Polyline> _polylines = {}; // Create a set of polylines
+
+  @override
+  void initState() {
+    super.initState();
+  }
+   @override
+    void didChangeDependencies() {
+      super.didChangeDependencies();
+      final calendarLogic = Provider.of<CalendarLogic>(context); // Access the CalendarLogic instance
+      drawRouteOnMap(calendarLogic);
+    } 
+
+    void drawRouteOnMap(CalendarLogic calendarLogic) async {
+      try{
+      // Get the polyline coordinates. drawRouteOnMap helper function in google_routes.dart
+      List<LatLng> polylineCoordinates = getCoordFromMarker(calendarLogic.markers.toList());
+      List<LatLng> allCoords = [];
+      /*List<LatLng> polylineCoordinates = [ //Hard coded coords for testing
+        //const LatLng(44.87614689999999, -91.9236423999), //BK
+        //const LatLng(44.87171177394303, -91.93048800926618),//kwiktrip
+        //const LatLng(44.879669645560085, -91.93005113276051),//fortune cookie
+        //const LatLng(44.8763198, -91.925625), //TOPPERS
+        //const LatLng(44.8761658, -91.9299928), //LOGJAM
+      ];*/
+     
+      for (int i = 0; i < polylineCoordinates.length - 1; i++) {
+      List<LatLng> routeSegment = await getRouteCoordinates(polylineCoordinates[i], polylineCoordinates[i + 1]);
+      if (allCoords.isNotEmpty && allCoords.last == routeSegment.first) {
+        // Removes repeated coordinate if it matches the last one
+        routeSegment.removeAt(0);
+      }
+      allCoords.addAll(routeSegment);
+      print('new route coords at $i: $allCoords\n');
+    }
+      
+      
+      setState(() {
+          _polylines.add(Polyline(
+            polylineId: PolylineId('Id'),
+            visible: true,
+            points: allCoords,
+            color: Colors.blue,
+            width: 5,
+          ));
+        });
+
+        
+      } catch (e) {
+        print('Error drawing route on map: $e');
+      }
+    }
+  
   @override
   Widget build(BuildContext context) {
-    final calendarLogic = Provider.of<CalendarLogic>(context);
-
-    List<LatLng> latlen = [];
+  final calendarLogic = Provider.of<CalendarLogic>(context); // Access the CalendarLogic instance
+ 
+  /*List<LatLng> latlen = [];
 
     calendarLogic.markers.toList().forEach((marker){
       latlen.add(marker.position);
@@ -54,7 +109,7 @@ class MapSampleState extends State<MapSample> {
             points: latlen,
             color: Colors.green,
           )
-      );
+      );*/
     
      return Scaffold(
       body: Column(
@@ -69,9 +124,7 @@ class MapSampleState extends State<MapSample> {
                 _controller.complete(controller);
                 //<LatLng> coords = await convertAddressToCoords(calendarLogic.events);
                 //for (int marker = 0; marker < calendarLogic.markers.length; marker++) {
-                 drawRouteOnMap(calendarLogic.markers.toList(), route);
-          
-                
+             
               },
               polylines: _polylines,
               markers: calendarLogic.markers.toSet(),

@@ -58,6 +58,7 @@ dependencies:
   font_awesome_flutter: ^10.8.0
   provider: ^6.1.2
   google_geocoding_api: ^1.5.2
+  flutter_polyline_points: ^1.0.0
   google_maps_routes: ^1.1.2
 dev_dependencies:
   flutter_test:

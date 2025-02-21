@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_geocoding_api/google_geocoding_api.dart';
@@ -9,9 +11,10 @@ import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 import '../calendar/g_g_merge.dart';
 import 'package:google_maps_routes/google_maps_routes.dart';
+import 'package:http/http.dart' as http;
 
 
-Future<void> drawRouteOnMap(List<Marker> eventList, MapsRoutes route) async {
+List<LatLng> getCoordFromMarker(List<Marker> eventList) {
   //print("TESTING: $eventList");
   //MapsRoutes route = new MapsRoutes();
   String apiKey = dotenv.env['GOOGLE_MAPS_KEY']!;
@@ -19,27 +22,43 @@ Future<void> drawRouteOnMap(List<Marker> eventList, MapsRoutes route) async {
 
   for (var marker in eventList) {
     coords.add(LatLng(marker.position.latitude, marker.position.longitude));
-    print("Coords: ${coords}");
+    //print("Coords: ${coords}");
   }
-  /*List<LatLng> points = [
-    LatLng(44.87614689999999, -91.92364239999999),
-    LatLng(44.8763198, -91.925625),
-    LatLng(44.8761658, -91.9299928)
-  ];*/
-   //print("Points: ${points}");
-
-  //String formattedCoords = coords.map((coord) => '(${coord.latitude}, ${coord.longitude})').join(', ');
-  //print("Formatted Coords: $formattedCoords");
-
-  await route.drawRoute(
-      coords,
-      eventList.first.infoWindow.title!,
-      Color.fromRGBO(130, 78, 210, 1.0),
-      apiKey,
-      travelMode: TravelModes.driving
-    );
-  
+ 
+  return coords;
   
 }
 
+Future<List<LatLng>> getRouteCoordinates(LatLng start, LatLng end) async {
+  try{
+    String apiKey = dotenv.env['GOOGLE_MAPS_KEY']!;
+    String url = 'https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey';
+    http.Response response = await http.get(Uri.parse(url));
+    Map<String, dynamic> data = json.decode(response.body); //Map with a key of type String and a value of type dynamic(any type) stores in the API response
 
+    print("API Response: $data\n"); // delete later
+
+    List<LatLng> polylineCoordinates = [];
+    if (data['routes'].isNotEmpty) {
+      /*routes key is a list of routes, 0 is the first route 
+      legs are the part of the route between two points
+      Steps are single instructions inside of legs
+      each step contains further information about the route such as start, end location, distance, and duration
+      */
+      data['routes'][0]['legs'][0]['steps'].forEach((step) {//for each step in the route of the leg, add the start and end location to the polylineCoordinates list
+        polylineCoordinates.add(LatLng(
+          step['start_location']['lat'],
+          step['start_location']['lng'],
+        ));
+        polylineCoordinates.add(LatLng(
+          step['end_location']['lat'],
+          step['end_location']['lng'],
+        ));
+      });
+    }
+    return polylineCoordinates;
+  } catch (e) {
+    print("Error: $e");
+    return [];
+  }
+}
