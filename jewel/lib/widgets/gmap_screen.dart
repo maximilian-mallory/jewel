@@ -24,6 +24,7 @@ class MapSampleState extends State<MapSample> {
   final Completer<GoogleMapController> _controller =
       Completer<GoogleMapController>();
   MapsRoutes route = MapsRoutes();
+  final Set<Polyline> _polylines = {};
   
   static const CameraPosition _statPos = CameraPosition(
     target: LatLng(44.8742, -91.9195),
@@ -40,8 +41,21 @@ class MapSampleState extends State<MapSample> {
   @override
   Widget build(BuildContext context) {
     final calendarLogic = Provider.of<CalendarLogic>(context);
-    
 
+    List<LatLng> latlen = [];
+
+    calendarLogic.markers.toList().forEach((marker){
+      latlen.add(marker.position);
+    });
+
+    _polylines.add(
+          Polyline(
+            polylineId: PolylineId('1'),
+            points: latlen,
+            color: Colors.green,
+          )
+      );
+    
      return Scaffold(
       body: Column(
         children: [
@@ -59,7 +73,7 @@ class MapSampleState extends State<MapSample> {
           
                 
               },
-              polylines: route.routes,
+              polylines: _polylines,
               markers: calendarLogic.markers.toSet(),
               
             ),
