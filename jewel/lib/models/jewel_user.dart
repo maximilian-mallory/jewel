@@ -10,23 +10,27 @@ class JewelUser {
   final String? displayName;
   final String? photoUrl;
   List<CalendarLogic>? calendarLogicList;
+  final Map<String, List<PersonalGoals>>? personalGoalsList;
+
 
   JewelUser({
     required this.uid,
     required this.email,
+    required this.personalGoalsList,
     this.displayName,
     this.photoUrl,
     this.calendarLogicList
   });
 
   // Factory constructor to create JewelUser from Firebase User
-  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList}) {
+  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList, Map<String, List<PersonalGoals>>? personalGoalsList}) {
     return JewelUser(
       uid: user.uid,
       email: user.email!,
       displayName: user.displayName,
       photoUrl: user.photoURL,
       calendarLogicList: calendarLogicList ?? [],
+      personalGoalsList: personalGoalsList ?? []
     );
   }
 
@@ -56,11 +60,10 @@ class JewelUser {
       calendarLogicList: jsonDecode(json['calendarLogic'])
     );
   }
-
   
   
   Future<JewelUser?> getUserFromFirestore(String email) async {
-    DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc(email).get();
+    DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc('email').get();
 
     if (doc.exists) {
       return JewelUser.fromJson(doc.data() as Map<String, dynamic>);
