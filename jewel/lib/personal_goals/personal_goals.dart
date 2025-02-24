@@ -1,45 +1,31 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+
 /*
 Personal Goals Class:
 -Creates the information needed for the personal goals
 -Stores data in FireBase bassed off the current user
 */
+part 'personal_goals.g.dart';
+@JsonSerializable()
 class PersonalGoals{
-  //private variables
-  String _title = ""; //title of the goal the user sets
-  String _description = ""; //description of the goal the user sets
-  int _duration = 0; //time the goal took (building for tracking purposes and analytics later)
-  bool _completed = false; //determines if the goal has been completed -> eventually used to determine if it should be showed in current goals or archive
-  String _category = ""; //Categorizes goals, will have options on goal creation form
-  
-  //getters and setters
-  String get title => _title;
-  set title(String title){_title = title;}
-  String get description => _description;
-  set description(String description){_description = description;}
-  int get duration => _duration;
-  set duration(int duration){_duration = duration;}
-  bool get completed => _completed;
-  set completed(bool completed){_completed = completed;}
-  String get category => _category;
-  set category(String category){_category = category;}
+
+  late String? ownerEmail; //holds the user email
+  String title = ""; //title of the goal the user sets
+  String description = ""; //description of the goal the user sets
+  int duration = 0; //time the goal took (building for tracking purposes and analytics later)
+  bool completed = false; //determines if the goal has been completed -> eventually used to determine if it should be showed in current goals or archive
+  String category = ""; //Categorizes goals, will have options on goal creation form
 
   //constructor(s)
-  PersonalGoals(this._title,this._description,this._category,this._completed,this._duration);
+  PersonalGoals(this.title,this.description,this.category,this.completed,this.duration);
 
+  factory PersonalGoals.fromJson(Map<String, dynamic> json) => _$PersonalGoalsFromJson(json);
+  Map<String, dynamic> toJson() => _$PersonalGoalsToJson(this);
   //Puts Map<String, dynamic> into firebase
   Future<void> storeGoal() async{
-    await FirebaseFirestore.instance.collection('goals').doc().set(toJson());
-  }
-
-  //decouples the code
-  Map<String, dynamic> toJson(){
-    return {
-      'title': _title,
-      'description': _description,
-      'duration': _duration,
-      'completed': _completed,
-      'category': _completed
-    };
+    ownerEmail = FirebaseAuth.instance.currentUser?.email;
+    await FirebaseFirestore.instance.collection('goals').doc(category).collection(ownerEmail!).doc().set(toJson());
   }
 }
