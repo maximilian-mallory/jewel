@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/personal_goals/personal_goals.dart';
 
 class JewelUser {
   final String uid;
@@ -10,27 +11,27 @@ class JewelUser {
   final String? displayName;
   final String? photoUrl;
   List<CalendarLogic>? calendarLogicList;
-  final Map<String, List<PersonalGoals>>? personalGoalsList;
+  final List<PersonalGoals>? personalGoalsList;
 
 
   JewelUser({
     required this.uid,
     required this.email,
-    required this.personalGoalsList,
+    this.personalGoalsList,
     this.displayName,
     this.photoUrl,
     this.calendarLogicList
   });
 
   // Factory constructor to create JewelUser from Firebase User
-  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList, Map<String, List<PersonalGoals>>? personalGoalsList}) {
+  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList, List<PersonalGoals>? personalGoalsList}) {
     return JewelUser(
       uid: user.uid,
       email: user.email!,
       displayName: user.displayName,
       photoUrl: user.photoURL,
-      calendarLogicList: calendarLogicList ?? [],
-      personalGoalsList: personalGoalsList ?? []
+      calendarLogicList: calendarLogicList,
+      personalGoalsList: personalGoalsList
     );
   }
 
@@ -57,7 +58,7 @@ class JewelUser {
       email: json['email'],
       displayName: json['displayName'],
       photoUrl: json['photoUrl'],
-      calendarLogicList: jsonDecode(json['calendarLogic'])
+      calendarLogicList: jsonDecode(json['calendarLogic']),
     );
   }
   
