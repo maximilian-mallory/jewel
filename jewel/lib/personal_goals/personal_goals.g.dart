@@ -13,11 +13,11 @@ PersonalGoals _$PersonalGoalsFromJson(Map<String, dynamic> json) =>
       json['category'] as String,
       json['completed'] as bool,
       (json['duration'] as num).toInt(),
-    )..ownerEmail = json['owner'] as String?;
+    )..ownerEmail = json['ownerEmail'] as String?;
 
 Map<String, dynamic> _$PersonalGoalsToJson(PersonalGoals instance) =>
     <String, dynamic>{
-      'owner': instance.ownerEmail,
+      'ownerEmail': instance.ownerEmail,
       'title': instance.title,
       'description': instance.description,
       'duration': instance.duration,
