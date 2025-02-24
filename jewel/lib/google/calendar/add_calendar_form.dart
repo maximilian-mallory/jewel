@@ -60,7 +60,7 @@ class _AddCalendarFormState extends State<AddCalendarForm> {
                   value == null || value.isEmpty ? "Please enter a time zone" : null,
               // Optionally, you can use a dropdown for time zones
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 16.0), //puts some room between the button and fields
             ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
