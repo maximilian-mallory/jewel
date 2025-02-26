@@ -12,6 +12,7 @@ import 'package:jewel/widgets/gmap_screen.dart';
 import 'package:jewel/widgets/settings.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:provider/provider.dart';
+import 'package:jewel/screens/test_screen1.dart';
 
 class SelectedIndexNotifier extends ChangeNotifier {
   int _selectedIndex;
@@ -71,6 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
       SettingsScreen(jewelUser: widget.jewelUser,),
       CalendarEventsView(),
       MapSample(),
+      Screen1(),
     ];
   }
 
