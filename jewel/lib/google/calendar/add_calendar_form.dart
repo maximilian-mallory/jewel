@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/foundation.dart';
+import 'package:jewel/google/calendar/mode_toggle.dart';
 
 class AddCalendarForm extends StatefulWidget {
   final void Function(String calendarName, String description, String timeZone)
@@ -60,7 +61,7 @@ class _AddCalendarFormState extends State<AddCalendarForm> {
                   value == null || value.isEmpty ? "Please enter a time zone" : null,
               // Optionally, you can use a dropdown for time zones
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 16.0), //puts some room between the button and fields
             ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
@@ -161,8 +162,8 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
             ],
           ),
 
-          dateToggle(), // Toggle button for changing the view (day/month)
-
+          dateToggle(), // Date picker to select a specific date
+          modeToggleButton(), // Toggle button for changing the view of the calendar
           daymonthForwardButton(), // Right arrow button
         ],
       ),
@@ -202,6 +203,21 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
       backgroundColor: Colors.green.withOpacity(0.1), // Light green background
       
     ),
+  );
+}
+
+// Toggle function for switching between daily and monthly views
+Widget modeToggleButton() {
+  return Consumer<ModeToggle>(
+    builder: (context, eventsProvider, child) {
+      return IconButton(
+        icon: Icon(eventsProvider.isMonthlyView ? Icons.calendar_month : Icons.calendar_view_day), // Change icon based on view mode
+        tooltip: eventsProvider.isMonthlyView ? "Switch to Daily View" : "Switch to Monthly View", // Tooltip for accessibility
+        onPressed: () {
+          eventsProvider.toggleViewMode(); // Notify listeners
+        },
+      );
+    },
   );
 }
 
@@ -316,21 +332,14 @@ Widget daymonthForwardButton() {
     future: _getIcalFeeds(), // Call the async function to fetch calendar names
     builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
       if (snapshot.hasError) {
-        return Text('Error: ${snapshot.error}'); // Handle any error that occurred
+        return Text('CalendarSelect Error: ${snapshot.error}'); // Handle any error that occurred
       } else if (snapshot.hasData) {
         List<String> userCalendars = snapshot.data ?? []; // Get the list of calendars
 
         return Container(
   decoration: BoxDecoration(
     borderRadius: BorderRadius.circular(12.0), // Add rounded corners
-    color: Colors.white, // Set background color of the container
-    boxShadow: [
-      BoxShadow(
-        color: Colors.grey.withOpacity(0.2),
-        spreadRadius: 2,
-        blurRadius: 5,
-      ),
-    ], // Optional shadow for the dropdown
+    color: Theme.of(context).scaffoldBackgroundColor, // Set background color of the container
   ),
   child: ClipRect( // Ensures content respects the container boundaries
     child: SizedBox(

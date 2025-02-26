@@ -2,8 +2,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:jewel/google/calendar/authenticated_events.dart';
+import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/models/jewel_user.dart';
 //import 'package:jewel/google/maps/map_screen.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/widgets/events_view.dart';
@@ -11,6 +12,7 @@ import 'package:jewel/widgets/gmap_screen.dart';
 import 'package:jewel/widgets/settings.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:provider/provider.dart';
+import 'package:jewel/screens/test_screen1.dart';
 
 class SelectedIndexNotifier extends ChangeNotifier {
   int _selectedIndex;
@@ -39,8 +41,9 @@ class SelectedIndexNotifier extends ChangeNotifier {
 class HomeScreen extends StatefulWidget {
   final CalendarLogic calendarLogic; //have to have so that the page knows it exsists
   final int initialIndex;
+  final JewelUser jewelUser;
 
-  const HomeScreen({super.key, required this.calendarLogic, required this.initialIndex}); //requires the calendarLogic used from main.dart
+  const HomeScreen({super.key, required this.jewelUser, required this.calendarLogic, required this.initialIndex}); //requires the calendarLogic used from main.dart
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -48,7 +51,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   
-  late int _selectedIndex = widget.initialIndex;
+  late int _selectedIndex = widget.initialIndex; // would be used to track cached page index
   late gcal.CalendarApi calendarApi;
   late final List<Widget> _screens;
   bool isWeb = kIsWeb;
@@ -62,26 +65,25 @@ class _HomeScreenState extends State<HomeScreen> {
         widget.calendarLogic.currentUser = account;
         widget.calendarLogic.isAuthorized = account != null;
       });
-      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
+      widget.jewelUser.calendarLogicList?[0].events = await getGoogleEventsData(widget.calendarLogic, context);
       
     });
-    _screens = [
-      SettingsScreen(),//calendarLogic: widget.calendarLogic),
-      CalendarEventsView(),
-       //takes callendar logic to use for the page
-      //MapScreen(), // Pass CalendarLogic if needed
+    _screens = [ // widgets available in the nav bar
+      SettingsScreen(jewelUser: widget.jewelUser,),
+      CalendarEventsView(jewelUser: widget.jewelUser),
       MapSample(),
+      Screen1(),
     ];
   }
 
-  void _onItemTapped(int index) {
+  void _onItemTapped(int index) { // updates the index notifier
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     setState(() {
       notifier.selectedIndex = index;
     });
   }
 
-  void updateSelectedCalendar(String calendarId) {
+  void updateSelectedCalendar(String calendarId) { // updates the calendar selected from the dropdown menu
     setState(() async {
       widget.calendarLogic.selectedCalendar = calendarId;
       widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
@@ -94,9 +96,9 @@ Widget build(BuildContext context) {
   return Scaffold(
     body: Column(
       children: [
-        if (!kIsWeb) SizedBox(height: 24),
+        if (!kIsWeb) SizedBox(height: 24), // some difference in header space on the mobile devices
         // AppBar content as a child, now full width
-        Container(
+        Container( // this is the whole top section of the screen. if its a web app caltools is part of is container. if anything else, its a separate element
           height: MediaQuery.of(context).size.height * 0.1325,
           width: double.infinity, // Make the container take up the entire width
           padding: EdgeInsets.all(kIsWeb ? 10 : 5),
@@ -110,24 +112,9 @@ Widget build(BuildContext context) {
               ),
             ],
           ),
-          child: Row(
+          child: Row( 
             children: [
-              TextButton.icon(
-                style: TextButton.styleFrom(
-                  foregroundColor: Colors.green,
-                  textStyle: const TextStyle(fontSize: 1),
-                ),
-                icon: FaIcon(
-                  FontAwesomeIcons.google,
-                  size: kIsWeb ? 50 : 28,
-                ),
-                onPressed: () async {
-                  await handleSignOut();
-                  await handleSignIn();
-                  setState(() {});
-                },
-                label: const Text(''),
-              ),
+              logicList(),
               SizedBox(width: kIsWeb ? 10 : 5), // Add spacing between widgets
               kIsWeb
                   ? Flexible(child: calTools())
@@ -156,23 +143,21 @@ Widget build(BuildContext context) {
             ],
           ),
         ),
-        if (!kIsWeb) Flexible(child: calTools()),
-        // Main content area, expanded to take remaining space
-         // Controlled by the bottom navigation bar
-        Consumer<SelectedIndexNotifier>(
-  builder: (context, selectedIndexNotifier, _) {
-    return SizedBox(
-      height: MediaQuery.of(context).size.height * 0.735,
-      child: 
-          _screens[selectedIndexNotifier.selectedIndex],
+        if (!kIsWeb) Flexible(child: calTools()), // if not web app, caltools is separate
+        Consumer<SelectedIndexNotifier>( // this recieves a message from the IndexNotifier and decides what screen to load based on the nav bar index
+          builder: (context, selectedIndexNotifier, _) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.735,
+              child: 
+                  _screens[selectedIndexNotifier.selectedIndex],
 
-    );
-  },
-)
+            );
+          },
+        )
       ],
     ),
-    bottomNavigationBar: Container(
-    height: MediaQuery.of(context).size.height * 0.1325, // Set your desired height here
+    bottomNavigationBar: Container( // this is the actual nav bar
+    height: MediaQuery.of(context).size.height * 0.1325,
     child: CustomNavBar(
       currentIndex: context.watch<SelectedIndexNotifier>().selectedIndex,
       onTap: (index) {
@@ -181,6 +166,59 @@ Widget build(BuildContext context) {
     ),
   ),
   );
+}
+
+PopupMenuButton<int> logicList()
+{
+  return PopupMenuButton<int>(
+      icon: FaIcon(
+        FontAwesomeIcons.google,
+        size: 28,
+        color: Colors.green,
+      ),
+      onSelected: (value) async {
+        if (value == 1) {
+          // Handle Add Account
+          await handleSignIn();
+        } else if (value == 2) {
+          // Handle Sign Out
+          await handleSignOut();
+        }
+      },
+      itemBuilder: (context) {
+        List<PopupMenuEntry<int>> menuItems = [];
+
+        // Add menu items for calendarLogics
+        if (widget.jewelUser?.calendarLogicList != null) {
+          for (var calendarLogic in widget.jewelUser!.calendarLogicList!) {
+            menuItems.add(
+              PopupMenuItem<int>(
+                value: 0,
+                child: Text(calendarLogic.currentUser!.email),
+              ),
+            );
+          }
+        }
+
+        // Add "Add Account" button at the bottom
+        menuItems.add(
+          PopupMenuItem<int>(
+            value: 1,
+            child: Text('Add Account'),
+          ),
+        );
+
+        // Add "Sign Out" button at the bottom
+        menuItems.add(
+          PopupMenuItem<int>(
+            value: 2,
+            child: Text('Sign Out'),
+          ),
+        );
+
+        return menuItems;
+      },
+    );
 }
 
 Widget calTools() {
@@ -198,13 +236,13 @@ Widget calTools() {
     child: ClipRRect(
       borderRadius: BorderRadius.circular(12), // Ensure rounding is applied to the child
       child: SizedBox(
-        height: isWeb ? 75 : 55, // Constrain height
+        height: isWeb ? 75 : 55, 
         child: Align(
-  alignment: Alignment.center, // Vertically and horizontally centers the child
-  child: AuthenticatedCalendar(
-    calendarLogic: widget.calendarLogic,
-  ),
-),
+          alignment: Alignment.center, // Vertically and horizontally centers the child
+          child: AuthenticatedCalendar(
+            calendarLogic: widget.calendarLogic,
+          ),
+        ),
       ),
     ),
   );

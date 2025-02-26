@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:jewel/models/jewel_user.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  final JewelUser? jewelUser;
+  const SettingsScreen({super.key, required this.jewelUser});
 
   @override
   Widget build(BuildContext context) {
@@ -38,11 +41,22 @@ class SettingsScreen extends StatelessWidget {
                 ToggleSetting(title: 'Location Permission'),
               ],
             ),
+            SizedBox(height: 20), // Adds some space before the button
+            ElevatedButton(
+              onPressed: () {
+                saveUserToFirestore(jewelUser!);
+              },
+              child: Text('Save Settings'),
+            ),
           ],
         ),
       ),
     );
   }
+}
+Future<void> saveUserToFirestore(JewelUser user) async {
+    final docId = user.email; // Use email as document ID
+    await FirebaseFirestore.instance.collection('users').doc(docId).set(user.toJson());
 }
 
 class SettingsCategory extends StatelessWidget {
