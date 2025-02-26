@@ -32,11 +32,12 @@ List<LatLng> getCoordFromMarker(List<Marker> eventList) {
 Future<List<LatLng>> getRouteCoordinates(LatLng start, LatLng end) async {
   try{
     String apiKey = dotenv.env['GOOGLE_MAPS_KEY']!;
-    String url = 'https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey';
+    String url = 'https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=now';
     http.Response response = await http.get(Uri.parse(url));
     Map<String, dynamic> data = json.decode(response.body); //Map with a key of type String and a value of type dynamic(any type) stores in the API response
-
-    print("API Response: $data\n"); // delete later
+    
+    String prettyJson = const JsonEncoder.withIndent('  ').convert(data);
+    print("API Response: $prettyJson\n"); // delete later
 
     List<LatLng> polylineCoordinates = [];
     if (data['routes'].isNotEmpty) {
