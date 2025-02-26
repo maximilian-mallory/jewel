@@ -31,7 +31,6 @@ Future<List<String>> getStreetAddresses() async {
 
 Future<LatLng> convertAddressToCoords(gcal.Event event) async {
   String? apiKey = dotenv.env['GOOGLE_GEO_KEY'];
-  print('API Key: $apiKey');
   if (apiKey == null) {
     throw Exception('Google Maps API key is null');
   }

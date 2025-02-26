@@ -61,7 +61,7 @@ class _AddCalendarFormState extends State<AddCalendarForm> {
                   value == null || value.isEmpty ? "Please enter a time zone" : null,
               // Optionally, you can use a dropdown for time zones
             ),
-            const SizedBox(height: 16.0),
+            const SizedBox(height: 16.0), //puts some room between the button and fields
             ElevatedButton(
               onPressed: () {
                 if (_formKey.currentState!.validate()) {
@@ -339,14 +339,7 @@ Widget daymonthForwardButton() {
         return Container(
   decoration: BoxDecoration(
     borderRadius: BorderRadius.circular(12.0), // Add rounded corners
-    color: Colors.white, // Set background color of the container
-    boxShadow: [
-      BoxShadow(
-        color: Colors.grey.withOpacity(0.2),
-        spreadRadius: 2,
-        blurRadius: 5,
-      ),
-    ], // Optional shadow for the dropdown
+    color: Theme.of(context).scaffoldBackgroundColor, // Set background color of the container
   ),
   child: ClipRect( // Ensures content respects the container boundaries
     child: SizedBox(

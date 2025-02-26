@@ -1,9 +1,13 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:jewel/google/auth/auth_gate.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/screens/firebase_login_screen.dart';
 import 'package:jewel/screens/intermediary.dart';
+import 'package:jewel/screens/test_screen1.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
@@ -14,6 +18,8 @@ import "package:universal_html/html.dart" as html;
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 import 'package:jewel/google/calendar/g_g_merge.dart';
 import 'package:jewel/google/calendar/mode_toggle.dart';
+import 'package:jewel/utils/app_themes.dart';
+
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -74,11 +80,10 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false, //turns off the "dubug" banner in the top right corner
       title: 'Jewel',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
-        useMaterial3: true,
-      ),
-      home: Intermediary(calendarLogic: calendarLogic) // we immediately force the user to the loading screen, which makes the app unusable without a login
+      theme: MyAppThemes.lightTheme,
+      darkTheme: MyAppThemes.darkTheme,
+      themeMode: ThemeMode.system,
+      home: AuthGate(calendarLogic: calendarLogic) // we immediately force the user to the loading screen, which makes the app unusable without a login
     );
   }
 }
