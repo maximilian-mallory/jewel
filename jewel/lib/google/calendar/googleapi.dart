@@ -49,6 +49,53 @@ Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic, BuildC
   return appointments;
 }
 
+// Function to get all events for the selected month from the Google Calendar API
+Future<List<gcal.Event>> getGoogleEventsForMonth(CalendarLogic calendarLogic, BuildContext context) async {
+  // Get the first and last day of the current month
+  DateTime now = calendarLogic.selectedDate;
+  DateTime startOfMonth = DateTime(now.year, now.month, 1);
+  DateTime endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59); // Last day of the month
+
+  // Convert to UTC for Google Calendar API
+  DateTime startOfMonthUtc = startOfMonth.toUtc();
+  DateTime endOfMonthUtc = endOfMonth.toUtc();
+
+  // Fetch events from the calendar
+  final gcal.Events calEvents = await calendarLogic.calendarApi.events.list(
+    calendarLogic.selectedCalendar,
+    timeMin: startOfMonthUtc, // Fetch events from the start of the month
+    timeMax: endOfMonthUtc,   // Fetch events until the end of the month
+    singleEvents: true, // Ensures recurring events are expanded
+    orderBy: "startTime", // Orders events by start time
+  );
+
+  List<gcal.Event> appointments = <gcal.Event>[];
+  calendarLogic.markers.clear();
+
+  // If events exist, add them to the list
+  if (calEvents.items != null) {
+    for (int i = 0; i < calEvents.items!.length; i++) {
+      final gcal.Event event = calEvents.items![i];
+      if (event.start == null) {
+        continue;
+      }
+      // Parse the event start time
+      DateTime eventStart = DateTime.parse(event.start!.dateTime.toString());
+
+      // Ensure event is within the selected month
+      if (eventStart.isAfter(startOfMonthUtc) && eventStart.isBefore(endOfMonthUtc)) {
+        appointments.add(event);
+        Marker? marker = await makeMarker(event, calendarLogic, context);
+        if (marker != null) {
+          calendarLogic.markers.add(marker);
+        }
+      }
+    }
+  }
+
+  return appointments; // Return all events for the month
+}
+
 DateTime changeDateBy(int days, CalendarLogic calendarLogic){
     
       return calendarLogic.selectedDate.add(Duration(days: days));

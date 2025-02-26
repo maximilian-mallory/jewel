@@ -13,6 +13,7 @@ import '/utils/fake_ui.dart' if (dart.library.html) '/utils/real_ui.dart' as ui;
 import "package:universal_html/html.dart" as html;
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 import 'package:jewel/google/calendar/g_g_merge.dart';
+import 'package:jewel/google/calendar/mode_toggle.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,6 +57,8 @@ Future<void> main() async {
         ChangeNotifierProvider( // keeps track of what screen the user is on
           create: (_) => SelectedIndexNotifier(1), // Initialize with a default index, e.g., 0
         ),
+        ChangeNotifierProvider( // Keeps track of what calendar mode the user is in
+          create: (context) => ModeToggle()),
       ],
       child: MyApp(),
     ),
