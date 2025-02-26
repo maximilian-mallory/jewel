@@ -53,13 +53,17 @@ Future<void> main() async {
   // }
 
   runApp(
-    MultiProvider( // providers allow us to have app level access to objects
+    MultiProvider(
+      // providers allow us to have app level access to objects
       providers: [
-        ChangeNotifierProvider( // for the auth object
+        ChangeNotifierProvider(
+          // for the auth object
           create: (_) => CalendarLogic(),
         ),
-        ChangeNotifierProvider( // keeps track of what screen the user is on
-          create: (_) => SelectedIndexNotifier(1), // Initialize with a default index, e.g., 0
+        ChangeNotifierProvider(
+          // keeps track of what screen the user is on
+          create: (_) => SelectedIndexNotifier(
+              1), // Initialize with a default index, e.g., 0
         ),
       ],
       child: MyApp(),
@@ -68,18 +72,22 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  final CalendarLogic calendarLogic = CalendarLogic();  // listener for API calls
+  final CalendarLogic calendarLogic = CalendarLogic(); // listener for API calls
   MyApp({super.key});
 
   @override
-  Widget build(BuildContext context) { // if we can use BuildContext instead of Providers that would be cool
+  Widget build(BuildContext context) {
+    // if we can use BuildContext instead of Providers that would be cool
     return MaterialApp(
-      debugShowCheckedModeBanner: false, //turns off the "dubug" banner in the top right corner
-      title: 'Jewel',
-      theme: MyAppThemes.lightTheme,
-      darkTheme: MyAppThemes.darkTheme,
-      themeMode: ThemeMode.system,
-      home: AuthGate(calendarLogic: calendarLogic) // we immediately force the user to the loading screen, which makes the app unusable without a login
-    );
+        debugShowCheckedModeBanner:
+            false, //turns off the "dubug" banner in the top right corner
+        title: 'Jewel',
+        theme: MyAppThemes.lightTheme,
+        darkTheme: MyAppThemes.darkTheme,
+        themeMode: ThemeMode.system,
+        home: AuthGate(
+            calendarLogic:
+                calendarLogic) // we immediately force the user to the loading screen, which makes the app unusable without a login
+        );
   }
 }

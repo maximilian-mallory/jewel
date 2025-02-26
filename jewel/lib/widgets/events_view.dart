@@ -226,6 +226,9 @@ class _CalendarEventsView extends State<CalendarEventsView> {
     List<EventGroup> availableGroups = getAvailableGroups(events);
     EventGroup? selectedGroup;
 
+    final oldGroup = event.extendedProperties?.private?['group'];
+    final oldGroupColor = event.extendedProperties?.private?['groupColor'];
+
     await showDialog(
       context: context,
       builder: (context) {
@@ -366,6 +369,13 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                 if (colorString !=
                     '${eventColor.red}, ${eventColor.green}, ${eventColor.blue}') {
                   changeLog += "\nColor Changed";
+                }
+                if (oldGroup !=
+                        updatedEvent.extendedProperties?.private?['group'] ||
+                    oldGroupColor !=
+                        updatedEvent
+                            .extendedProperties?.private?['groupColor']) {
+                  changeLog += "\nGroup Changed";
                 }
 
                 calendarLogic.addToHistory(event.id!, changeLog);
