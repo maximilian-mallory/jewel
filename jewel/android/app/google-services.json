@@ -14,6 +14,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "954035696925-2s76jqka5p7dvqtgcra71d356rjvhdl1.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jewel.app",
+            "certificate_hash": "debc37be58555c5ef41e6737d438ea00ebe091be"
+          }
+        },
+        {
           "client_id": "954035696925-2v1n6ep4v89rl58mju2ol9a23k7i4qdi.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
@@ -35,6 +43,14 @@
           "android_info": {
             "package_name": "com.jewel.app",
             "certificate_hash": "eeeba4cc88f0de8e5501d537769df69d3c363c2d"
+          }
+        },
+        {
+          "client_id": "954035696925-qgo5gp08kcbcmlem66dh5h3kcl7n667v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.jewel.app",
+            "certificate_hash": "0ae609bcae7e133cfe506558458495c56e00a9db"
           }
         },
         {
