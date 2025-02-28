@@ -13,7 +13,8 @@ import 'package:jewel/google/calendar/mode_toggle.dart';
 */
 class CalendarEventsView extends StatefulWidget {
 
-  const CalendarEventsView({super.key});
+  final JewelUser? jewelUser;
+  const CalendarEventsView({super.key, required this.jewelUser});
   @override
   _CalendarEventsView createState() => _CalendarEventsView();
 }
@@ -25,8 +26,8 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   void initState() {
     super.initState();
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
-    _scrollController =
-        ScrollController(initialScrollOffset: notifier.getScrollPosition(1));
+    _scrollController = ScrollController(initialScrollOffset: notifier.getScrollPosition(1) );
+    print('[Events View] Jewel user matched to calendar tools: ${widget.jewelUser?.calendarLogicList?[0].events.toString()}');
   }
 
   @override
