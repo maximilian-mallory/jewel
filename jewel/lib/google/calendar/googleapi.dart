@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -7,10 +8,12 @@ import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:jewel/google/calendar/event_snap.dart';
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 
 Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic, BuildContext context) async {
   // Get the current date at midnight local time
+  print("[GET EVENTS] firebase user is: ${FirebaseAuth.instance.currentUser?.email}");
   DateTime now = calendarLogic.selectedDate;
   DateTime startOfDay = DateTime(now.year, now.month, now.day); 
   // Midnight local time today
@@ -39,6 +42,15 @@ Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic, BuildC
       DateTime eventStart = DateTime.parse(event.start!.dateTime.toString());
       if (eventStart.isAfter(startOfDayUtc) && eventStart.isBefore(endOfDayUtc)) {
         appointments.add(event);
+        
+        if(await checkDocExists('jewelevents', event.id))
+        {
+          print('[FIREBASE PART REFRESH]: ${event.id}');
+        }
+        else
+        {
+          JewelEvent.fromGoogleEvent(event).store();
+        }
         Marker? marker = await makeMarker(event, calendarLogic, context);
         if(marker != null){
           calendarLogic.markers.add(marker);
@@ -94,6 +106,51 @@ Future<List<gcal.Event>> getGoogleEventsForMonth(CalendarLogic calendarLogic, Bu
   }
 
   return appointments; // Return all events for the month
+}
+
+// Function to insert an event into Google Calendar
+Future<void> insertGoogleEvent({
+  required gcal.CalendarApi calendarApi,
+  required String eventName,
+  required String eventLocation,
+  required String eventDescription,
+  required DateTime startDate,
+  required DateTime endDate,
+}) async {
+  try {
+    if (startDate.isAfter(endDate) || startDate.isAtSameMomentAs(endDate)) {
+      print("Error: Start time must be before end time.");
+      return;
+    }
+    // Create a new event
+    var event = gcal.Event()
+      ..summary = eventName
+      ..location = eventLocation
+      ..description = eventDescription
+      ..start = (gcal.EventDateTime()
+        ..dateTime = startDate.toUtc()
+        ..timeZone = "UTC")
+      ..end = (gcal.EventDateTime()
+        ..dateTime = endDate.toUtc()
+        ..timeZone = "UTC");
+
+    var createdEvent = await calendarApi.events.insert(event, "primary"); // Insert the event into the primary calendar
+    print("Event created successfully: ${createdEvent.htmlLink}");
+  } catch (e) { // Catch any errors that occur during the insertion process
+    print("Error inserting event into Google Calendar: $e");
+  }
+}
+
+Future<bool> checkDocExists(String collectionPath, String? docId) async {
+  try {
+    DocumentSnapshot docSnapshot =
+        await FirebaseFirestore.instance.collection(collectionPath).doc(docId).get();
+
+    return docSnapshot.exists;
+  } catch (e) {
+    print('Error checking document existence: $e');
+    return false;
+  }
 }
 
 DateTime changeDateBy(int days, CalendarLogic calendarLogic){

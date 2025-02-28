@@ -12,6 +12,7 @@ import 'package:jewel/widgets/settings.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:provider/provider.dart';
 import 'package:jewel/screens/test_screen1.dart';
+import 'package:jewel/screens/test_screen2.dart';
 
 /// Returns a map of responsive values based on screen width.
 /// Breakpoints:
@@ -97,7 +98,7 @@ class SelectedIndexNotifier extends ChangeNotifier {
 class HomeScreen extends StatefulWidget {
   final CalendarLogic calendarLogic;
   final int initialIndex;
-  final JewelUser? jewelUser;
+  final JewelUser jewelUser;
 
   const HomeScreen({
     super.key,
@@ -126,13 +127,16 @@ class _HomeScreenState extends State<HomeScreen> {
         widget.calendarLogic.currentUser = account;
         widget.calendarLogic.isAuthorized = account != null;
       });
-      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
+
+      widget.jewelUser.calendarLogicList?[0].events = await getGoogleEventsData(widget.calendarLogic, context);
+      
     });
-    _screens = [
-      SettingsScreen(jewelUser: widget.jewelUser),
+    _screens = [ // widgets available in the nav bar
+      SettingsScreen(jewelUser: widget.jewelUser,),
       CalendarEventsView(jewelUser: widget.jewelUser),
       MapSample(),
       Screen1(),
+      Screen2(),
     ];
   }
 
