@@ -42,7 +42,7 @@ class SelectedIndexNotifier extends ChangeNotifier {
 class HomeScreen extends StatefulWidget {
   final CalendarLogic calendarLogic; //have to have so that the page knows it exsists
   final int initialIndex;
-  final JewelUser? jewelUser;
+  final JewelUser jewelUser;
 
   const HomeScreen({super.key, required this.jewelUser, required this.calendarLogic, required this.initialIndex}); //requires the calendarLogic used from main.dart
 
@@ -66,12 +66,12 @@ class _HomeScreenState extends State<HomeScreen> {
         widget.calendarLogic.currentUser = account;
         widget.calendarLogic.isAuthorized = account != null;
       });
-      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
+      widget.jewelUser.calendarLogicList?[0].events = await getGoogleEventsData(widget.calendarLogic, context);
       
     });
     _screens = [ // widgets available in the nav bar
       SettingsScreen(jewelUser: widget.jewelUser,),
-      CalendarEventsView(),
+      CalendarEventsView(jewelUser: widget.jewelUser),
       MapSample(),
       Screen1(),
       Screen2(),
