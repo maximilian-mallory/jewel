@@ -45,7 +45,7 @@ Future<LatLng> convertAddressToCoords(gcal.Event event) async {
         if (location != null) {
           coordinate = LatLng(location.lat, location.lng);
 
-          print('Address: $address, Coordinates: (${coordinate.latitude}, ${coordinate.longitude})');
+          //print('Address: $address, Coordinates: (${coordinate.latitude}, ${coordinate.longitude})');
         }
     }
 

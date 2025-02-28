@@ -46,14 +46,14 @@ Future<List<gcal.Event>> getGoogleEventsData(
           eventStart.isBefore(endOfDayUtc)) {
         appointments.add(event);
         
-        if(await checkDocExists('jewelevents', event.id))
+        /*if(await checkDocExists('jewelevents', event.id))
         {
           print('[FIREBASE PART REFRESH]: ${event.id}');
         }
         else
         {
           JewelEvent.fromGoogleEvent(event).store();
-        }
+        }*/
         Marker? marker = await makeMarker(event, calendarLogic, context);
         if (marker != null) {
           calendarLogic.markers.add(marker);
