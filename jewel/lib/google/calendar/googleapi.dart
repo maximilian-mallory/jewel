@@ -96,6 +96,39 @@ Future<List<gcal.Event>> getGoogleEventsForMonth(CalendarLogic calendarLogic, Bu
   return appointments; // Return all events for the month
 }
 
+// Function to insert an event into Google Calendar
+Future<void> insertGoogleEvent({
+  required gcal.CalendarApi calendarApi,
+  required String eventName,
+  required String eventLocation,
+  required String eventDescription,
+  required DateTime startDate,
+  required DateTime endDate,
+}) async {
+  try {
+    if (startDate.isAfter(endDate) || startDate.isAtSameMomentAs(endDate)) {
+      print("Error: Start time must be before end time.");
+      return;
+    }
+    // Create a new event
+    var event = gcal.Event()
+      ..summary = eventName
+      ..location = eventLocation
+      ..description = eventDescription
+      ..start = (gcal.EventDateTime()
+        ..dateTime = startDate.toUtc()
+        ..timeZone = "UTC")
+      ..end = (gcal.EventDateTime()
+        ..dateTime = endDate.toUtc()
+        ..timeZone = "UTC");
+
+    var createdEvent = await calendarApi.events.insert(event, "primary"); // Insert the event into the primary calendar
+    print("Event created successfully: ${createdEvent.htmlLink}");
+  } catch (e) { // Catch any errors that occur during the insertion process
+    print("Error inserting event into Google Calendar: $e");
+  }
+}
+
 DateTime changeDateBy(int days, CalendarLogic calendarLogic){
     
       return calendarLogic.selectedDate.add(Duration(days: days));

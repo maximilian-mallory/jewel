@@ -18,7 +18,8 @@ class CustomNavBar extends StatelessWidget {
           _buildNavItem(Icons.settings, 'Settings', 0),
           _buildNavItem(Icons.calendar_month, 'Calendar', 1),
           _buildNavItem(Icons.map, 'Maps', 2),
-          _buildNavItem(Icons.theater_comedy_sharp, 'Test', 3)
+          _buildNavItem(Icons.theater_comedy_sharp, 'Test', 3),
+          _buildNavItem(Icons.warning, 'TestEvent', 4)
         ],
       ),
     );
