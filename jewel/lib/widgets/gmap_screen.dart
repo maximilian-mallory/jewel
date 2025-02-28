@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -62,16 +63,12 @@ class MapSampleState extends State<MapSample> {
       // Get the polyline coordinates. drawRouteOnMap helper function in google_routes.dart
       List<LatLng> polylineCoordinates = getCoordFromMarker(calendarLogic.markers.toList());
       List<LatLng> allCoords = [];
-      /*List<LatLng> polylineCoordinates = [ //Hard coded coords for testing
-        //const LatLng(44.87614689999999, -91.9236423999), //BK
-        //const LatLng(44.87171177394303, -91.93048800926618),//kwiktrip
-        //const LatLng(44.879669645560085, -91.93005113276051),//fortune cookie
-        //const LatLng(44.8763198, -91.925625), //TOPPERS
-        //const LatLng(44.8761658, -91.9299928), //LOGJAM
-      ];*/
-     
+
+      print('DEBUG polylineCoordinates.length = ${polylineCoordinates.length}');
+      print('DEBUG allEvents.length = ${getDepatureTime(calendarLogic).length}');
+
       for (int i = 0; i < polylineCoordinates.length - 1; i++) {
-      List<LatLng> routeSegment = await getRouteCoordinates(polylineCoordinates[i], polylineCoordinates[i + 1]);
+      List<LatLng> routeSegment = await getRouteCoordinates(polylineCoordinates[i], polylineCoordinates[i + 1], calendarLogic, i);
       if (allCoords.isNotEmpty && allCoords.last == routeSegment.first) {
         // Removes repeated coordinate if it matches the last one
         routeSegment.removeAt(0);
