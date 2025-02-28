@@ -28,8 +28,7 @@ class MapSampleState extends State<MapSample> {
   final Completer<GoogleMapController> _controller = // this snippet comes from the API docs
       Completer<GoogleMapController>();
 
-  static const CameraPosition _statPos = CameraPosition( // this variable is the default location, or static position, of the user
-  MapsRoutes route = MapsRoutes();
+
   
   static const CameraPosition _statPos = CameraPosition(
     target: LatLng(44.8742, -91.9195),
@@ -78,7 +77,7 @@ class MapSampleState extends State<MapSample> {
         routeSegment.removeAt(0);
       }
       allCoords.addAll(routeSegment);
-      print('new route coords at $i: $allCoords\n');
+      //print('new route coords at $i: $allCoords\n');
     }
       
       
@@ -101,8 +100,6 @@ class MapSampleState extends State<MapSample> {
   @override
   Widget build(BuildContext context) {
     final calendarLogic = Provider.of<CalendarLogic>(context); // app level Calendar Auth object
-    
-  final calendarLogic = Provider.of<CalendarLogic>(context); // Access the CalendarLogic instance
  
   /*List<LatLng> latlen = [];
 
@@ -135,7 +132,6 @@ class MapSampleState extends State<MapSample> {
               },
               markers: calendarLogic.markers.toSet(), // this adds the list of markers, markers must be of type Set<Marker>
               polylines: _polylines,
-              markers: calendarLogic.markers.toSet(),
               
             ),
           ),

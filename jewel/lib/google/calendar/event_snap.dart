@@ -8,14 +8,16 @@ part 'event_snap.g.dart';
 class JewelEvent {
   final Event event;
   final String? customProp;
+  final String? arrivalTime;
 
-  JewelEvent( {required this.event, this.customProp});
+  JewelEvent( {required this.event, this.customProp, this.arrivalTime});
 
   /// Factory method to create an instance from a Google Calendar event
   factory JewelEvent.fromGoogleEvent(Event googleEvent) {
     return JewelEvent(
       event: googleEvent,
-      customProp: "this is a test"
+      customProp: "this is a test",
+      arrivalTime: googleEvent.start?.dateTime?.toIso8601String()
     );
   }
 
@@ -25,7 +27,8 @@ class JewelEvent {
   Map<String, dynamic> toJson() {
     return {
       'event': event.toJson(),
-      'customProp': customProp
+      'customProp': customProp,
+      'arrivalTime': arrivalTime
     };
   }
 
@@ -34,5 +37,5 @@ class JewelEvent {
   }
 
   @override
-  String toString() => 'JewelEvent(event: $event)';
+  String toString() => 'JewelEvent(event: $event, arrivalTime: $arrivalTime, customProp: $customProp)';
 }

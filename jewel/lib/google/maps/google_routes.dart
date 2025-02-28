@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_geocoding_api/google_geocoding_api.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:googleapis/adsense/v2.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
+import 'package:jewel/google/calendar/event_snap.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 import 'package:jewel/widgets/home_screen.dart';
@@ -30,14 +32,24 @@ List<LatLng> getCoordFromMarker(List<Marker> eventList) {
 }
 
 Future<List<LatLng>> getRouteCoordinates(LatLng start, LatLng end) async {
+  /*TODO:
+  Fix polyline snapping by decoding the encoded polyline_overview from the API response
+  */
   try{
+    gcal.Event googleEvent = gcal.Event();
+    
+    JewelEvent jewelEvent = JewelEvent.fromGoogleEvent(googleEvent);
+    DateTime eventStart = DateTime.parse(jewelEvent.arrivalTime!);
+    //String? arrivalTime = jewelEvent.arrivalTime;
+    print("Jewel Event arrival time: $eventStart");
+
     String apiKey = dotenv.env['GOOGLE_MAPS_KEY']!;
     String url = 'https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=now';
     http.Response response = await http.get(Uri.parse(url));
     Map<String, dynamic> data = json.decode(response.body); //Map with a key of type String and a value of type dynamic(any type) stores in the API response
     
     String prettyJson = const JsonEncoder.withIndent('  ').convert(data);
-    print("API Response: $prettyJson\n"); // delete later
+    //print("API Response: $prettyJson\n"); // delete later
 
     List<LatLng> polylineCoordinates = [];
     if (data['routes'].isNotEmpty) {
