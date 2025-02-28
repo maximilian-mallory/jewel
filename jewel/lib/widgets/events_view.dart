@@ -7,6 +7,10 @@ import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:jewel/google/calendar/mode_toggle.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:jewel/widgets/color_picker.dart';
+import 'package:jewel/widgets/event_grouping.dart';
+import 'package:jewel/models/event_group.dart';
 
 /*
   This widget class builds a Calendar widget
@@ -338,11 +342,36 @@ class _CalendarEventsView extends State<CalendarEventsView> {
               final height = durationInHours > 1
                   ? 100.0 * durationInHours
                   : 100.0; // Ensure single-hour events fill the block fully
+
+              Color eventColor;
+              String? groupTitle;
+              if (event.extendedProperties?.private?['groupColor'] != null) {
+                final groupColorString =
+                    event.extendedProperties!.private!['groupColor']!;
+                final groupColorValues = groupColorString
+                    .split(',')
+                    .map((e) => int.parse(e.trim()))
+                    .toList();
+                eventColor = Color.fromARGB(255, groupColorValues[0],
+                    groupColorValues[1], groupColorValues[2]);
+                groupTitle = event.extendedProperties!.private!['group'];
+              } else {
+                final colorString =
+                    event.extendedProperties?.private?['color'] ??
+                        '57, 145, 102';
+                final colorValues = colorString
+                    .split(',')
+                    .map((e) => int.parse(e.trim()))
+                    .toList();
+                eventColor = Color.fromARGB(
+                    255, colorValues[0], colorValues[1], colorValues[2]);
+              }
+
               return Positioned.fill(
                 // builds the actual card that will be added to the list
                 child: Card(
                     margin: const EdgeInsets.all(0),
-                    color: const Color.fromARGB(255, 57, 145, 102),
+                    color: eventColor,
                     child: (hourIndex == start!.hour)
                         ? ListTile(
                             title: Text(
@@ -351,7 +380,8 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                             ),
                             subtitle: Text(
                               '${start != null ? DateFormat('hh:mm a').format(start) : 'No Time'} - '
-                              '${end != null ? DateFormat('hh:mm a').format(end) : 'No Time'}',
+                              '${end != null ? DateFormat('hh:mm a').format(end) : 'No Time'}'
+                              '${groupTitle != null ? '\n$groupTitle' : ''}',
                               style: const TextStyle(color: Colors.white70),
                             ),
                             onTap: () {
@@ -375,6 +405,9 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   }
 
   Future<void> _editEvent(BuildContext context, gcal.Event event) async {
+    final calendarLogic = Provider.of<CalendarLogic>(context, listen: false);
+    final events = await getGoogleEventsData(calendarLogic, context);
+
     TextEditingController titleController =
         TextEditingController(text: event.summary ?? "No Title");
 
@@ -383,6 +416,20 @@ class _CalendarEventsView extends State<CalendarEventsView> {
     DateTime startTime = event.start?.dateTime ?? DateTime.now();
     DateTime endTime =
         event.end?.dateTime ?? DateTime.now().add(Duration(hours: 1));
+
+    final colorString =
+        event.extendedProperties?.private?['color'] ?? '57, 145, 102';
+    final colorValues =
+        colorString.split(',').map((e) => int.parse(e.trim())).toList();
+    Color eventColor =
+        Color.fromARGB(255, colorValues[0], colorValues[1], colorValues[2]);
+
+    // Options for groups that are already made
+    List<EventGroup> availableGroups = getAvailableGroups(events);
+    EventGroup? selectedGroup;
+
+    final oldGroup = event.extendedProperties?.private?['group'];
+    final oldGroupColor = event.extendedProperties?.private?['groupColor'];
 
     await showDialog(
       context: context,
@@ -424,6 +471,52 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                   }
                 },
               ),
+              ListTile(
+                title: Text("Event Color"),
+                trailing: Icon(Icons.color_lens),
+                onTap: () async {
+                  Color? pickedColor = await showDialog(
+                    context: context,
+                    builder: (context) =>
+                        ColorPickerDialog(initialColor: eventColor),
+                  );
+                  if (pickedColor != null) {
+                    eventColor = pickedColor;
+                  }
+                },
+              ),
+              ListTile(
+                title: Text("Add to Group"),
+                trailing: Icon(Icons.group_add),
+                onTap: () async {
+                  EventGroup? newGroup = await showDialog(
+                    context: context,
+                    builder: (context) => CreateGroupDialog(),
+                  );
+                  if (newGroup != null) {
+                    // Assign the event to the created group
+                    event.extendedProperties!.private!['group'] =
+                        newGroup.title;
+                    event.extendedProperties!.private!['groupColor'] =
+                        '${newGroup.color.red}, ${newGroup.color.green}, ${newGroup.color.blue}';
+                  }
+                },
+              ),
+              DropdownButton<EventGroup>(
+                hint: Text("Select Group"),
+                value: selectedGroup,
+                onChanged: (EventGroup? newValue) {
+                  setState(() {
+                    selectedGroup = newValue;
+                  });
+                },
+                items: availableGroups.map((EventGroup group) {
+                  return DropdownMenuItem<EventGroup>(
+                    value: group,
+                    child: Text(group.title),
+                  );
+                }).toList(),
+              ),
             ],
           ),
           actions: [
@@ -443,6 +536,28 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                 updatedEvent.end?.dateTime = endTime.toUtc();
                 updatedEvent.end?.timeZone = "UTC";
 
+                updatedEvent.extendedProperties =
+                    gcal.EventExtendedProperties();
+                updatedEvent.extendedProperties!.private = {
+                  'color':
+                      '${eventColor.red}, ${eventColor.green}, ${eventColor.blue}'
+                };
+
+                // Check if the event is part of a group and include the group's color
+                if (selectedGroup != null) {
+                  updatedEvent.extendedProperties!.private!['group'] =
+                      selectedGroup!.title;
+                  updatedEvent.extendedProperties!.private!['groupColor'] =
+                      '${selectedGroup!.color.red}, ${selectedGroup!.color.green}, ${selectedGroup!.color.blue}';
+                } else if (event.extendedProperties?.private?['group'] !=
+                        null &&
+                    event.extendedProperties?.private?['groupColor'] != null) {
+                  updatedEvent.extendedProperties!.private!['group'] =
+                      event.extendedProperties!.private!['group']!;
+                  updatedEvent.extendedProperties!.private!['groupColor'] =
+                      event.extendedProperties!.private!['groupColor']!;
+                }
+
                 final calendarLogic =
                     Provider.of<CalendarLogic>(context, listen: false);
 
@@ -452,6 +567,18 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                     "Title: $oldSummary → $newSummary\n"
                     "Start: ${formatDateTime(event.start?.dateTime?.toLocal())} → ${formatDateTime(updatedEvent.start?.dateTime?.toLocal())}\n"
                     "End: ${formatDateTime(event.end?.dateTime?.toLocal())} → ${formatDateTime(updatedEvent.end?.dateTime?.toLocal())}";
+
+                if (colorString !=
+                    '${eventColor.red}, ${eventColor.green}, ${eventColor.blue}') {
+                  changeLog += "\nColor Changed";
+                }
+                if (oldGroup !=
+                        updatedEvent.extendedProperties?.private?['group'] ||
+                    oldGroupColor !=
+                        updatedEvent
+                            .extendedProperties?.private?['groupColor']) {
+                  changeLog += "\nGroup Changed";
+                }
 
                 calendarLogic.addToHistory(event.id!, changeLog);
 
@@ -552,6 +679,27 @@ class _CalendarEventsView extends State<CalendarEventsView> {
     return dateTime != null
         ? DateFormat('MM/dd/yyyy HH:mm').format(dateTime)
         : "Unknown";
+  }
+
+  List<EventGroup> getAvailableGroups(List<gcal.Event> events) {
+    // Extract group information from the events
+    final Map<String, EventGroup> groups = {};
+    for (var event in events) {
+      if (event.extendedProperties?.private?['group'] != null &&
+          event.extendedProperties?.private?['groupColor'] != null) {
+        final groupTitle = event.extendedProperties!.private!['group']!;
+        final groupColorString =
+            event.extendedProperties!.private!['groupColor']!;
+        final groupColorValues = groupColorString
+            .split(',')
+            .map((e) => int.parse(e.trim()))
+            .toList();
+        final groupColor = Color.fromARGB(
+            255, groupColorValues[0], groupColorValues[1], groupColorValues[2]);
+        groups[groupTitle] = EventGroup(title: groupTitle, color: groupColor);
+      }
+    }
+    return groups.values.toList();
   }
 // @override
 //   void didChangeDependencies() {
