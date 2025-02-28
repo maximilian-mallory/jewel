@@ -44,10 +44,9 @@ bool isLoading = true; // To show loading indicator
   widget.calendarLogic.currentUser = await handleSignIn(); // googleapi.dart
   widget.calendarLogic.calendarApi = await createCalendarApiInstance(widget.calendarLogic); // create api instance associated with the account
   
-  JewelUser? jewelUser = await getCurrentJewelUser();
-  jewelUser?.addCalendarLogic(widget.calendarLogic);
+  JewelUser jewelUser = await getCurrentJewelUser();
+  jewelUser.addCalendarLogic(widget.calendarLogic);
   print('[Jewel Factory] Jewel user signed in: ${jewelUser?.email}');
-  print('[Jewel Factory] Jewel user matched to calendar tools: ${jewelUser?.calendarLogicList?[0].currentDate}');
   // After signing in, navigate to the next screen
     Navigator.pushReplacement(
       context,
@@ -57,16 +56,12 @@ bool isLoading = true; // To show loading indicator
     );
   }
 
-  Future<JewelUser?> getCurrentJewelUser() async {
+  Future<JewelUser> getCurrentJewelUser() async {
     User? firebaseUser = FirebaseAuth.instance.currentUser;
-
-    if (firebaseUser != null) {
-
-      return JewelUser.fromFirebaseUser(
-        firebaseUser,
-      );
-    }
-    return null; // User is not logged in
+    return JewelUser.fromFirebaseUser(
+      firebaseUser!,
+    );
+ // User is not logged in
   }
 
   Future<void> createExternalUser() async {
