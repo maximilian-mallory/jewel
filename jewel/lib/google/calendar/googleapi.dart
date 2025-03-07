@@ -1,3 +1,4 @@
+// Imports
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -11,6 +12,12 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/calendar/event_snap.dart';
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 
+/* --- Google API Variables --- */
+GoogleSignInAccount? currentUser;
+
+/* --- Google API Functions --- */
+
+// Function to get events for the current selected day
 Future<List<gcal.Event>> getGoogleEventsData(
     CalendarLogic calendarLogic, BuildContext context) async {
   // Get the current date at midnight local time
@@ -147,6 +154,7 @@ Future<void> insertGoogleEvent({
   }
 }
 
+// Function to check if the docSnapshot exists
 Future<bool> checkDocExists(String collectionPath, String? docId) async {
   try {
     DocumentSnapshot docSnapshot =
@@ -159,6 +167,7 @@ Future<bool> checkDocExists(String collectionPath, String? docId) async {
   }
 }
 
+// Function to change the date
 DateTime changeDateBy(int days, CalendarLogic calendarLogic){
     
       return calendarLogic.selectedDate.add(Duration(days: days));
@@ -181,8 +190,7 @@ final GoogleSignIn googleSignIn = GoogleSignIn(
       : null,
 );
 
-GoogleSignInAccount? currentUser;
-
+// Function to handle signing in
 Future<GoogleSignInAccount?> handleSignIn() async {
   try {
     // await handleSignOut();
@@ -232,6 +240,9 @@ Future<gcal.CalendarApi> createCalendarApiInstance(
       authClient); // This is used to make requests to the Google Calendar API
 }
 
+/* --- Google API Classes --- */
+
+// CalendarLogic Class
 class CalendarLogic extends ChangeNotifier {
   Map<String, List<String>> eventHistory = {}; //Stores change history of events
 
