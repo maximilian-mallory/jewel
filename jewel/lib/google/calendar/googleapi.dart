@@ -9,12 +9,14 @@ import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 
-Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic, BuildContext context) async {
+Future<List<gcal.Event>> getGoogleEventsData(
+    CalendarLogic calendarLogic, BuildContext context) async {
   // Get the current date at midnight local time
   DateTime now = calendarLogic.selectedDate;
-  DateTime startOfDay = DateTime(now.year, now.month, now.day); 
+  DateTime startOfDay = DateTime(now.year, now.month, now.day);
   // Midnight local time today
-  DateTime endOfDay = startOfDay.add(Duration(days: 1)); // Midnight local time tomorrow
+  DateTime endOfDay =
+      startOfDay.add(Duration(days: 1)); // Midnight local time tomorrow
 
   // Convert to UTC for comparison with Google Calendar API times
   DateTime startOfDayUtc = startOfDay.toUtc();
@@ -24,7 +26,7 @@ Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic, BuildC
   final gcal.Events calEvents = await calendarLogic.calendarApi.events.list(
     calendarLogic.selectedCalendar,
     timeMin: startOfDayUtc, // Filter events starting from midnight today UTC
-    timeMax: endOfDayUtc,   // Filter events up to midnight tomorrow UTC
+    timeMax: endOfDayUtc, // Filter events up to midnight tomorrow UTC
   );
 
   List<gcal.Event> appointments = <gcal.Event>[];
@@ -37,12 +39,13 @@ Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic, BuildC
         continue;
       }
       DateTime eventStart = DateTime.parse(event.start!.dateTime.toString());
-      if (eventStart.isAfter(startOfDayUtc) && eventStart.isBefore(endOfDayUtc)) {
+      if (eventStart.isAfter(startOfDayUtc) &&
+          eventStart.isBefore(endOfDayUtc)) {
         appointments.add(event);
         Marker? marker = await makeMarker(event, calendarLogic, context);
-        if(marker != null){
+        if (marker != null) {
           calendarLogic.markers.add(marker);
-        } 
+        }
       }
     }
   }
@@ -50,11 +53,13 @@ Future<List<gcal.Event>> getGoogleEventsData(CalendarLogic calendarLogic, BuildC
 }
 
 // Function to get all events for the selected month from the Google Calendar API
-Future<List<gcal.Event>> getGoogleEventsForMonth(CalendarLogic calendarLogic, BuildContext context) async {
+Future<List<gcal.Event>> getGoogleEventsForMonth(
+    CalendarLogic calendarLogic, BuildContext context) async {
   // Get the first and last day of the current month
   DateTime now = calendarLogic.selectedDate;
   DateTime startOfMonth = DateTime(now.year, now.month, 1);
-  DateTime endOfMonth = DateTime(now.year, now.month + 1, 0, 23, 59, 59); // Last day of the month
+  DateTime endOfMonth =
+      DateTime(now.year, now.month + 1, 0, 23, 59, 59); // Last day of the month
 
   // Convert to UTC for Google Calendar API
   DateTime startOfMonthUtc = startOfMonth.toUtc();
@@ -64,7 +69,7 @@ Future<List<gcal.Event>> getGoogleEventsForMonth(CalendarLogic calendarLogic, Bu
   final gcal.Events calEvents = await calendarLogic.calendarApi.events.list(
     calendarLogic.selectedCalendar,
     timeMin: startOfMonthUtc, // Fetch events from the start of the month
-    timeMax: endOfMonthUtc,   // Fetch events until the end of the month
+    timeMax: endOfMonthUtc, // Fetch events until the end of the month
     singleEvents: true, // Ensures recurring events are expanded
     orderBy: "startTime", // Orders events by start time
   );
@@ -83,7 +88,8 @@ Future<List<gcal.Event>> getGoogleEventsForMonth(CalendarLogic calendarLogic, Bu
       DateTime eventStart = DateTime.parse(event.start!.dateTime.toString());
 
       // Ensure event is within the selected month
-      if (eventStart.isAfter(startOfMonthUtc) && eventStart.isBefore(endOfMonthUtc)) {
+      if (eventStart.isAfter(startOfMonthUtc) &&
+          eventStart.isBefore(endOfMonthUtc)) {
         appointments.add(event);
         Marker? marker = await makeMarker(event, calendarLogic, context);
         if (marker != null) {
@@ -96,72 +102,79 @@ Future<List<gcal.Event>> getGoogleEventsForMonth(CalendarLogic calendarLogic, Bu
   return appointments; // Return all events for the month
 }
 
-DateTime changeDateBy(int days, CalendarLogic calendarLogic){
-    
-      return calendarLogic.selectedDate.add(Duration(days: days));
-      
-      // currentDate = DateTime(currentDate.year, currentDate.month + daysOrMonths, 1);
- 
-     // Update events when date changes.
-  }
+DateTime changeDateBy(int days, CalendarLogic calendarLogic) {
+  return calendarLogic.selectedDate.add(Duration(days: days));
+
+  // currentDate = DateTime(currentDate.year, currentDate.month + daysOrMonths, 1);
+
+  // Update events when date changes.
+}
 
 // Define constants and scopes
 const List<String> scopes = <String>[
-  'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/calendar.calendarlist',
 ];
 
 // Initialize GoogleSignIn instance
 final GoogleSignIn googleSignIn = GoogleSignIn(
   scopes: scopes,
-  clientId: kIsWeb ? "954035696925-p4j9gbmpjknoc04qjd701r2h5ah190ug.apps.googleusercontent.com" : null,
+  clientId: kIsWeb
+      ? "954035696925-p4j9gbmpjknoc04qjd701r2h5ah190ug.apps.googleusercontent.com"
+      : null,
 );
 
 GoogleSignInAccount? currentUser;
 
 Future<GoogleSignInAccount?> handleSignIn() async {
-    try {
-      // await handleSignOut();
-      return await googleSignIn.signIn();
-    } catch (error) {
-      print('Sign-In failed: $error');
-    }
-    return null;
+  try {
+    // await handleSignOut();
+    return await googleSignIn.signIn();
+  } catch (error) {
+    print('Sign-In failed: $error');
+  }
+  return null;
+}
+
+// Clear current user and set unauthorized state
+Future<void> handleSignOut() async {
+  await googleSignIn.disconnect();
+}
+
+// Method returns an instance of a calendar API for a users Gmail
+Future<gcal.CalendarApi> createCalendarApiInstance(
+    CalendarLogic calendarLogic) async {
+  if (calendarLogic.currentUser == null) {
+    print('No current user found.');
   }
 
-  // Clear current user and set unauthorized state
-  Future<void> handleSignOut() async {
-    await googleSignIn.disconnect();
+  final auth = await calendarLogic
+      .currentUser?.authentication; // Authenticated against the active user
+  final accessToken = auth?.accessToken;
 
+  if (accessToken == null) {
+    throw Exception('Access token is null.');
   }
 
-  // Method returns an instance of a calendar API for a users Gmail
-  Future<gcal.CalendarApi> createCalendarApiInstance(CalendarLogic calendarLogic) async {
-    if (calendarLogic.currentUser == null) {
-      print('No current user found.');
-    }
+  final httpClient = http.Client();
+  final authClient = authenticatedClient(
+    httpClient,
+    AccessCredentials(
+      AccessToken(
+          'Bearer',
+          accessToken,
+          DateTime.now()
+              .toUtc()
+              .add(const Duration(hours: 1))), // One hour session
+      null,
+      scopes,
+    ),
+  );
 
-    final auth = await calendarLogic.currentUser?.authentication; // Authenticated against the active user
-    final accessToken = auth?.accessToken;
+  return gcal.CalendarApi(
+      authClient); // This is used to make requests to the Google Calendar API
+}
 
-    if (accessToken == null) {
-      throw Exception('Access token is null.');
-    }
-
-    final httpClient = http.Client();
-    final authClient = authenticatedClient(
-      httpClient,
-      AccessCredentials(
-        AccessToken('Bearer', accessToken, DateTime.now().toUtc().add(const Duration(hours: 1))), // One hour session
-        null,
-        scopes,
-      ),
-    );
-
-    return gcal.CalendarApi(authClient); // This is used to make requests to the Google Calendar API
-  }
-
-class CalendarLogic extends ChangeNotifier{
-
+class CalendarLogic extends ChangeNotifier {
   DateTime _selectedDate = DateTime.now();
 
   DateTime get selectedDate => _selectedDate;
@@ -224,9 +237,9 @@ class CalendarLogic extends ChangeNotifier{
   DateTime currentDate = DateTime.now();
   bool isDayMode = true;
   Map<String, dynamic> calendars = {};
-  
+
   // This list is a JSON List of events as Maps
-  
+
   // Method starts the signIn process externally with a Google Modal
 
   // This method returns a Firebase-Stored list of Calendars belonging to a user
@@ -239,7 +252,8 @@ class CalendarLogic extends ChangeNotifier{
       final docSnapshot = await calendarPrm.doc(userEmail).get();
 
       if (docSnapshot.exists) {
-        Map<String, dynamic> calendarsData = docSnapshot.data() as Map<String, dynamic>;
+        Map<String, dynamic> calendarsData =
+            docSnapshot.data() as Map<String, dynamic>;
         calendars = calendarsData; // Update the calendars map.
       } else {
         calendars = {}; // No calendars found.
@@ -255,10 +269,15 @@ class CalendarLogic extends ChangeNotifier{
       String? pageToken; // To paginate results
       List<gcal.Event> eventsList = []; //Storing all events
       print(eventsList);
-      DateTime startOfPeriod = isDayMode ? currentDate : DateTime(currentDate.year, currentDate.month, 1); // Stored value or midnight today
+      DateTime startOfPeriod = isDayMode
+          ? currentDate
+          : DateTime(currentDate.year, currentDate.month,
+              1); // Stored value or midnight today
       DateTime endOfPeriod = isDayMode // if its daymode
-          ? currentDate.add(const Duration(days: 1)) // End of period is 12:00am tomorrow
-          : DateTime(currentDate.year, currentDate.month + 1, 0); // Else end of period is 12:00am first day of next month
+          ? currentDate
+              .add(const Duration(days: 1)) // End of period is 12:00am tomorrow
+          : DateTime(currentDate.year, currentDate.month + 1,
+              0); // Else end of period is 12:00am first day of next month
       // Then fetch events
       do {
         gcal.Events events = await calendarApi.events.list(
@@ -313,14 +332,13 @@ class CalendarLogic extends ChangeNotifier{
     }
   }
 
-
   // Method to increment or decrement the Day or Month value of the current date
-
 
   // Method to toggle between Day and Month on calendar
   Future<void> toggleDayMode(bool value, CalendarLogic calendarLogic) async {
     isDayMode = value;
-    await createCalendarApiInstance(calendarLogic); // Update events when mode changes.
+    await createCalendarApiInstance(
+        calendarLogic); // Update events when mode changes.
   }
 
   List<Map<String, dynamic>> mapEvents(List<gcal.Event> events) {
@@ -369,7 +387,8 @@ class CalendarLogic extends ChangeNotifier{
         'originalStartTime': event.originalStartTime != null
             ? {
                 'date': event.originalStartTime?.date?.toIso8601String(),
-                'dateTime': event.originalStartTime?.dateTime?.toIso8601String(),
+                'dateTime':
+                    event.originalStartTime?.dateTime?.toIso8601String(),
                 'timeZone': event.originalStartTime?.timeZone,
               }
             : null,
@@ -410,5 +429,4 @@ class CalendarLogic extends ChangeNotifier{
       };
     }).toList();
   }
-
 }
