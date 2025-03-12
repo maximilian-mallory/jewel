@@ -2,21 +2,22 @@ import 'dart:convert';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/personal_goals/personal_goals.dart';
 
-class JewelUser {
-  final String uid;
-  final String email;
-  final String? displayName;
-  final String? photoUrl;
+class JewelUser extends ChangeNotifier{
+  String? uid;
+  String? email;
+  String? displayName;
+  String? photoUrl;
   List<CalendarLogic>? calendarLogicList;
-  final List<PersonalGoals>? personalGoalsList;
+  List<PersonalGoals>? personalGoalsList;
 
 
   JewelUser({
-    required this.uid,
-    required this.email,
+    this.uid,
+    this.email,
     this.personalGoalsList,
     this.displayName,
     this.photoUrl,
@@ -35,9 +36,40 @@ class JewelUser {
     );
   }
 
+  void updateFrom(JewelUser other) {
+  // Update all properties from the other instance
+  if (other.uid != null) {
+    uid = other.uid;
+  }
+
+  if (other.email != null) {
+    email = other.email;
+  }
+  if (other.displayName != null) {
+    displayName = other.displayName;
+  }
+  if (other.photoUrl != null) {
+    photoUrl = other.photoUrl;
+  }
+  
+  // Handle the calendar logic list
+  if (other.calendarLogicList != null) {
+    calendarLogicList = other.calendarLogicList;
+  }
+  
+  // Handle the personal goals list
+  if (other.personalGoalsList != null) {
+    personalGoalsList = other.personalGoalsList;
+  }
+  
+  // Notify listeners about the changes
+  notifyListeners();
+}
+
   void addCalendarLogic(CalendarLogic logic) async {
     calendarLogicList ??= [];
     calendarLogicList!.add(logic);
+    notifyListeners();
   }
 
   // Convert to JSON (useful for Firestore storage)

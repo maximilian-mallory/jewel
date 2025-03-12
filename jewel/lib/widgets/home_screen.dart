@@ -133,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
     _screens = [ // widgets available in the nav bar
       SettingsScreen(jewelUser: widget.jewelUser,),
-      CalendarEventsView(jewelUser: widget.jewelUser),
+      CalendarEventsView(),
       MapSample(),
       Screen1(),
       Screen2(),
@@ -321,7 +321,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Align(
             alignment: Alignment.center,
             child: AuthenticatedCalendar(
-              calendarLogic: widget.calendarLogic,
             ),
           ),
         ),

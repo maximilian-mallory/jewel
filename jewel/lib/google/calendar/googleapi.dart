@@ -232,6 +232,7 @@ Future<gcal.CalendarApi> createCalendarApiInstance(
       authClient); // This is used to make requests to the Google Calendar API
 }
 
+
 class CalendarLogic extends ChangeNotifier {
   Map<String, List<String>> eventHistory = {}; //Stores change history of events
 

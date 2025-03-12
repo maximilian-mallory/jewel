@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:jewel/google/auth/auth_gate.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/screens/firebase_login_screen.dart';
 import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/screens/test_screen1.dart';
@@ -60,7 +61,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(
           // for the auth object
-          create: (_) => CalendarLogic(),
+          create: (_) => JewelUser(),
         ),
         ChangeNotifierProvider(
           // keeps track of what screen the user is on
@@ -76,7 +77,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  final CalendarLogic calendarLogic = CalendarLogic(); // listener for API calls
+  final List<CalendarLogic> calendarLogicList = []; // listener for API calls
   MyApp({super.key});
 
   @override
@@ -89,9 +90,7 @@ class MyApp extends StatelessWidget {
         theme: MyAppThemes.lightTheme,
         darkTheme: MyAppThemes.darkTheme,
         themeMode: ThemeMode.system,
-        home: AuthGate(
-            calendarLogic:
-                calendarLogic) // we immediately force the user to the loading screen, which makes the app unusable without a login
+        home: AuthGate() // we immediately force the user to the loading screen, which makes the app unusable without a login
         );
   }
 }
