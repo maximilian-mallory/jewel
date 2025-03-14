@@ -43,6 +43,21 @@ Map<String, double> getResponsiveValues(BuildContext context) {
   };
 }
 
+/// Helper function to convert the selected text style value to a multiplier.
+double getTextStyleMultiplier(String textStyle) {
+  switch (textStyle) {
+    case 'extra Large':
+      return 1.2;
+    case 'large':
+      return 1.1;
+    case 'small':
+      return 0.8;
+    case 'default':
+    default:
+      return 1.0;
+  }
+}
+
 class SettingsScreen extends StatelessWidget {
   final JewelUser? jewelUser;
   const SettingsScreen({super.key, required this.jewelUser});
@@ -125,16 +140,22 @@ class SettingsCategory extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(
-            title,
-            style: TextStyle(
-              fontSize: res['titleFontSize']!,
-              fontWeight: FontWeight.bold,
-            ),
-            textAlign: TextAlign.center,
-          ),
+        // Wrap title with Consumer to apply global multiplier
+        Consumer<TextStyleNotifier>(
+          builder: (context, textStyleNotifier, child) {
+            double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: res['titleFontSize']! * multiplier,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            );
+          },
         ),
         ...settings,
         const Divider(),
@@ -156,6 +177,7 @@ class _ToggleSettingState extends State<ToggleSetting> {
 
   @override
   Widget build(BuildContext context) {
+    // This text will inherit the global text theme – already modified by multiplier.
     return SwitchListTile(
       title: Text(widget.title),
       value: _value,
