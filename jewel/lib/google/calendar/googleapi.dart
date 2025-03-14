@@ -310,7 +310,6 @@ class CalendarLogic extends ChangeNotifier {
   String selectedCalendar = 'primary';
   // DateTime selectedDate = DateTime.now();
   bool isAuthorized = false;
-  DateTime currentDate = DateTime.now();
   bool isDayMode = true;
   Map<String, dynamic> calendars = {};
 
@@ -346,13 +345,13 @@ class CalendarLogic extends ChangeNotifier {
       List<gcal.Event> eventsList = []; //Storing all events
       print(eventsList);
       DateTime startOfPeriod = isDayMode
-          ? currentDate
-          : DateTime(currentDate.year, currentDate.month,
+          ? selectedDate
+          : DateTime(selectedDate.year, selectedDate.month,
               1); // Stored value or midnight today
       DateTime endOfPeriod = isDayMode // if its daymode
-          ? currentDate
+          ? selectedDate
               .add(const Duration(days: 1)) // End of period is 12:00am tomorrow
-          : DateTime(currentDate.year, currentDate.month + 1,
+          : DateTime(selectedDate.year, selectedDate.month + 1,
               0); // Else end of period is 12:00am first day of next month
       // Then fetch events
       do {

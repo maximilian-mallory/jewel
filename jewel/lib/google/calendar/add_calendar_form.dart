@@ -209,36 +209,39 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   /// Builds the main scaffold with an adaptive AppBar.
   Widget buildCalendarUI() {
     final res = getResponsiveValues(context);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: LayoutBuilder(
-          builder: (context, constraints) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                daymonthBackButton(res),
-                loadCalendarMenu(res),
-                Column(
+    return Consumer<JewelUser>(
+      builder: (context, jewelUser, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                        Text(
-                          DateFormat('MM/dd/yyyy')
-                              .format(calendarLogic.selectedDate),
-                          style: TextStyle(
-                            fontSize: res['titleFontSize'],
-                            fontWeight: FontWeight.bold,
-                          ),
-                        )
+                    daymonthBackButton(res),
+                    loadCalendarMenu(res),
+                    Column(
+                      children: [
+                            Text(
+                              DateFormat('MM/dd/yyyy')
+                                  .format(calendarLogic.selectedDate),
+                              style: TextStyle(
+                                fontSize: res['titleFontSize'],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                      ],
+                    ),
+                    dateToggle(res),
+                    modeToggleButton(res),
+                    daymonthForwardButton(res),
                   ],
-                ),
-                dateToggle(res),
-                modeToggleButton(res),
-                daymonthForwardButton(res),
-              ],
-            );
-          },
-        ),
-      ),
+                );
+              },
+            ),
+          ),
+        );
+      }
     );
   }
 
@@ -320,7 +323,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
           onTap: () async {
             DateTime? selectedDate = await showDatePicker(
               context: context,
-              initialDate: calendarLogic.currentDate,
+              initialDate: calendarLogic.selectedDate,
               firstDate: DateTime(2000),
               lastDate: DateTime(2100),
             );
