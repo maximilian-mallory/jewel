@@ -147,7 +147,7 @@ class _HomeScreenState extends State<HomeScreen> {
       SettingsScreen(
         jewelUser: widget.jewelUser,
       ),
-      CalendarEventsView(jewelUser: widget.jewelUser),
+      CalendarEventsView(),
       MapSample(),
       Screen1(),
       Screen2(),
