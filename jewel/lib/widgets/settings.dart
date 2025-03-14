@@ -1,3 +1,4 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -5,16 +6,57 @@ import 'package:jewel/models/jewel_user.dart';
 import 'package:provider/provider.dart';
 import 'package:jewel/utils/text_style_notifier.dart';
 
+/// Returns responsive values based on the current screen width.
+/// These breakpoints match those used in add_calendar_form.dart.
+Map<String, double> getResponsiveValues(BuildContext context) {
+  final double screenWidth = MediaQuery.of(context).size.width;
+  double horizontalPadding, verticalPadding, titleFontSize;
+  if (screenWidth >= 1440) {
+    horizontalPadding = 64.0;
+    verticalPadding = 40.0;
+    titleFontSize = 22.0;
+  } else if (screenWidth >= 1024) {
+    horizontalPadding = 48.0;
+    verticalPadding = 32.0;
+    titleFontSize = 20.0;
+  } else if (screenWidth >= 768) {
+    horizontalPadding = 32.0;
+    verticalPadding = 24.0;
+    titleFontSize = 18.0;
+  } else if (screenWidth >= 425) {
+    horizontalPadding = 24.0;
+    verticalPadding = 16.0;
+    titleFontSize = 16.0;
+  } else if (screenWidth >= 375) {
+    horizontalPadding = 16.0;
+    verticalPadding = 12.0;
+    titleFontSize = 16.0;
+  } else {
+    horizontalPadding = 14.0;
+    verticalPadding = 10.0;
+    titleFontSize = 14.0;
+  }
+  return {
+    'horizontalPadding': horizontalPadding,
+    'verticalPadding': verticalPadding,
+    'titleFontSize': titleFontSize,
+  };
+}
+
 class SettingsScreen extends StatelessWidget {
   final JewelUser? jewelUser;
   const SettingsScreen({super.key, required this.jewelUser});
 
   @override
   Widget build(BuildContext context) {
+    final res = getResponsiveValues(context);
     return Scaffold(
       body: Center(
         child: ListView(
-          padding: EdgeInsets.all(16.0),
+          padding: EdgeInsets.symmetric(
+            horizontal: res['horizontalPadding']!,
+            vertical: res['verticalPadding']!,
+          ),
           children: [
             SettingsCategory(
               title: 'Calendar',
@@ -49,12 +91,12 @@ class SettingsScreen extends StatelessWidget {
                 TextStyleSetting(),
               ],
             ),
-            SizedBox(height: 20), // Adds some space before the button
+            SizedBox(height: res['verticalPadding']),
             ElevatedButton(
               onPressed: () {
                 saveUserToFirestore(jewelUser!);
               },
-              child: Text('Save Settings'),
+              child: const Text('Save Settings'),
             ),
           ],
         ),
@@ -79,6 +121,7 @@ class SettingsCategory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final res = getResponsiveValues(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
@@ -86,12 +129,15 @@ class SettingsCategory extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 8.0),
           child: Text(
             title,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(
+              fontSize: res['titleFontSize']!,
+              fontWeight: FontWeight.bold,
+            ),
             textAlign: TextAlign.center,
           ),
         ),
         ...settings,
-        Divider(),
+        const Divider(),
       ],
     );
   }
@@ -99,7 +145,6 @@ class SettingsCategory extends StatelessWidget {
 
 class ToggleSetting extends StatefulWidget {
   final String title;
-
   const ToggleSetting({super.key, required this.title});
 
   @override
@@ -125,7 +170,6 @@ class _ToggleSettingState extends State<ToggleSetting> {
 
 class ColorPickerSetting extends StatefulWidget {
   final String title;
-
   const ColorPickerSetting({super.key, required this.title});
 
   @override
@@ -153,7 +197,7 @@ class _ColorPickerSettingState extends State<ColorPickerSetting> {
           ),
           actions: <Widget>[
             ElevatedButton(
-              child: Text('Done'),
+              child: const Text('Done'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -183,7 +227,6 @@ class _ColorPickerSettingState extends State<ColorPickerSetting> {
 
 class NumberInputSetting extends StatefulWidget {
   final String title;
-
   const NumberInputSetting({super.key, required this.title});
 
   @override
@@ -201,7 +244,7 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
         width: 100,
         child: TextField(
           keyboardType: TextInputType.number,
-          decoration: InputDecoration(
+          decoration: const InputDecoration(
             hintText: 'Enter number',
           ),
           onChanged: (String value) {
@@ -215,7 +258,7 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
   }
 }
 
-// Updated widget for selecting text style using Provider, ensuring the dropdown reflects the global value.
+// Updated widget for selecting text style using Provider.
 class TextStyleSetting extends StatelessWidget {
   const TextStyleSetting({super.key});
 
@@ -224,7 +267,7 @@ class TextStyleSetting extends StatelessWidget {
     return Consumer<TextStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         return ListTile(
-          title: Text('Select Text Style'),
+          title: const Text('Select Text Style'),
           trailing: DropdownButton<String>(
             value: textStyleNotifier.textStyle,
             items: ['default', 'extra Large', 'large', 'small'].map((String style) {
