@@ -4,7 +4,8 @@ class CustomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  const CustomNavBar({super.key, required this.currentIndex, required this.onTap});
+  const CustomNavBar(
+      {super.key, required this.currentIndex, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +20,8 @@ class CustomNavBar extends StatelessWidget {
           _buildNavItem(Icons.calendar_month, 'Calendar', 1),
           _buildNavItem(Icons.map, 'Maps', 2),
           _buildNavItem(Icons.theater_comedy_sharp, 'Test', 3),
-          _buildNavItem(Icons.warning, 'TestEvent', 4)
+          _buildNavItem(Icons.warning, 'TestEvent', 4),
+          _buildNavItem(Icons.man_2_rounded, 'Groups', 5)
         ],
       ),
     );
@@ -32,8 +34,16 @@ class CustomNavBar extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon,color: isSelected ? Colors.green : Colors.grey,),
-          Text(label,style: TextStyle(color: isSelected ? Colors.green : Colors.grey,),),
+          Icon(
+            icon,
+            color: isSelected ? Colors.green : Colors.grey,
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.green : Colors.grey,
+            ),
+          ),
         ],
       ),
     );

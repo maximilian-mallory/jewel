@@ -5,6 +5,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:jewel/google/auth/auth_gate.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/screens/firebase_login_screen.dart';
 import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/screens/test_screen1.dart';
@@ -20,6 +21,9 @@ import 'package:jewel/google/calendar/g_g_merge.dart';
 import 'package:jewel/google/calendar/mode_toggle.dart';
 import 'package:jewel/utils/app_themes.dart';
 import 'package:jewel/utils/text_style_notifier.dart';
+import 'package:jewel/screens/user_group_screen.dart';
+import 'package:jewel/user_groups/user_group.dart';
+import 'package:jewel/user_groups/user_group_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,8 +41,8 @@ Future<void> main() async {
   );
 
   // Initialize notifications
-  await NotificationController.initializeLocalNotifications();
-  NotificationController.createNewNotification();
+  /*await NotificationController.initializeLocalNotifications();
+  NotificationController.createNewNotification();*/
 
   // Register the view type for the map
   if (kIsWeb) {
@@ -53,7 +57,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(
           // for the auth object
-          create: (_) => CalendarLogic(),
+          create: (_) => JewelUser(),
         ),
         ChangeNotifierProvider(
           // keeps track of what screen the user is on
@@ -67,6 +71,14 @@ Future<void> main() async {
           // provides the selected text style for the app
           create: (_) => TextStyleNotifier(),
         ),
+        ChangeNotifierProvider(
+          // Keeps track of what calendar mode the user is in
+          create: (context) => ModeToggle(),
+        ),
+        ChangeNotifierProvider(
+          // Provides access to user groups
+          create: (_) => UserGroupProvider(),
+        ),
       ],
       child: MyApp(),
     ),
@@ -74,7 +86,7 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-  final CalendarLogic calendarLogic = CalendarLogic(); // listener for API calls
+  final List<CalendarLogic> calendarLogicList = []; // listener for API calls
   MyApp({super.key});
 
   @override
@@ -87,7 +99,7 @@ class MyApp extends StatelessWidget {
           theme: MyAppThemes.lightThemeWithTextStyle(textStyleNotifier.textStyle),
           darkTheme: MyAppThemes.darkThemeWithTextStyle(textStyleNotifier.textStyle),
           themeMode: ThemeMode.system,
-          home: AuthGate(calendarLogic: calendarLogic),
+          home: AuthGate(),
         );
       },
     );
