@@ -38,8 +38,8 @@ Future<void> main() async {
   );
 
   // Initialize notifications
-  await NotificationController.initializeLocalNotifications();
-  NotificationController.createNewNotification();
+  /*await NotificationController.initializeLocalNotifications();
+  NotificationController.createNewNotification();*/
 
   // Register the view type for the map
   if (kIsWeb) {
