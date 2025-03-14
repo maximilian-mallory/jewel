@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:provider/provider.dart';
+import 'package:jewel/utils/text_style_notifier.dart';
 
 class SettingsScreen extends StatelessWidget {
   final JewelUser? jewelUser;
@@ -41,6 +43,12 @@ class SettingsScreen extends StatelessWidget {
                 ToggleSetting(title: 'Location Permission'),
               ],
             ),
+            SettingsCategory(
+              title: 'Text Style',
+              settings: [
+                TextStyleSetting(),
+              ],
+            ),
             SizedBox(height: 20), // Adds some space before the button
             ElevatedButton(
               onPressed: () {
@@ -54,9 +62,13 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+
 Future<void> saveUserToFirestore(JewelUser user) async {
-    final docId = user.email; // Use email as document ID
-    await FirebaseFirestore.instance.collection('users').doc(docId).set(user.toJson());
+  final docId = user.email; // Use email as document ID
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(docId)
+      .set(user.toJson());
 }
 
 class SettingsCategory extends StatelessWidget {
@@ -198,6 +210,46 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
             });
           },
         ),
+      ),
+    );
+  }
+}
+
+// New widget for selecting text style from a dropdown
+class TextStyleSetting extends StatefulWidget {
+  const TextStyleSetting({super.key});
+
+  @override
+  _TextStyleSettingState createState() => _TextStyleSettingState();
+}
+
+class _TextStyleSettingState extends State<TextStyleSetting> {
+  final List<String> _options = ['default', 'large', 'serif', 'monospace'];
+  String _selectedOption = 'default';
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      title: Text('Select Text Style'),
+      trailing: DropdownButton<String>(
+        value: _selectedOption,
+        items: _options.map((String style) {
+          return DropdownMenuItem<String>(
+            value: style,
+            child: Text(
+              style[0].toUpperCase() + style.substring(1),
+            ),
+          );
+        }).toList(),
+        onChanged: (String? newStyle) {
+          if (newStyle != null) {
+            setState(() {
+              _selectedOption = newStyle;
+            });
+            Provider.of<TextStyleNotifier>(context, listen: false)
+                .updateTextStyle(newStyle);
+          }
+        },
       ),
     );
   }
