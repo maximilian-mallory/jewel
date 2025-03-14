@@ -8,6 +8,7 @@
 .buildlog/
 .history
 .svn/
+.vs/
 #.env
 #assets/.env
 migrate_working_dir/

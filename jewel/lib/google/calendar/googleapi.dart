@@ -47,7 +47,7 @@ Future<List<gcal.Event>> getGoogleEventsData(
       if (eventStart.isAfter(startOfDayUtc) &&
           eventStart.isBefore(endOfDayUtc)) {
         appointments.add(event);
-        
+
         /*if(await checkDocExists('jewelevents', event.id))
         {
           print('[FIREBASE PART REFRESH]: ${event.id}');
@@ -143,17 +143,21 @@ Future<void> insertGoogleEvent({
         ..dateTime = endDate.toUtc()
         ..timeZone = "UTC");
 
-    var createdEvent = await calendarApi.events.insert(event, "primary"); // Insert the event into the primary calendar
+    var createdEvent = await calendarApi.events
+        .insert(event, "primary"); // Insert the event into the primary calendar
     print("Event created successfully: ${createdEvent.htmlLink}");
-  } catch (e) { // Catch any errors that occur during the insertion process
+  } catch (e) {
+    // Catch any errors that occur during the insertion process
     print("Error inserting event into Google Calendar: $e");
   }
 }
 
 Future<bool> checkDocExists(String collectionPath, String? docId) async {
   try {
-    DocumentSnapshot docSnapshot =
-        await FirebaseFirestore.instance.collection(collectionPath).doc(docId).get();
+    DocumentSnapshot docSnapshot = await FirebaseFirestore.instance
+        .collection(collectionPath)
+        .doc(docId)
+        .get();
 
     return docSnapshot.exists;
   } catch (e) {
@@ -162,18 +166,17 @@ Future<bool> checkDocExists(String collectionPath, String? docId) async {
   }
 }
 
-DateTime changeDateBy(int days, CalendarLogic calendarLogic){
-    
-      return calendarLogic.selectedDate.add(Duration(days: days));
-      
-      // currentDate = DateTime(currentDate.year, currentDate.month + daysOrMonths, 1);
- 
-     // Update events when date changes.
-  }
+DateTime changeDateBy(int days, CalendarLogic calendarLogic) {
+  return calendarLogic.selectedDate.add(Duration(days: days));
+
+  // currentDate = DateTime(currentDate.year, currentDate.month + daysOrMonths, 1);
+
+  // Update events when date changes.
+}
 
 // Define constants and scopes
 const List<String> scopes = <String>[
-  'https://www.googleapis.com/auth/calendar',
+  'https://www.googleapis.com/auth/calendar.calendarlist',
 ];
 
 // Initialize GoogleSignIn instance

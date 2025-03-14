@@ -20,7 +20,9 @@ import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 import 'package:jewel/google/calendar/g_g_merge.dart';
 import 'package:jewel/google/calendar/mode_toggle.dart';
 import 'package:jewel/utils/app_themes.dart';
-
+import 'package:jewel/screens/user_group_screen.dart';
+import 'package:jewel/user_groups/user_group.dart';
+import 'package:jewel/user_groups/user_group_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,8 +70,14 @@ Future<void> main() async {
           create: (_) => SelectedIndexNotifier(
               1), // Initialize with a default index, e.g., 0
         ),
-        ChangeNotifierProvider( // Keeps track of what calendar mode the user is in
-          create: (context) => ModeToggle()),
+        ChangeNotifierProvider(
+          // Keeps track of what calendar mode the user is in
+          create: (context) => ModeToggle(),
+        ),
+        ChangeNotifierProvider(
+          // Provides access to user groups
+          create: (_) => UserGroupProvider(),
+        ),
       ],
       child: MyApp(),
     ),
