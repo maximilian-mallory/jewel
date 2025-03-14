@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/utils/location.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/widgets/events_view.dart';
 import 'package:jewel/widgets/gmap_screen.dart';
@@ -120,6 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    getLocationData();
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     _selectedIndex = widget.initialIndex;
     googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async {

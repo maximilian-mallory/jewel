@@ -37,8 +37,12 @@ class SettingsScreen extends StatelessWidget {
             SettingsCategory(
               title: 'Permissions',
               settings: [
-                ToggleSetting(title: 'Notification Permission'),
-                ToggleSetting(title: 'Location Permission'),
+                ToggleSetting(
+                  title: 'Notification Permission', 
+                  ),
+                ToggleSetting(
+                  title: 'Location Permission'
+                  ),
               ],
             ),
             SizedBox(height: 20), // Adds some space before the button
