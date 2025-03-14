@@ -37,40 +37,47 @@ class JewelUser extends ChangeNotifier{
   }
 
   void updateFrom(JewelUser other) {
-  // Update all properties from the other instance
-  if (other.uid != null) {
-    uid = other.uid;
-  }
+    // Update all properties from the other instance
+    if (other.uid != null) {
+      uid = other.uid;
+    }
 
-  if (other.email != null) {
-    email = other.email;
+    if (other.email != null) {
+      email = other.email;
+    }
+    if (other.displayName != null) {
+      displayName = other.displayName;
+    }
+    if (other.photoUrl != null) {
+      photoUrl = other.photoUrl;
+    }
+    
+    // Handle the calendar logic list
+    if (other.calendarLogicList != null) {
+      calendarLogicList = other.calendarLogicList;
+    }
+    
+    // Handle the personal goals list
+    if (other.personalGoalsList != null) {
+      personalGoalsList = other.personalGoalsList;
+    }
+    
+    // Notify listeners about the changes
+    notifyListeners();
   }
-  if (other.displayName != null) {
-    displayName = other.displayName;
-  }
-  if (other.photoUrl != null) {
-    photoUrl = other.photoUrl;
-  }
-  
-  // Handle the calendar logic list
-  if (other.calendarLogicList != null) {
-    calendarLogicList = other.calendarLogicList;
-  }
-  
-  // Handle the personal goals list
-  if (other.personalGoalsList != null) {
-    personalGoalsList = other.personalGoalsList;
-  }
-  
-  // Notify listeners about the changes
-  notifyListeners();
-}
 
   void addCalendarLogic(CalendarLogic logic) async {
     calendarLogicList ??= [];
     calendarLogicList!.add(logic);
     notifyListeners();
   }
+
+  void updateCalendarLogic(CalendarLogic updated)
+  {
+    calendarLogicList![0] = updated;
+    notifyListeners();
+  }
+
 
   // Convert to JSON (useful for Firestore storage)
   Map<String, dynamic> toJson() {

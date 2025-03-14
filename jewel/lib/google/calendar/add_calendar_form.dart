@@ -312,29 +312,38 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
 
   /// Date picker toggle.
   Widget dateToggle(Map<String, double> res) {
-    return Padding(
-      padding: EdgeInsets.all(res['buttonPadding']! * 1.5),
-      child: GestureDetector(
-        onTap: () async {
-          DateTime? selectedDate = await showDatePicker(
-            context: context,
-            initialDate: calendarLogic.currentDate,
-            firstDate: DateTime(2000),
-            lastDate: DateTime(2100),
-          );
-          if (selectedDate != null) {
-            calendarLogic.selectedDate = selectedDate;
-            setState(() {});
-          }
-        },
-        child: Icon(
-          Icons.calendar_today,
-          size: res['iconSize'],
-          color: Colors.green,
+  return Consumer<JewelUser>(
+    builder: (context, user, child) {
+      return Padding(
+        padding: EdgeInsets.all(res['buttonPadding']! * 1.5),
+        child: GestureDetector(
+          onTap: () async {
+            DateTime? selectedDate = await showDatePicker(
+              context: context,
+              initialDate: calendarLogic.currentDate,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+            );
+            if (selectedDate != null) {
+              calendarLogic.selectedDate = selectedDate;
+              calendarLogic.events = await getGoogleEventsData(calendarLogic, context);
+              
+              // Update the provider
+              user.updateCalendarLogic(calendarLogic);
+              
+              print('[DATE PICKER] SelectedDate: ${calendarLogic.selectedDate} should match JewelUser SelectedDate: ${user.calendarLogicList![0].selectedDate}');
+            }
+          },
+          child: Icon(
+            Icons.calendar_today,
+            size: res['iconSize'],
+            color: Colors.green,
+          ),
         ),
-      ),
-    );
-  }
+      );
+    },
+  );
+}
 
   /// Loads calendar menu with responsive design.
   Widget loadCalendarMenu(Map<String, double> res) {

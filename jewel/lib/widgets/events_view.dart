@@ -39,14 +39,18 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   @override
   Widget build(BuildContext context) {
     final isMonthlyViewPrivate = context.watch<ModeToggle>().isMonthlyView;
-    return Column(
-      children: [
-        Expanded(
-          child: isMonthlyViewPrivate
-              ? buildMonthlyView(context)
-              : buildDailyView(context),
-        ),
-      ],
+    return Consumer<JewelUser>(
+      builder: (context, jewelUser, child) {
+        return Column(
+          children: [
+            Expanded(
+              child: isMonthlyViewPrivate
+                  ? buildMonthlyView(context)
+                  : buildDailyView(context),
+            ),
+          ],
+        );
+      }
     );
   }
 
@@ -79,35 +83,14 @@ class _CalendarEventsView extends State<CalendarEventsView> {
           ),
           // Calendar Events column
           Expanded(
-            child: FutureBuilder<List<gcal.Event>>(
-              // FutureBuilders lets us make asyncronous calls to methods that return lists of widgets with the asynchronously retrieved data
-              future: getGoogleEventsData(calendarLogic!, context),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'EventsViewError: ${snapshot.error}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                } else if (snapshot.hasData) {
-                  return buildEventsList(snapshot
-                      .data!); // this is our list of widgets that we pass the list building method, which returns our second column
-                } else {
-                  return const Center(
-                    child: Text(
-                      'No events found',
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }
-              },
-            ),
+            child: calendarLogic?.events != null
+              ? buildEventsList(calendarLogic!.events)
+              : const Center(
+                  child: Text(
+                    'No events found',
+                    textAlign: TextAlign.center,
+                  ),
+                ),
           ),
         ],
       ),
