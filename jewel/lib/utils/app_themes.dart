@@ -12,27 +12,25 @@ class MyAppThemes {
 
     // Modify the base text theme based on the selected text style option.
     switch (textStyle) {
-      case 'large':
+      case 'extra Large':
         baseTextTheme = baseTextTheme.copyWith(
           bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 20),
           bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 18),
           titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 22),
         );
         break;
-      case 'serif':
-        // Instead of applying a font family, adjust sizes so there's a visible difference.
+      case 'large':
         baseTextTheme = baseTextTheme.copyWith(
           bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 18),
           bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 16),
           titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 20),
         );
         break;
-      case 'monospace':
-        // Adjust to slightly smaller sizes for a noticeable effect.
+      case 'small':
         baseTextTheme = baseTextTheme.copyWith(
-          bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 16),
-          bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 14),
-          titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 18),
+          bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 10),
+          bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 8),
+          titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 12),
         );
         break;
       case 'default':
