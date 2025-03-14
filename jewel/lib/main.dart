@@ -20,6 +20,7 @@ import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 import 'package:jewel/google/calendar/g_g_merge.dart';
 import 'package:jewel/google/calendar/mode_toggle.dart';
 import 'package:jewel/utils/app_themes.dart';
+import 'package:jewel/utils/text_style_notifier.dart';
 import 'package:jewel/screens/user_group_screen.dart';
 import 'package:jewel/user_groups/user_group.dart';
 import 'package:jewel/user_groups/user_group_provider.dart';
@@ -50,13 +51,6 @@ Future<void> main() async {
     });
   }
 
-  // Fetch sorted events and convert addresses to coordinates
-  // Map<String, dynamic> sortedEvents = await fetchEventData();
-  // List<LatLng> coordinates = await convertAddressesToCoords(sortedEvents);
-  // for (var coord in coordinates) {
-  //   print('Coordinates: (${coord.latitude}, ${coord.longitude})');
-  // }
-
   runApp(
     MultiProvider(
       // providers allow us to have app level access to objects
@@ -67,8 +61,15 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           // keeps track of what screen the user is on
-          create: (_) => SelectedIndexNotifier(
-              1), // Initialize with a default index, e.g., 0
+          create: (_) => SelectedIndexNotifier(1), // default index
+        ),
+        ChangeNotifierProvider(
+          // keeps track of what calendar mode the user is in
+          create: (context) => ModeToggle(),
+        ),
+        ChangeNotifierProvider(
+          // provides the selected text style for the app
+          create: (_) => TextStyleNotifier(),
         ),
         ChangeNotifierProvider(
           // Keeps track of what calendar mode the user is in
@@ -90,15 +91,17 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // if we can use BuildContext instead of Providers that would be cool
-    return MaterialApp(
-        debugShowCheckedModeBanner:
-            false, //turns off the "dubug" banner in the top right corner
-        title: 'Jewel',
-        theme: MyAppThemes.lightTheme,
-        darkTheme: MyAppThemes.darkTheme,
-        themeMode: ThemeMode.system,
-        home: AuthGate() // we immediately force the user to the loading screen, which makes the app unusable without a login
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          title: 'Jewel',
+          theme: MyAppThemes.lightThemeWithTextStyle(textStyleNotifier.textStyle),
+          darkTheme: MyAppThemes.darkThemeWithTextStyle(textStyleNotifier.textStyle),
+          themeMode: ThemeMode.system,
+          home: AuthGate(),
         );
+      },
+    );
   }
 }

@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:provider/provider.dart';
+import 'package:jewel/utils/text_style_notifier.dart';
 
 class SettingsScreen extends StatelessWidget {
   final JewelUser? jewelUser;
@@ -45,6 +47,12 @@ class SettingsScreen extends StatelessWidget {
                   ),
               ],
             ),
+            SettingsCategory(
+              title: 'Text Style',
+              settings: [
+                TextStyleSetting(),
+              ],
+            ),
             SizedBox(height: 20), // Adds some space before the button
             ElevatedButton(
               onPressed: () {
@@ -58,9 +66,13 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+
 Future<void> saveUserToFirestore(JewelUser user) async {
-    final docId = user.email; // Use email as document ID
-    await FirebaseFirestore.instance.collection('users').doc(docId).set(user.toJson());
+  final docId = user.email; // Use email as document ID
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(docId)
+      .set(user.toJson());
 }
 
 class SettingsCategory extends StatelessWidget {
@@ -203,6 +215,36 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
           },
         ),
       ),
+    );
+  }
+}
+
+// Updated widget for selecting text style using Provider, ensuring the dropdown reflects the global value.
+class TextStyleSetting extends StatelessWidget {
+  const TextStyleSetting({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        return ListTile(
+          title: Text('Select Text Style'),
+          trailing: DropdownButton<String>(
+            value: textStyleNotifier.textStyle,
+            items: ['default', 'extra Large', 'large', 'small'].map((String style) {
+              return DropdownMenuItem<String>(
+                value: style,
+                child: Text(style[0].toUpperCase() + style.substring(1)),
+              );
+            }).toList(),
+            onChanged: (String? newStyle) {
+              if (newStyle != null) {
+                textStyleNotifier.updateTextStyle(newStyle);
+              }
+            },
+          ),
+        );
+      },
     );
   }
 }
