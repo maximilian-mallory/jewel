@@ -227,7 +227,7 @@ class TextStyleSetting extends StatelessWidget {
           title: Text('Select Text Style'),
           trailing: DropdownButton<String>(
             value: textStyleNotifier.textStyle,
-            items: ['default', 'large', 'serif', 'monospace'].map((String style) {
+            items: ['default', 'extra Large', 'large', 'small'].map((String style) {
               return DropdownMenuItem<String>(
                 value: style,
                 child: Text(style[0].toUpperCase() + style.substring(1)),
