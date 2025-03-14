@@ -215,42 +215,32 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
   }
 }
 
-// New widget for selecting text style from a dropdown
-class TextStyleSetting extends StatefulWidget {
+// Updated widget for selecting text style using Provider, ensuring the dropdown reflects the global value.
+class TextStyleSetting extends StatelessWidget {
   const TextStyleSetting({super.key});
 
   @override
-  _TextStyleSettingState createState() => _TextStyleSettingState();
-}
-
-class _TextStyleSettingState extends State<TextStyleSetting> {
-  final List<String> _options = ['default', 'large', 'serif', 'monospace'];
-  String _selectedOption = 'default';
-
-  @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text('Select Text Style'),
-      trailing: DropdownButton<String>(
-        value: _selectedOption,
-        items: _options.map((String style) {
-          return DropdownMenuItem<String>(
-            value: style,
-            child: Text(
-              style[0].toUpperCase() + style.substring(1),
-            ),
-          );
-        }).toList(),
-        onChanged: (String? newStyle) {
-          if (newStyle != null) {
-            setState(() {
-              _selectedOption = newStyle;
-            });
-            Provider.of<TextStyleNotifier>(context, listen: false)
-                .updateTextStyle(newStyle);
-          }
-        },
-      ),
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        return ListTile(
+          title: Text('Select Text Style'),
+          trailing: DropdownButton<String>(
+            value: textStyleNotifier.textStyle,
+            items: ['default', 'large', 'serif', 'monospace'].map((String style) {
+              return DropdownMenuItem<String>(
+                value: style,
+                child: Text(style[0].toUpperCase() + style.substring(1)),
+              );
+            }).toList(),
+            onChanged: (String? newStyle) {
+              if (newStyle != null) {
+                textStyleNotifier.updateTextStyle(newStyle);
+              }
+            },
+          ),
+        );
+      },
     );
   }
 }
