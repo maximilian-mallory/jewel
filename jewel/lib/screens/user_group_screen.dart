@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:jewel/user_groups/create_user_group_form.dart';
 import 'package:jewel/user_groups/user_group_provider.dart';
 import 'package:jewel/user_groups/user_group.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:jewel/firebase_ops/user_groups.dart';
 
 class UserGroupScreen extends StatefulWidget {
   const UserGroupScreen({Key? key}) : super(key: key);
@@ -74,7 +76,15 @@ class _UserGroupScreenState extends State<UserGroupScreen> {
                             if (group.isPrivate) {
                               _showPasswordDialog(context, group);
                             } else {
-                              print('Joined group: ${group.getName}');
+                              final email =
+                                  FirebaseAuth.instance.currentUser?.email;
+                              if (email != null) {
+                                group.addMember(email);
+                                updateGroupMembersInFireBase(group);
+                                print('$email Joined group: ${group.getName}');
+                              } else {
+                                print('Error: User email is null');
+                              }
                             }
                           },
                           child: const Text('Join'),
@@ -128,6 +138,13 @@ class _UserGroupScreenState extends State<UserGroupScreen> {
             TextButton(
               onPressed: () {
                 if (_passwordController.text == group.getPassword) {
+                  final email = FirebaseAuth.instance.currentUser?.email;
+                  if (email != null) {
+                    group.addMember(email);
+                    print('$email Joined group: ${group.getName}');
+                  } else {
+                    print('Error: User email is null');
+                  }
                   print('Joined group: ${group.getName}');
                   Navigator.of(context).pop();
                 } else {

@@ -8,16 +8,20 @@ class UserGroup {
   String
       _password; //Password for the group -- only used if the group is private
   String get getPassword => _password;
+  List<String> _members = []; //List of members in the group
+  List<String> get getMembers => _members;
 
   UserGroup(
       {required String name,
       required String description,
       required bool private,
-      required String password})
+      required String password,
+      required List<String> members})
       : _name = name,
         _description = description,
         _private = private,
-        _password = password;
+        _password = password,
+        _members = members;
 
   set setName(String value) {
     if (value.isNotEmpty) {
@@ -41,12 +45,37 @@ class UserGroup {
     }
   }
 
+  void addMember(String member) {
+    if (member.isNotEmpty && !_members.contains(member)) {
+      _members.add(member);
+    } else {
+      print("Member already exists or is empty");
+    }
+  }
+
+  set setMembers(List<String> value) {
+    if (value.isNotEmpty) {
+      _members = value;
+    }
+  }
+
   factory UserGroup.fromJson(Map<String, dynamic> json) {
     return UserGroup(
       name: json['name'],
       description: json['description'],
       private: json['private'],
       password: json['password'],
+      members: List<String>.from(json['members']),
     );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'name': _name,
+      'description': _description,
+      'private': _private,
+      'password': _password,
+      'members': _members,
+    };
   }
 }
