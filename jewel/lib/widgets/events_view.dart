@@ -27,13 +27,16 @@ class CalendarEventsView extends StatefulWidget {
 class _CalendarEventsView extends State<CalendarEventsView> {
   late ScrollController _scrollController;
   late JewelUser? jewelUser;
+  late CalendarLogic calendarLogic;
   @override
   void initState() {
     super.initState();
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     jewelUser = Provider.of<JewelUser>(context, listen: false);
+    calendarLogic = jewelUser!.calendarLogicList![0];
     _scrollController = ScrollController(initialScrollOffset: notifier.getScrollPosition(1) );
     print('[Events View] Jewel user matched to calendar tools: ${jewelUser?.calendarLogicList?[0].selectedCalendar}');
+    print('[Events View] Init State events: ${jewelUser?.calendarLogicList?[0].events.toString()}');
   }
 
   @override
@@ -56,9 +59,20 @@ class _CalendarEventsView extends State<CalendarEventsView> {
 
   // Builds the daily view
   Widget buildDailyView(BuildContext context) {
-    final calendarLogic = jewelUser?.calendarLogicList?[0];
+  return FutureBuilder<List<gcal.Event>>(
+    future: getGoogleEventsData(calendarLogic, context), // Create a method that returns your Future<List<Event>>
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return Center(child: CircularProgressIndicator());
+      } else if (snapshot.hasError) {
+        return Center(child: Text('Error loading events: ${snapshot.error}'));
+      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+        return Center(child: Text('No events found'));
+      }
 
-    return SingleChildScrollView(
+      final events = snapshot.data;
+      
+      return SingleChildScrollView(
       controller: _scrollController,
       scrollDirection: Axis.vertical,
       child: Row(
@@ -83,8 +97,8 @@ class _CalendarEventsView extends State<CalendarEventsView> {
           ),
           // Calendar Events column
           Expanded(
-            child: calendarLogic?.events != null
-              ? buildEventsList(calendarLogic!.events)
+            child: events!.isNotEmpty
+              ? buildEventsList(events)
               : const Center(
                   child: Text(
                     'No events found',
@@ -95,7 +109,9 @@ class _CalendarEventsView extends State<CalendarEventsView> {
         ],
       ),
     );
-  }
+    }
+  );
+}
 
 // Builds the monthly view
   Widget buildMonthlyView(BuildContext context) {
