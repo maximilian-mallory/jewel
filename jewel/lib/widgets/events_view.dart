@@ -66,10 +66,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
         return Center(child: CircularProgressIndicator());
       } else if (snapshot.hasError) {
         return Center(child: Text('Error loading events: ${snapshot.error}'));
-      } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-        return Center(child: Text('No events found'));
       }
-
       final events = snapshot.data;
       
       return SingleChildScrollView(
@@ -97,14 +94,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
           ),
           // Calendar Events column
           Expanded(
-            child: events!.isNotEmpty
-              ? buildEventsList(events)
-              : const Center(
-                  child: Text(
-                    'No events found',
-                    textAlign: TextAlign.center,
-                  ),
-                ),
+            child: buildEventsList(events!)
           ),
         ],
       ),

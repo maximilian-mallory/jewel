@@ -253,7 +253,9 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
             changeDateBy(-1, calendarLogic);
         calendarLogic.events =
             await getGoogleEventsData(calendarLogic, context);
-        setState(() {});
+        setState(() {
+          jewelUser.updateCalendarLogic(calendarLogic);
+        });
       },
       child: Container(
         padding: EdgeInsets.all(res['buttonPadding']!),
@@ -278,7 +280,9 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
             changeDateBy(1, calendarLogic);
         calendarLogic.events =
             await getGoogleEventsData(calendarLogic, context);
-        setState(() {});
+        setState(() {
+          jewelUser.updateCalendarLogic(calendarLogic);
+        });
       },
       child: Container(
         padding: EdgeInsets.all(res['buttonPadding']!),
