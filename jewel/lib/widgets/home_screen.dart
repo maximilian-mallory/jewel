@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/user_groups/user_group.dart';
 //import 'package:jewel/google/maps/map_screen.dart';
 import 'package:jewel/utils/location.dart';
@@ -132,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
     getLocationData();
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     _selectedIndex = widget.initialIndex;
-    googleSignIn.onCurrentUserChanged
+    googleSignInList[0].onCurrentUserChanged
         .listen((GoogleSignInAccount? account) async {
       setState(() {
         widget.calendarLogic.currentUser = account;
@@ -286,6 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   PopupMenuButton<int> accountList() {
+    JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
     return PopupMenuButton<int>(
       icon: FaIcon(
         FontAwesomeIcons.google,
@@ -293,16 +295,14 @@ class _HomeScreenState extends State<HomeScreen> {
         color: Colors.green,
       ),
       onSelected: (value) async {
-        if (value == 1) {
-          await handleSignIn();
-        } else if (value == 2) {
-          await handleSignOut();
-        }
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => Intermediary()),
+        );
       },
       itemBuilder: (context) {
         List<PopupMenuEntry<int>> menuItems = [];
-        if (widget.jewelUser.calendarLogicList != null) {
-          for (var calendarLogic in widget.jewelUser.calendarLogicList!) {
+        if (jewelUser.calendarLogicList != null) {
+          for (var calendarLogic in jewelUser.calendarLogicList!) {
             menuItems.add(
               PopupMenuItem<int>(
                 value: 0,

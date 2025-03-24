@@ -40,10 +40,13 @@ bool isLoading = true; // To show loading indicator
     signIn(); //force signin
   }
 
+  
+
   Future<void> signIn() async {
   JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
+
   CalendarLogic calendarLogic = CalendarLogic();
-  calendarLogic.currentUser = await handleSignIn(); // googleapi.dart
+  calendarLogic.currentUser = await handleSignIn(jewelUser); // googleapi.dart
   calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
   
   JewelUser ourUser = await getCurrentJewelUser();
@@ -51,6 +54,7 @@ bool isLoading = true; // To show loading indicator
   print('[Jewel Factory] Our user signed in: ${ourUser.email}');
   jewelUser.updateFrom(ourUser);
   print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
+  print('[ADD CALENDAR] JewelUser CalendarCount: ${jewelUser.calendarLogicList!.length}');
   // After signing in, navigate to the next screen
     Navigator.pushReplacement(
       context,
