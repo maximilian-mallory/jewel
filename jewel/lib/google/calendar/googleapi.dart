@@ -17,14 +17,6 @@ import 'package:jewel/google/calendar/calendar_logic.dart';
 // GoogleSignInAccount object
 GoogleSignInAccount? currentUser;
 
-// Initialize GoogleSignIn instance
-final GoogleSignIn googleSignIn = GoogleSignIn(
-  scopes: scopes,
-  clientId: kIsWeb
-      ? "954035696925-p4j9gbmpjknoc04qjd701r2h5ah190ug.apps.googleusercontent.com"
-      : null,
-);
-
 /* --- Google API Functions --- */
 
 // Function to get events for the current selected day
@@ -187,19 +179,3 @@ DateTime changeDateBy(int days, CalendarLogic calendarLogic){
  
      // Update events when date changes.
   }
-
-// Function to handle signing in
-Future<GoogleSignInAccount?> handleSignIn() async {
-  try {
-    // await handleSignOut();
-    return await googleSignIn.signIn();
-  } catch (error) {
-    print('Sign-In failed: $error');
-  }
-  return null;
-}
-
-// Clear current user and set unauthorized state
-Future<void> handleSignOut() async {
-  await googleSignIn.disconnect();
-}
