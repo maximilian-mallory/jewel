@@ -43,7 +43,6 @@ dependencies:
   googleapis: ^3.0.0
   go_router: ^14.3.0
   cloud_firestore: ^5.4.4
-  awesome_notifications: 0.10.0
   woosmap_flutter: ^1.3.0
   google_maps_flutter: ^2.9.0
   universal_html: ^2.2.4
@@ -62,6 +61,7 @@ dependencies:
   json_annotation: ^4.9.0
   flutter_polyline_points: ^1.0.0
   google_maps_routes: ^1.1.2
+  location: ^5.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

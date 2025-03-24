@@ -14,8 +14,7 @@ import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 Future<List<gcal.Event>> getGoogleEventsData(
     CalendarLogic calendarLogic, BuildContext context) async {
   // Get the current date at midnight local time
-  print(
-      "[GET EVENTS] firebase user is: ${FirebaseAuth.instance.currentUser?.email}");
+  print("[GET EVENTS DayMode] JewelUser CalendarLogic is: ${calendarLogic.calendarApi}");
   DateTime now = calendarLogic.selectedDate;
   DateTime startOfDay = DateTime(now.year, now.month, now.day);
   // Midnight local time today
@@ -37,8 +36,10 @@ Future<List<gcal.Event>> getGoogleEventsData(
   calendarLogic.markers.clear();
   // If events are available and are within the time range, add them to the list
   if (calEvents.items != null) {
+    print('[GET EVENTS] calendar events not null!');
     for (int i = 0; i < calEvents.items!.length; i++) {
       final gcal.Event event = calEvents.items![i];
+      print(event.toString());
       if (event.start == null) {
         continue;
       }
@@ -62,6 +63,7 @@ Future<List<gcal.Event>> getGoogleEventsData(
       }
     }
   }
+  print('[GET EVENTS] Appointments: ${appointments.toString()}');
   return appointments;
 }
 
@@ -236,6 +238,7 @@ Future<gcal.CalendarApi> createCalendarApiInstance(
       authClient); // This is used to make requests to the Google Calendar API
 }
 
+
 class CalendarLogic extends ChangeNotifier {
   Map<String, List<String>> eventHistory = {}; //Stores change history of events
 
@@ -310,7 +313,6 @@ class CalendarLogic extends ChangeNotifier {
   String selectedCalendar = 'primary';
   // DateTime selectedDate = DateTime.now();
   bool isAuthorized = false;
-  DateTime currentDate = DateTime.now();
   bool isDayMode = true;
   Map<String, dynamic> calendars = {};
 
@@ -346,13 +348,13 @@ class CalendarLogic extends ChangeNotifier {
       List<gcal.Event> eventsList = []; //Storing all events
       print(eventsList);
       DateTime startOfPeriod = isDayMode
-          ? currentDate
-          : DateTime(currentDate.year, currentDate.month,
+          ? selectedDate
+          : DateTime(selectedDate.year, selectedDate.month,
               1); // Stored value or midnight today
       DateTime endOfPeriod = isDayMode // if its daymode
-          ? currentDate
+          ? selectedDate
               .add(const Duration(days: 1)) // End of period is 12:00am tomorrow
-          : DateTime(currentDate.year, currentDate.month + 1,
+          : DateTime(selectedDate.year, selectedDate.month + 1,
               0); // Else end of period is 12:00am first day of next month
       // Then fetch events
       do {

@@ -10,14 +10,14 @@ import 'package:jewel/models/external_user.dart';
 import 'package:jewel/models/internal_user.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/widgets/home_screen.dart';
+import 'package:provider/provider.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
 
 /*
   This widget class returns the loading screen. The loading screen opens when the app launches, forcing the user to log in
 */
 class Intermediary extends StatefulWidget{
-  final CalendarLogic calendarLogic;
-  const Intermediary({super.key, required this.calendarLogic});
+  const Intermediary({super.key,});
 
   @override
   _IntermediaryScreenState createState() => _IntermediaryScreenState();  
@@ -41,17 +41,21 @@ bool isLoading = true; // To show loading indicator
   }
 
   Future<void> signIn() async {
-  widget.calendarLogic.currentUser = await handleSignIn(); // googleapi.dart
-  widget.calendarLogic.calendarApi = await createCalendarApiInstance(widget.calendarLogic); // create api instance associated with the account
+  JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
+  CalendarLogic calendarLogic = CalendarLogic();
+  calendarLogic.currentUser = await handleSignIn(); // googleapi.dart
+  calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
   
-  JewelUser jewelUser = await getCurrentJewelUser();
-  jewelUser.addCalendarLogic(widget.calendarLogic);
-  print('[Jewel Factory] Jewel user signed in: ${jewelUser?.email}');
+  JewelUser ourUser = await getCurrentJewelUser();
+  ourUser.addCalendarLogic(calendarLogic);
+  print('[Jewel Factory] Our user signed in: ${ourUser.email}');
+  jewelUser.updateFrom(ourUser);
+  print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
   // After signing in, navigate to the next screen
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => HomeScreen(jewelUser: jewelUser, calendarLogic: widget.calendarLogic, initialIndex: 1,), // Use named parameter
+        builder: (context) => HomeScreen(jewelUser: jewelUser, calendarLogic: calendarLogic, initialIndex: 1,), // Use named parameter
       ),
     );
   }
