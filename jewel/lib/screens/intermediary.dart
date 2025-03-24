@@ -11,6 +11,7 @@ import 'package:jewel/models/internal_user.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
 
 /*
   This widget class returns the loading screen. The loading screen opens when the app launches, forcing the user to log in

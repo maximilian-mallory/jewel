@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/personal_goals/personal_goals.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
 
 class JewelUser {
   final String uid;

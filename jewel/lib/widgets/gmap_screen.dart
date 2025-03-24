@@ -5,6 +5,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:provider/provider.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
 
 /*
   This widget class returns the map frame and its markers
