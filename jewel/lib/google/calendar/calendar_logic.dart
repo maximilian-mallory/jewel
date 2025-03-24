@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -8,8 +7,6 @@ import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:jewel/google/calendar/event_snap.dart'; /* *** UNUSED *** */
-import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 
 // Define the scopes for the Google Calendar API
 const List<String> scopes = <String>[
