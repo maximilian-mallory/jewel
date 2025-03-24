@@ -9,35 +9,11 @@ class MyAppColors {
 class MyAppThemes {
   static ThemeData lightThemeWithTextStyle(String textStyle) {
     TextTheme baseTextTheme = ThemeData.light().textTheme;
+    // Determine the modifier based on the chosen text style option.
+    double multiplier = _getModifier(textStyle);
 
-    // Modify the base text theme based on the selected text style option.
-    switch (textStyle) {
-      case 'extra Large':
-        baseTextTheme = baseTextTheme.copyWith(
-          bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 20),
-          bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 18),
-          titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 22),
-        );
-        break;
-      case 'large':
-        baseTextTheme = baseTextTheme.copyWith(
-          bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 18),
-          bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 16),
-          titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 20),
-        );
-        break;
-      case 'small':
-        baseTextTheme = baseTextTheme.copyWith(
-          bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 10),
-          bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 8),
-          titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 12),
-        );
-        break;
-      case 'default':
-      default:
-        // No modifications for default
-        break;
-    }
+    // Apply the multiplier to the base text theme.
+    baseTextTheme = _applyModifier(baseTextTheme, multiplier);
 
     return ThemeData(
       primaryColor: MyAppColors.lightGreen,
@@ -48,40 +24,41 @@ class MyAppThemes {
 
   static ThemeData darkThemeWithTextStyle(String textStyle) {
     TextTheme baseTextTheme = ThemeData.dark().textTheme;
-
-    // Modify the base text theme based on the selected text style option.
-    switch (textStyle) {
-      case 'extra Large':
-        baseTextTheme = baseTextTheme.copyWith(
-          bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 20),
-          bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 18),
-          titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 22),
-        );
-        break;
-      case 'large':
-        baseTextTheme = baseTextTheme.copyWith(
-          bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 18),
-          bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 16),
-          titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 20),
-        );
-        break;
-      case 'small':
-        baseTextTheme = baseTextTheme.copyWith(
-          bodyLarge: baseTextTheme.bodyLarge?.copyWith(fontSize: 10),
-          bodyMedium: baseTextTheme.bodyMedium?.copyWith(fontSize: 8),
-          titleLarge: baseTextTheme.titleLarge?.copyWith(fontSize: 12),
-        );
-        break;
-      case 'default':
-      default:
-        // No modifications for default
-        break;
-    }
+    double multiplier = _getModifier(textStyle);
+    baseTextTheme = _applyModifier(baseTextTheme, multiplier);
 
     return ThemeData(
       primaryColor: MyAppColors.darkGreen,
       brightness: Brightness.dark,
       textTheme: baseTextTheme,
+    );
+  }
+
+  // Returns a percentage multiplier for the given text style option.
+  static double _getModifier(String textStyle) {
+    switch (textStyle) {
+      case 'extra Large':
+        return 1.2;
+      case 'large':
+        return 1.1;
+      case 'small':
+        return 0.8;
+      case 'default':
+      default:
+        return 1.0;
+    }
+  }
+
+  // Applies the multiplier to key properties of the text theme.
+  static TextTheme _applyModifier(TextTheme theme, double multiplier) {
+    return theme.copyWith(
+      bodyLarge: theme.bodyLarge?.copyWith(
+          fontSize: (theme.bodyLarge?.fontSize ?? 16) * multiplier),
+      bodyMedium: theme.bodyMedium?.copyWith(
+          fontSize: (theme.bodyMedium?.fontSize ?? 14) * multiplier),
+      titleLarge: theme.titleLarge?.copyWith(
+          fontSize: (theme.titleLarge?.fontSize ?? 20) * multiplier),
+      // Add other text styles if desired.
     );
   }
 }
