@@ -8,12 +8,22 @@ on:
 
 jobs:
 
-  build:
-    runs-on: ubuntu-latest
+  # build:
+  #   runs-on: ubuntu-latest
     
-    steps:
-    - uses: actions/checkout@v4
-    - name: Build and tag the Docker image
-      run: docker build . --file Dockerfile --tag jewel:latest
+  #   steps:
+  #   - uses: actions/checkout@v4
+  #   - name: Build and tag the Docker image
+  #     run: docker build . --file Dockerfile --tag jewel:latest
 
-  
+  push:
+    uses: Azure/cli@v2.1.0
+
+    steps:
+    - name: Azure Login
+      uses: Azure/login@v2.2.0
+      with:
+        # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+      
+      
