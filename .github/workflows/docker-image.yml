@@ -17,6 +17,7 @@ jobs:
   #     run: docker build . --file Dockerfile --tag jewel:latest
 
   push:
+    runs-on: ubuntu-latest
 
     steps:
     - name: Azure Login
