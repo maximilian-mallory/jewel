@@ -248,8 +248,17 @@ class CalendarLogic extends ChangeNotifier {
 
   Future<void> addToHistory(String eventId, String change) async {
     final event = await getHistoryFromFireBase(eventId);
+    if (event.getChangelog.isEmpty) {
+      // If the event doesn't exist, create a new one
+      createHistoryInFireBase(EventHistory(
+        eventId: eventId,
+        Id: '',
+        changelog: [change],
+      ));
+    } else {
+      updateChangeLogInFireBase(event, change);
+    }
 
-    updateChangeLogInFireBase(event, change);
     notifyListeners(); // Notify UI of changes
   }
 

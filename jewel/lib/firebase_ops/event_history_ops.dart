@@ -14,6 +14,19 @@ Future<List<EventHistory>> getAllHistoriesFromFireBase() async {
   return history;
 }
 
+void createHistoryInFireBase(EventHistory history) async {
+  String docName = history.getEventId;
+  await FirebaseFirestore.instance
+      .collection('event_history')
+      .doc(docName) // Use group name as document ID
+      .set(history.toJson())
+      .then((docRef) {
+    print('History created successfully with ID: $docName');
+  }).catchError((error) {
+    print('Error creating group: $error');
+  });
+}
+
 void addHistoryToFireBase(EventHistory history) {
   String docName = history.getEventId;
   FirebaseFirestore.instance
