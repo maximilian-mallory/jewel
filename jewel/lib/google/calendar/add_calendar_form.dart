@@ -245,6 +245,39 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
     );
   }
 
+  Widget googleDropdownButton() {
+    return PopupMenuButton<String>(
+      icon: Image.asset('assets/google_logo.png', width: 32, height: 32),
+      onSelected: (String value) {
+        // Do nothing for now
+      },
+      itemBuilder: (BuildContext context) => [
+        PopupMenuItem<String>(
+          value: 'Option 1',
+          child: Text('Option 1'),
+        ),
+        PopupMenuItem<String>(
+          value: 'Option 2',
+          child: Text('Option 2'),
+        ),
+        PopupMenuItem<String>(
+          value: 'Option 3',
+          child: Text('Option 3'),
+        ),
+        PopupMenuItem<String>(
+          value: 'Add New',
+          child: Row(
+            children: [
+              Icon(Icons.add, color: Colors.blue),
+              SizedBox(width: 8),
+              Text('Add New'),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   /// Back button with a background that scales with icon size.
   Widget daymonthBackButton(Map<String, double> res) {
     return InkWell(

@@ -211,7 +211,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          logicList(),
+          accountList(),
           SizedBox(
               width: isWeb
                   ? res['horizontalPadding']! * 0.3
@@ -285,7 +285,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  PopupMenuButton<int> logicList() {
+  PopupMenuButton<int> accountList() {
     return PopupMenuButton<int>(
       icon: FaIcon(
         FontAwesomeIcons.google,
@@ -301,8 +301,8 @@ class _HomeScreenState extends State<HomeScreen> {
       },
       itemBuilder: (context) {
         List<PopupMenuEntry<int>> menuItems = [];
-        if (widget.jewelUser?.calendarLogicList != null) {
-          for (var calendarLogic in widget.jewelUser!.calendarLogicList!) {
+        if (widget.jewelUser.calendarLogicList != null) {
+          for (var calendarLogic in widget.jewelUser.calendarLogicList!) {
             menuItems.add(
               PopupMenuItem<int>(
                 value: 0,
