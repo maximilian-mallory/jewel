@@ -20,10 +20,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Azure Login
+    - name: Azure CLI Login Init
       uses: Azure/login@v2.2.0
       with:
         # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
         creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Azure CLI Login Verify
+      run: az account show
+    - name: Azure CR Login
+      run: az acr login --name jewelcontainers
+      
       
       
