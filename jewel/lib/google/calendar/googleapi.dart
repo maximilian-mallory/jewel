@@ -10,11 +10,14 @@ import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/calendar/event_snap.dart';
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
+import 'package:jewel/event_history/event_history.dart';
+import 'package:jewel/firebase_ops/event_history_ops.dart';
 
 Future<List<gcal.Event>> getGoogleEventsData(
     CalendarLogic calendarLogic, BuildContext context) async {
   // Get the current date at midnight local time
-  print("[GET EVENTS DayMode] JewelUser CalendarLogic is: ${calendarLogic.calendarApi}");
+  print(
+      "[GET EVENTS DayMode] JewelUser CalendarLogic is: ${calendarLogic.calendarApi}");
   DateTime now = calendarLogic.selectedDate;
   DateTime startOfDay = DateTime(now.year, now.month, now.day);
   // Midnight local time today
@@ -238,24 +241,21 @@ Future<gcal.CalendarApi> createCalendarApiInstance(
       authClient); // This is used to make requests to the Google Calendar API
 }
 
-
 class CalendarLogic extends ChangeNotifier {
-  Map<String, List<String>> eventHistory = {}; //Stores change history of events
-
   DateTime _selectedDate = DateTime.now();
 
   DateTime get selectedDate => _selectedDate;
 
-  void addToHistory(String eventId, String change) {
-    if (!eventHistory.containsKey(eventId)) {
-      eventHistory[eventId] = [];
-    }
-    eventHistory[eventId]!.add(change);
+  Future<void> addToHistory(String eventId, String change) async {
+    final event = await getHistoryFromFireBase(eventId);
+
+    updateChangeLogInFireBase(event, change);
     notifyListeners(); // Notify UI of changes
   }
 
-  List<String> getHistory(String eventId) {
-    return eventHistory[eventId] ?? [];
+  Future<List<String>> getHistory(String eventId) async {
+    final event = await getHistoryFromFireBase(eventId);
+    return event.getChangelog;
   }
 
   set selectedDate(DateTime newDate) {

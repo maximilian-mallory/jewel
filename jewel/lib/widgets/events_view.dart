@@ -11,15 +11,17 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/widgets/color_picker.dart';
 import 'package:jewel/widgets/event_grouping.dart';
 import 'package:jewel/models/event_group.dart';
+import 'package:jewel/event_history/event_history.dart';
+import 'package:jewel/firebase_ops/event_history_ops.dart';
 
 /*
   This widget class builds a Calendar widget
   It does not create the controls
 */
 class CalendarEventsView extends StatefulWidget {
-
-  
-  const CalendarEventsView({super.key,});
+  const CalendarEventsView({
+    super.key,
+  });
   @override
   _CalendarEventsView createState() => _CalendarEventsView();
 }
@@ -32,26 +34,26 @@ class _CalendarEventsView extends State<CalendarEventsView> {
     super.initState();
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     jewelUser = Provider.of<JewelUser>(context, listen: false);
-    _scrollController = ScrollController(initialScrollOffset: notifier.getScrollPosition(1) );
-    print('[Events View] Jewel user matched to calendar tools: ${jewelUser?.calendarLogicList?[0].selectedCalendar}');
+    _scrollController =
+        ScrollController(initialScrollOffset: notifier.getScrollPosition(1));
+    print(
+        '[Events View] Jewel user matched to calendar tools: ${jewelUser?.calendarLogicList?[0].selectedCalendar}');
   }
 
   @override
   Widget build(BuildContext context) {
     final isMonthlyViewPrivate = context.watch<ModeToggle>().isMonthlyView;
-    return Consumer<JewelUser>(
-      builder: (context, jewelUser, child) {
-        return Column(
-          children: [
-            Expanded(
-              child: isMonthlyViewPrivate
-                  ? buildMonthlyView(context)
-                  : buildDailyView(context),
-            ),
-          ],
-        );
-      }
-    );
+    return Consumer<JewelUser>(builder: (context, jewelUser, child) {
+      return Column(
+        children: [
+          Expanded(
+            child: isMonthlyViewPrivate
+                ? buildMonthlyView(context)
+                : buildDailyView(context),
+          ),
+        ],
+      );
+    });
   }
 
   // Builds the daily view
@@ -84,13 +86,13 @@ class _CalendarEventsView extends State<CalendarEventsView> {
           // Calendar Events column
           Expanded(
             child: calendarLogic?.events != null
-              ? buildEventsList(calendarLogic!.events)
-              : const Center(
-                  child: Text(
-                    'No events found',
-                    textAlign: TextAlign.center,
+                ? buildEventsList(calendarLogic!.events)
+                : const Center(
+                    child: Text(
+                      'No events found',
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                ),
           ),
         ],
       ),
@@ -511,6 +513,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
             ElevatedButton(
               onPressed: () async {
                 // Update event with new details
+                final history = await getHistoryFromFireBase(event.summary!);
                 final updatedEvent = gcal.Event();
                 updatedEvent.summary = titleController.text;
                 updatedEvent.start = gcal.EventDateTime();
@@ -542,8 +545,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                       event.extendedProperties!.private!['groupColor']!;
                 }
 
-                final calendarLogic =
-                    jewelUser?.calendarLogicList?[0];
+                final calendarLogic = jewelUser?.calendarLogicList?[0];
 
                 final newSummary = updatedEvent.summary ?? "No Title";
 
@@ -606,19 +608,30 @@ class _CalendarEventsView extends State<CalendarEventsView> {
             constraints: BoxConstraints(
               maxHeight: 300, // Set a maximum height for the scrollable area
             ),
-            child: history.isEmpty
-                ? Text('No changes recorded for this event.')
-                : SingleChildScrollView(
+            child: FutureBuilder<List<String>>(
+              future: history,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Text('No changes recorded for this event.');
+                } else {
+                  return SingleChildScrollView(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
-                      children: history
+                      children: snapshot.data!
                           .map((change) => Padding(
                                 padding: const EdgeInsets.only(bottom: 8.0),
                                 child: Text(change),
                               ))
                           .toList(),
                     ),
-                  ),
+                  );
+                }
+              },
+            ),
           ),
           actions: [
             TextButton(
