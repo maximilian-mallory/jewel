@@ -28,8 +28,9 @@ jobs:
     - name: Azure CR Login
       run: az acr login --name jewelcontainers
     - name: Docker Registry Tag and Push
-      run: docker tag jewel jewelcontainers.azurecr.io/jewel:latest
-      run: docker push jewelcontainers.azurecr.io/jewel:latest
+      run: | 
+        docker tag jewel jewelcontainers.azurecr.io/jewel:latest
+        docker push jewelcontainers.azurecr.io/jewel:latest
 
 
       
