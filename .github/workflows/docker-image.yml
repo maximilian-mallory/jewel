@@ -36,6 +36,9 @@ jobs:
       with:
         name: jewel-image
 
+    - name: Load Docker image
+      run: docker load -i jewel.tar
+
     - name: Azure CLI Login Init
       uses: Azure/login@v2.2.0
       with:
@@ -44,7 +47,7 @@ jobs:
 
     - name: Azure CR Login
       run: az acr login --name jewelcontainers
-      
+
     - name: Docker Registry Tag and Push
       run: | 
         docker tag jewel jewelcontainers.azurecr.io/jewel:latest
