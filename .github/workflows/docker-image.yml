@@ -29,7 +29,7 @@ jobs:
       
       - name: Build and tag Docker image
         run: |
-          docker buildx build --file Dockerfile --tag jewel:latest --cache-to=type=local,dest=/tmp/.buildx-cache --cache-from=type=local,src=/tmp/.buildx-cache .
+          docker buildx build --file Dockerfile --tag jewel:latest --load --cache-to=type=local,dest=/tmp/.buildx-cache --cache-from=type=local,src=/tmp/.buildx-cache .
 
       - name: Azure CLI Login Init
         uses: Azure/login@v2.2.0
