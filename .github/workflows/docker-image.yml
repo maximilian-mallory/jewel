@@ -55,7 +55,7 @@ jobs:
             --registry-username ${{ secrets.AZURECR_USERNAME }} \
             --registry-password ${{ secrets.AZURECR_PASSWORD }} \
             --ip-address Public \
-            --dns-name-label jewel \
+            --dns-name-label project-emerald-jewel \
             --ports 80 443 \
             --os-type Linux 
       
