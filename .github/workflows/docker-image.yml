@@ -13,8 +13,10 @@ jobs:
     
     steps:
     - uses: actions/checkout@v4
+    
     - name: Build and tag the Docker image
       run: docker build . --file Dockerfile --tag jewel:latest
+
     - name: Save Docker image as artifact
       run: docker save jewel:latest -o jewel.tar
 
