@@ -52,11 +52,11 @@ jobs:
         uses: Azure/login@v2.2.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
-          
+
       - name: Deploy Jewel Image
         run: |
           az container create \
-            --resource-group jewelcontainers \
+            --resource-group JewelHosting \
             --name jewel \
             --image jewelcontainers.azurecr.io/jewel:latest \
             --cpu 1 --memory 1 \
