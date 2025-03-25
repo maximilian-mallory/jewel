@@ -59,21 +59,21 @@ jobs:
             --ports 80 443 \
             --os-type Linux 
 
-    instance_shutdown:
-      needs: build_push_deploy
-      steps:
-        - name: Azure CLI Login Init
+  instance_shutdown:
+    needs: build_push_deploy
+    steps:
+      - name: Azure CLI Login Init
         uses: Azure/login@v2.2.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-        - name: Azure CR Login
-          run: |
-            az acr login --name jewelcontainers
+      - name: Azure CR Login
+        run: |
+          az acr login --name jewelcontainers
 
-        - name: Save My Credits
-          run: |
-            az container stop
-            --resource-group JewelHosting \
-            --name jewel
+      - name: Save My Credits
+        run: |
+          az container stop
+          --resource-group JewelHosting \
+          --name jewel
       
