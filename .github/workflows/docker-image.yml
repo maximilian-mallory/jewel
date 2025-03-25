@@ -74,7 +74,7 @@ jobs:
 
       - name: Save My Credits
         run: |
-          az container stop
+          az container stop \
           --resource-group JewelHosting \
           --name jewel
       
