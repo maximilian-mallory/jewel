@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  build_and_push:
+  build_push_build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,15 +43,6 @@ jobs:
         run: | 
           docker tag jewel jewelcontainers.azurecr.io/jewel:latest
           docker push jewelcontainers.azurecr.io/jewel:latest
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build_and_push  # Ensures 'deploy' runs AFTER 'push'
-    steps:
-      - name: Azure CLI Login Init
-        uses: Azure/login@v2.2.0
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Deploy Jewel Image
         run: |
