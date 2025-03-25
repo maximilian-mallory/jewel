@@ -8,52 +8,55 @@ on:
 
 jobs:
 
-  build:
+  build_and_push:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Build and tag the Docker image
-      run: docker build . --file Dockerfile --tag jewel:latest
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        run: |
+          docker buildx create --use
+      
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+      
+      - name: Build and tag Docker image
+        run: |
+          docker buildx build --file Dockerfile --tag jewel:latest --cache-to=type=local,dest=/tmp/.buildx-cache --cache-from=type=local,src=/tmp/.buildx-cache .
 
-    - name: Save Docker image as artifact
-      run: docker save jewel:latest -o jewel.tar
+      - name: Azure CLI Login Init
+        uses: Azure/login@v2.2.0
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Upload Docker image artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: jewel-image
-        path: jewel.tar
+      - name: Azure CR Login
+        run: az acr login --name jewelcontainers
 
-  push:
+      - name: Docker Registry Tag and Push
+        run: | 
+          docker tag jewel jewelcontainers.azurecr.io/jewel:latest
+          docker push jewelcontainers.azurecr.io/jewel:latest
+
+  deploy:
     runs-on: ubuntu-latest
-    needs: build  # ✅ This ensures 'push' runs AFTER 'build' is complete
-
+    needs: build_and_push  # Ensures 'deploy' runs AFTER 'push'
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Download Docker image artifact
-      uses: actions/download-artifact@v4
-      with:
-        name: jewel-image
-
-    - name: Load Docker image
-      run: docker load -i jewel.tar
-
-    - name: Azure CLI Login Init
-      uses: Azure/login@v2.2.0
-      with:
-        # Paste output of `az ad sp create-for-rbac` as value of secret variable: AZURE_CREDENTIALS
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Azure CR Login
-      run: az acr login --name jewelcontainers
-
-    - name: Docker Registry Tag and Push
-      run: | 
-        docker tag jewel jewelcontainers.azurecr.io/jewel:latest
-        docker push jewelcontainers.azurecr.io/jewel:latest
-
-
+      - name: Deploy Jewel Image
+        run: |
+          az container create \
+            --resource-group jewelcontainers \
+            --name jewel \
+            --image jewelcontainers.azurecr.io/jewel:latest \
+            --cpu 1 --memory 1 \
+            --registry-login-server jewelcontainers.azurecr.io \
+            --registry-username ${{ secrets.AZURECR_USERNAME }} \
+            --registry-password ${{ secrets.AZURECR_PASSWORD }} \
+            --ip-address Public \
+            --dns-name-label jewel \
+            --ports 80 443
       
