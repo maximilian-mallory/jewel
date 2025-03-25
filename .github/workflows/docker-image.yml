@@ -8,7 +8,7 @@ on:
 
 jobs:
 
-  build_push_build:
+  build_push_deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -58,4 +58,22 @@ jobs:
             --dns-name-label project-emerald-jewel \
             --ports 80 443 \
             --os-type Linux 
+
+    instance_shutdown:
+      needs: build_push_deploy
+      steps:
+        - name: Azure CLI Login Init
+        uses: Azure/login@v2.2.0
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+        - name: Azure CR Login
+          run: |
+            az acr login --name jewelcontainers
+
+        - name: Save My Credits
+          run: |
+            az container stop
+            --resource-group JewelHosting \
+            --name jewel
       
