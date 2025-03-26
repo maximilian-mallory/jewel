@@ -28,7 +28,7 @@ void main() {
           // Add other required providers here
           ChangeNotifierProvider(create: (_) => SelectedIndexNotifier(1)),
           ChangeNotifierProvider(create: (_) => ModeToggle()),
-          ChangeNotifierProvider(create: (_) => JewelUser()),
+          ChangeNotifierProvider(create: (_) => JewelUser(selectedCalendarIndex: 0)),
           ChangeNotifierProvider(create: (_) => UserGroupProvider()),
         ],
         child: MyApp(),

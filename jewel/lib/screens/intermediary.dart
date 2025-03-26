@@ -49,17 +49,23 @@ bool isLoading = true; // To show loading indicator
   calendarLogic.currentUser = await handleSignIn(jewelUser); // googleapi.dart
   calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
   
-  JewelUser ourUser = await getCurrentJewelUser();
-  ourUser.addCalendarLogic(calendarLogic);
-  print('[Jewel Factory] Our user signed in: ${ourUser.email}');
-  jewelUser.updateFrom(ourUser);
+  if( jewelUser.calendarLogicList?.length == 0)
+  {
+    JewelUser ourUser = await getCurrentJewelUser();
+    ourUser.addCalendarLogic(calendarLogic);
+    jewelUser.updateFrom(ourUser);
+  }
+  else
+  {
+    jewelUser.addCalendarLogic(calendarLogic);
+  }
   print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
   print('[ADD CALENDAR] JewelUser CalendarCount: ${jewelUser.calendarLogicList!.length}');
   // After signing in, navigate to the next screen
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => HomeScreen(jewelUser: jewelUser, calendarLogic: calendarLogic, initialIndex: 1,), // Use named parameter
+        builder: (context) => HomeScreen(calendarLogic: calendarLogic, initialIndex: 1,), // Use named parameter
       ),
     );
   }
@@ -68,6 +74,7 @@ bool isLoading = true; // To show loading indicator
     User? firebaseUser = FirebaseAuth.instance.currentUser;
     return JewelUser.fromFirebaseUser(
       firebaseUser!,
+      selectedCalendarIndex: 0
     );
  // User is not logged in
   }

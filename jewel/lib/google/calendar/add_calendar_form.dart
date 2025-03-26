@@ -175,10 +175,9 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
     jewelUser = Provider.of<JewelUser>(context, listen: false);
     calendarLogic = jewelUser.calendarLogicList![0];
     // Listen for authentication state changes.
-    googleSignInList[0].onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
+    googleSignInList[jewelUser.calendarLogicList!.length - 1].onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
       setState(() {
-        calendarLogic.currentUser = account;
-        calendarLogic.isAuthorized = account != null;
+        calendarLogic.currentUser = account!;
       });
       if (account != null) {
         // Fetch events once authenticated.

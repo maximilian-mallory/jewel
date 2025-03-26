@@ -13,6 +13,7 @@ class JewelUser extends ChangeNotifier{
   String? photoUrl;
   List<CalendarLogic>? calendarLogicList;
   List<PersonalGoals>? personalGoalsList;
+  int selectedCalendarIndex = 0;
 
 
   JewelUser({
@@ -21,18 +22,20 @@ class JewelUser extends ChangeNotifier{
     this.personalGoalsList,
     this.displayName,
     this.photoUrl,
-    this.calendarLogicList
+    this.calendarLogicList,
+    required this.selectedCalendarIndex
   });
 
   // Factory constructor to create JewelUser from Firebase User
-  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList, List<PersonalGoals>? personalGoalsList}) {
+  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList, List<PersonalGoals>? personalGoalsList, required int selectedCalendarIndex}) {
     return JewelUser(
       uid: user.uid,
       email: user.email!,
       displayName: user.displayName,
       photoUrl: user.photoURL,
       calendarLogicList: calendarLogicList,
-      personalGoalsList: personalGoalsList
+      personalGoalsList: personalGoalsList,
+      selectedCalendarIndex: selectedCalendarIndex
     );
   }
 
@@ -78,6 +81,14 @@ class JewelUser extends ChangeNotifier{
     notifyListeners();
   }
 
+  void updateSelectedCalendarIndex(int index)
+  {
+    print('[UPDATE INDEX] Current Index: $selectedCalendarIndex');
+    print('[UPDATE INDEX] New Index: $index');
+    selectedCalendarIndex = index;
+    notifyListeners();
+  }
+
 
   // Convert to JSON (useful for Firestore storage)
   Map<String, dynamic> toJson() {
@@ -98,6 +109,7 @@ class JewelUser extends ChangeNotifier{
       displayName: json['displayName'],
       photoUrl: json['photoUrl'],
       calendarLogicList: jsonDecode(json['calendarLogic']),
+      selectedCalendarIndex: json['selectedCalendarIndex']
     );
   }
   

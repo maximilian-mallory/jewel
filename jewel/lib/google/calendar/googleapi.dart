@@ -14,7 +14,7 @@ import 'package:jewel/models/jewel_user.dart';
 import 'package:provider/provider.dart';
 
 Future<List<gcal.Event>> getGoogleEventsData(
-    CalendarLogic calendarLogic, BuildContext context) async {
+  CalendarLogic calendarLogic, BuildContext context) async {
   // Get the current date at midnight local time
   print("[GET EVENTS DayMode] JewelUser CalendarLogic is: ${calendarLogic.calendarApi}");
   DateTime now = calendarLogic.selectedDate;
@@ -210,7 +210,7 @@ Future<GoogleSignInAccount?> handleSignIn(JewelUser jewelUser) async {
     bool? hasExistingAccounts = jewelUser.calendarLogicList?.isNotEmpty;
     if (hasExistingAccounts != null) {
       // Force a new login session by signing in a different user
-      return await googleSignInList[0].signInSilently(suppressErrors: true).then((existingUser) async {
+      return await googleSignInList[jewelUser.calendarLogicList!.length - 1].signInSilently(suppressErrors: true).then((existingUser) async {
         print("[GOOGLE SIGN-IN] Trying to add second account...");
         if (existingUser != null) {
           print('[Google Sign-In] Existing user detected: ${existingUser.email}');
@@ -245,11 +245,10 @@ Future<gcal.CalendarApi> createCalendarApiInstance(
   if (calendarLogic.currentUser == null) {
     print('No current user found.');
   }
-
+  calendarLogic.userEmail = calendarLogic.currentUser!.email;
   final auth = await calendarLogic
       .currentUser?.authentication; // Authenticated against the active user
   final accessToken = auth?.accessToken;
-
   if (accessToken == null) {
     throw Exception('Access token is null.');
   }
@@ -268,7 +267,6 @@ Future<gcal.CalendarApi> createCalendarApiInstance(
       scopes,
     ),
   );
-
   return gcal.CalendarApi(
       authClient); // This is used to make requests to the Google Calendar API
 }
@@ -301,8 +299,6 @@ class CalendarLogic extends ChangeNotifier {
   Future<void> changeDateBy(int days) async {
     selectedDate = _selectedDate.add(Duration(days: days));
   }
-
-  static final CalendarLogic _instance = CalendarLogic._internal();
 
   List<gcal.Event> _events = [];
 
@@ -338,12 +334,8 @@ class CalendarLogic extends ChangeNotifier {
     notifyListeners(); // Notify listeners whenever events are updated
   }
 
-  factory CalendarLogic() {
-    return _instance;
-  }
-
-  CalendarLogic._internal();
   GoogleSignInAccount? currentUser;
+  String userEmail = '';
   late gcal.CalendarApi calendarApi;
   String selectedCalendar = 'primary';
   // DateTime selectedDate = DateTime.now();
