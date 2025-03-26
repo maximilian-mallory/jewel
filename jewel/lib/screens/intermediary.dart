@@ -46,19 +46,12 @@ bool isLoading = true; // To show loading indicator
   JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
 
   CalendarLogic calendarLogic = CalendarLogic();
-  calendarLogic.currentUser = await handleSignIn(jewelUser); // googleapi.dart
+  jewelUser.addCalendarLogic(calendarLogic);
+  calendarLogic.currentUser = (await handleSignIn(jewelUser))!; // googleapi.dart
   calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
   
-  if( jewelUser.calendarLogicList?.length == 0)
-  {
-    JewelUser ourUser = await getCurrentJewelUser();
-    ourUser.addCalendarLogic(calendarLogic);
-    jewelUser.updateFrom(ourUser);
-  }
-  else
-  {
-    jewelUser.addCalendarLogic(calendarLogic);
-  }
+  jewelUser.addCalendarLogic(calendarLogic);
+
   print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
   print('[ADD CALENDAR] JewelUser CalendarCount: ${jewelUser.calendarLogicList!.length}');
   // After signing in, navigate to the next screen

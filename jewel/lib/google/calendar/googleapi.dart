@@ -188,8 +188,6 @@ const List<String> scopes = <String>[
 //       : null,
 // );
 
-List<GoogleSignIn> googleSignInList = [];
-
 GoogleSignIn createGoogleSignInInstance() {
     return GoogleSignIn(
       scopes: scopes,
@@ -199,32 +197,30 @@ GoogleSignIn createGoogleSignInInstance() {
     );
   }
 
-GoogleSignInAccount? currentUser;
-
 // Function to sign in a Google user
 Future<GoogleSignInAccount?> handleSignIn(JewelUser jewelUser) async {
   print("[GOOGLE SIGN-IN] Handling Sign-In...");
-  
+  CalendarLogic? calendarLogic = jewelUser.calendarLogicList?[jewelUser.selectedCalendarIndex!];
   // print(jewelUser.toJson());
   try {
     bool? hasExistingAccounts = jewelUser.calendarLogicList?.isNotEmpty;
     if (hasExistingAccounts != null) {
       // Force a new login session by signing in a different user
-      return await googleSignInList[jewelUser.calendarLogicList!.length - 1].signInSilently(suppressErrors: true).then((existingUser) async {
+      return await calendarLogic!.googleSignInList[jewelUser.calendarLogicList!.length - 1].signInSilently(suppressErrors: true).then((existingUser) async {
         print("[GOOGLE SIGN-IN] Trying to add second account...");
         if (existingUser != null) {
           print('[Google Sign-In] Existing user detected: ${existingUser.email}');
-          googleSignInList.add(createGoogleSignInInstance());
-          return await googleSignInList[1].signIn(); // Prompts new login without logging out the first user
+          calendarLogic.googleSignInList.add(createGoogleSignInInstance());
+          return await calendarLogic.googleSignInList[1].signIn(); // Prompts new login without logging out the first user
         } else {
           print("[GOOGLE SIGN-IN] No Existing Session on second run...");
-          return await googleSignInList[0].signIn(); // No existing session, proceed with normal sign-in
+          return await calendarLogic.googleSignInList[0].signIn(); // No existing session, proceed with normal sign-in
         }
       });
     } else {
       print("[GOOGLE SIGN-IN] No Existing Session on first run...");
-      googleSignInList.add(createGoogleSignInInstance());
-      return await googleSignInList[0].signIn();
+      calendarLogic!.googleSignInList.add(createGoogleSignInInstance());
+      return await calendarLogic.googleSignInList[0].signIn();
     }
   } catch (error) {
     print('Sign-In failed: $error');
@@ -235,20 +231,17 @@ Future<GoogleSignInAccount?> handleSignIn(JewelUser jewelUser) async {
 
 
 //Clear current user and set unauthorized state
-Future<void> handleSignOut() async {
-  await googleSignInList[0].disconnect();
-}
+// Future<void> handleSignOut() async {
+//   await googleSignInList[0].disconnect();
+// }
 
 // Method returns an instance of a calendar API for a users Gmail
 Future<gcal.CalendarApi> createCalendarApiInstance(
     CalendarLogic calendarLogic) async {
-  if (calendarLogic.currentUser == null) {
-    print('No current user found.');
-  }
-  calendarLogic.userEmail = calendarLogic.currentUser!.email;
+  calendarLogic.userEmail = calendarLogic.currentUser.email;
   final auth = await calendarLogic
-      .currentUser?.authentication; // Authenticated against the active user
-  final accessToken = auth?.accessToken;
+      .currentUser.authentication; // Authenticated against the active user
+  final accessToken = auth.accessToken;
   if (accessToken == null) {
     throw Exception('Access token is null.');
   }
@@ -273,6 +266,9 @@ Future<gcal.CalendarApi> createCalendarApiInstance(
 
 
 class CalendarLogic extends ChangeNotifier {
+
+  List<GoogleSignIn> googleSignInList = [];
+
   Map<String, List<String>> eventHistory = {}; //Stores change history of events
 
   DateTime _selectedDate = DateTime.now();
@@ -334,7 +330,7 @@ class CalendarLogic extends ChangeNotifier {
     notifyListeners(); // Notify listeners whenever events are updated
   }
 
-  GoogleSignInAccount? currentUser;
+  late GoogleSignInAccount currentUser;
   String userEmail = '';
   late gcal.CalendarApi calendarApi;
   String selectedCalendar = 'primary';

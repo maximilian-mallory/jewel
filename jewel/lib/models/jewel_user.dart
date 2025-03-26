@@ -37,35 +37,6 @@ class JewelUser extends ChangeNotifier{
     );
   }
 
-  void updateFrom(JewelUser other) {
-    // Update all properties from the other instance
-    if (other.uid != null) {
-      uid = other.uid;
-    }
-
-    if (other.email != null) {
-      email = other.email;
-    }
-    if (other.displayName != null) {
-      displayName = other.displayName;
-    }
-    if (other.photoUrl != null) {
-      photoUrl = other.photoUrl;
-    }
-    
-    // Handle the calendar logic list
-    if (other.calendarLogicList != null) {
-      calendarLogicList = other.calendarLogicList;
-    }
-    
-    // Handle the personal goals list
-    if (other.personalGoalsList != null) {
-      personalGoalsList = other.personalGoalsList;
-    }
-    
-    // Notify listeners about the changes
-    notifyListeners();
-  }
 
   void addCalendarLogic(CalendarLogic logic) async {
     calendarLogicList ??= [];
@@ -75,7 +46,7 @@ class JewelUser extends ChangeNotifier{
 
   void updateCalendarLogic(CalendarLogic updated)
   {
-    calendarLogicList![0] = updated;
+    calendarLogicList![selectedCalendarIndex!] = updated;
     notifyListeners();
   }
 

@@ -133,7 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     jewelUser = Provider.of<JewelUser>(context, listen: false);
     _selectedIndex = widget.initialIndex;
-    googleSignInList[jewelUser.selectedCalendarIndex!].onCurrentUserChanged
+    jewelUser.calendarLogicList![jewelUser.selectedCalendarIndex!].googleSignInList[jewelUser.selectedCalendarIndex!].onCurrentUserChanged
         .listen((GoogleSignInAccount? account) async {
       setState(() {
       });
