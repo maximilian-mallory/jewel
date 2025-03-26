@@ -52,9 +52,10 @@ class CustomNavBar extends StatelessWidget {
             _buildNavItem(context, Icons.settings, 'Settings', 0, sizes),
             _buildNavItem(context, Icons.calendar_month, 'Calendar', 1, sizes),
             _buildNavItem(context, Icons.map, 'Maps', 2, sizes),
-            _buildNavItem(context, Icons.theater_comedy_sharp, 'Test', 3, sizes),
+            _buildNavItem(context, Icons.checklist_sharp, 'Goals', 3, sizes),
             _buildNavItem(context, Icons.warning, 'TestEvent', 4, sizes),
             _buildNavItem(context, Icons.man_2_rounded, 'Groups', 5, sizes),
+            
           ],
         ),
       ),

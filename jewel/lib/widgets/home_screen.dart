@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/screens/goal_screen.dart';
 import 'package:jewel/user_groups/user_group.dart';
 //import 'package:jewel/google/maps/map_screen.dart';
 import 'package:jewel/utils/location.dart';
@@ -18,6 +19,8 @@ import 'package:jewel/screens/test_screen1.dart';
 import 'package:jewel/screens/user_group_screen.dart';
 
 import 'package:jewel/screens/test_screen2.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
+import 'package:jewel/google/calendar/google_sign_in.dart';
 
 /// Returns a map of responsive values based on screen width.
 /// Breakpoints:
@@ -80,7 +83,8 @@ Map<String, double> getResponsiveValues(BuildContext context) {
   };
 }
 
-/// SelectedIndexNotifier tracks the selected index and scroll positions.
+/// SelectedIndexNotifier tracks the selected index and scroll positions.import 'package:jewel/screens/goal_screen.dart';
+
 class SelectedIndexNotifier extends ChangeNotifier {
   int _selectedIndex;
   Map<int, double> _scrollPositions = {};
@@ -149,7 +153,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       CalendarEventsView(),
       MapSample(),
-      Screen1(),
+      GoalScreen(),
       Screen2(),
       UserGroupScreen(),
     ];
