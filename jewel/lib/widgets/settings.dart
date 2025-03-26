@@ -121,7 +121,7 @@ class ColorPickerSetting extends StatefulWidget {
 }
 
 class _ColorPickerSettingState extends State<ColorPickerSetting> {
-  Color _currentColor = Colors.blue;
+  Color _currentColor = Colors.green;
 
   void _pickColor() {
     showDialog(

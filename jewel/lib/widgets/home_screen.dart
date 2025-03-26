@@ -5,6 +5,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/screens/goal_screen.dart';
 //import 'package:jewel/google/maps/map_screen.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/widgets/events_view.dart';
@@ -13,6 +14,7 @@ import 'package:jewel/widgets/settings.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:provider/provider.dart';
 import 'package:jewel/screens/test_screen1.dart';
+import 'package:jewel/screens/goal_screen.dart';
 
 class SelectedIndexNotifier extends ChangeNotifier {
   int _selectedIndex;
@@ -72,7 +74,7 @@ class _HomeScreenState extends State<HomeScreen> {
       SettingsScreen(jewelUser: widget.jewelUser,),
       CalendarEventsView(),
       MapSample(),
-      Screen1(),
+      GoalScreen(),
     ];
   }
 
@@ -153,7 +155,7 @@ Widget build(BuildContext context) {
 
             );
           },
-        )
+        ),
       ],
     ),
     bottomNavigationBar: Container( // this is the actual nav bar
