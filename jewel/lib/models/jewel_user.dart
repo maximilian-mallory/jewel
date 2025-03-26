@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/personal_goals/personal_goals.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
 
 class JewelUser extends ChangeNotifier{
   String? uid;

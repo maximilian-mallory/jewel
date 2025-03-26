@@ -7,6 +7,7 @@ import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 import '../calendar/g_g_merge.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
 
 Future<List<String>> getStreetAddresses() async {
   Map<String, dynamic> sortedEvents = await fetchEventData();
