@@ -5,35 +5,41 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/personal_goals/personal_goals.dart';
+import 'package:jewel/user_groups/user_group.dart';
 
-class JewelUser extends ChangeNotifier{
+class JewelUser extends ChangeNotifier {
   String? uid;
   String? email;
   String? displayName;
   String? photoUrl;
   List<CalendarLogic>? calendarLogicList;
   List<PersonalGoals>? personalGoalsList;
+  List<UserGroup>? userGroupList;
 
-
-  JewelUser({
-    this.uid,
-    this.email,
-    this.personalGoalsList,
-    this.displayName,
-    this.photoUrl,
-    this.calendarLogicList
-  });
+  JewelUser(
+      {this.uid,
+      this.email,
+      this.personalGoalsList,
+      this.displayName,
+      this.photoUrl,
+      this.calendarLogicList,
+      this.userGroupList});
 
   // Factory constructor to create JewelUser from Firebase User
-  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList, List<PersonalGoals>? personalGoalsList}) {
+  factory JewelUser.fromFirebaseUser(User user,
+      {String? role,
+      String? bio,
+      List<CalendarLogic>? calendarLogicList,
+      List<PersonalGoals>? personalGoalsList,
+      List<UserGroup>? userGroupList}) {
     return JewelUser(
-      uid: user.uid,
-      email: user.email!,
-      displayName: user.displayName,
-      photoUrl: user.photoURL,
-      calendarLogicList: calendarLogicList,
-      personalGoalsList: personalGoalsList
-    );
+        uid: user.uid,
+        email: user.email!,
+        displayName: user.displayName,
+        photoUrl: user.photoURL,
+        calendarLogicList: calendarLogicList,
+        personalGoalsList: personalGoalsList,
+        userGroupList: userGroupList);
   }
 
   void updateFrom(JewelUser other) {
@@ -51,17 +57,20 @@ class JewelUser extends ChangeNotifier{
     if (other.photoUrl != null) {
       photoUrl = other.photoUrl;
     }
-    
+
     // Handle the calendar logic list
     if (other.calendarLogicList != null) {
       calendarLogicList = other.calendarLogicList;
     }
-    
+
     // Handle the personal goals list
     if (other.personalGoalsList != null) {
       personalGoalsList = other.personalGoalsList;
     }
-    
+
+    if (other.userGroupList != null) {
+      userGroupList = other.userGroupList;
+    }
     // Notify listeners about the changes
     notifyListeners();
   }
@@ -72,12 +81,10 @@ class JewelUser extends ChangeNotifier{
     notifyListeners();
   }
 
-  void updateCalendarLogic(CalendarLogic updated)
-  {
+  void updateCalendarLogic(CalendarLogic updated) {
     calendarLogicList![0] = updated;
     notifyListeners();
   }
-
 
   // Convert to JSON (useful for Firestore storage)
   Map<String, dynamic> toJson() {
@@ -100,20 +107,22 @@ class JewelUser extends ChangeNotifier{
       calendarLogicList: jsonDecode(json['calendarLogic']),
     );
   }
-  
-  
+
   Future<JewelUser?> getUserFromFirestore(String email) async {
-    DocumentSnapshot doc = await FirebaseFirestore.instance.collection('users').doc('email').get();
+    DocumentSnapshot doc =
+        await FirebaseFirestore.instance.collection('users').doc('email').get();
 
     if (doc.exists) {
       return JewelUser.fromJson(doc.data() as Map<String, dynamic>);
     }
     return null;
   }
-
 }
 
 Future<void> saveUserToFirestore(JewelUser user) async {
-    final docId = user.email; // Use email as document ID
-    await FirebaseFirestore.instance.collection('users').doc(docId).set(user.toJson());
+  final docId = user.email; // Use email as document ID
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(docId)
+      .set(user.toJson());
 }

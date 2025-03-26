@@ -12,21 +12,24 @@ import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
+import 'package:jewel/firebase_ops/user_groups.dart';
 
 /*
   This widget class returns the loading screen. The loading screen opens when the app launches, forcing the user to log in
 */
-class Intermediary extends StatefulWidget{
-  const Intermediary({super.key,});
+class Intermediary extends StatefulWidget {
+  const Intermediary({
+    super.key,
+  });
 
   @override
-  _IntermediaryScreenState createState() => _IntermediaryScreenState();  
+  _IntermediaryScreenState createState() => _IntermediaryScreenState();
 }
-class _IntermediaryScreenState extends State<Intermediary> {
-  
-bool isLoading = true; // To show loading indicator
 
- @override
+class _IntermediaryScreenState extends State<Intermediary> {
+  bool isLoading = true; // To show loading indicator
+
+  @override
   void initState() {
     super.initState();
     // googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async { // Auth State listener
@@ -35,27 +38,37 @@ bool isLoading = true; // To show loading indicator
     //     widget.calendarLogic.isAuthorized = account != null;
     //   });
     // });
-     User? firebaseUser = FirebaseAuth.instance.currentUser;
-    print('[Firebase Auth] Firebase user successfully signed in: ${firebaseUser!.email}');
+    User? firebaseUser = FirebaseAuth.instance.currentUser;
+    print(
+        '[Firebase Auth] Firebase user successfully signed in: ${firebaseUser!.email}');
     signIn(); //force signin
   }
 
   Future<void> signIn() async {
-  JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
-  CalendarLogic calendarLogic = CalendarLogic();
-  calendarLogic.currentUser = await handleSignIn(); // googleapi.dart
-  calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
-  
-  JewelUser ourUser = await getCurrentJewelUser();
-  ourUser.addCalendarLogic(calendarLogic);
-  print('[Jewel Factory] Our user signed in: ${ourUser.email}');
-  jewelUser.updateFrom(ourUser);
-  print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
-  // After signing in, navigate to the next screen
+    JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
+    CalendarLogic calendarLogic = CalendarLogic();
+    calendarLogic.currentUser = await handleSignIn(); // googleapi.dart
+    calendarLogic.calendarApi = await createCalendarApiInstance(
+        calendarLogic); // create api instance associated with the account
+
+    JewelUser ourUser = await getCurrentJewelUser();
+    ourUser.addCalendarLogic(calendarLogic);
+    print('[Jewel Factory] Our user signed in: ${ourUser.email}');
+    ourUser.userGroupList =
+        await getUsersGroups(ourUser.email!); // Get user groups from Firestore
+    print(
+        '[Jewel Factory] User groups: ${ourUser.userGroupList!.map((group) => group.getName).join(', ')}');
+    jewelUser.updateFrom(ourUser);
+    print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
+    // After signing in, navigate to the next screen
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => HomeScreen(jewelUser: jewelUser, calendarLogic: calendarLogic, initialIndex: 1,), // Use named parameter
+        builder: (context) => HomeScreen(
+          jewelUser: jewelUser,
+          calendarLogic: calendarLogic,
+          initialIndex: 1,
+        ), // Use named parameter
       ),
     );
   }
@@ -65,25 +78,33 @@ bool isLoading = true; // To show loading indicator
     return JewelUser.fromFirebaseUser(
       firebaseUser!,
     );
- // User is not logged in
+    // User is not logged in
   }
 
   Future<void> createExternalUser() async {
-    User? user =FirebaseAuth.instance.currentUser;
-    
+    User? user = FirebaseAuth.instance.currentUser;
+
     StoreOpeningHoursPeriod dailyHours = StoreOpeningHoursPeriod();
 
     dailyHours.start = "9:00";
     dailyHours.end = "17:00";
     dailyHours.allDay = false;
-    
-    List<StoreOpeningHoursPeriod> hoursList = List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
 
-   
-    StoreWeeklyOpeningHoursPeriod weeklyHours = StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
-    
-    if (user != null){
-      ExternalUser storeInDatabase = ExternalUser(firebaseUser: user, userType: "contractor", companyName: "Null Contracting", openHours: weeklyHours, title: "contractor", cause: "external contractor", calendars: [{}]);
+    List<StoreOpeningHoursPeriod> hoursList =
+        List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
+
+    StoreWeeklyOpeningHoursPeriod weeklyHours =
+        StoreWeeklyOpeningHoursPeriod(hours: hoursList, isSpecial: false);
+
+    if (user != null) {
+      ExternalUser storeInDatabase = ExternalUser(
+          firebaseUser: user,
+          userType: "contractor",
+          companyName: "Null Contracting",
+          openHours: weeklyHours,
+          title: "contractor",
+          cause: "external contractor",
+          calendars: [{}]);
       print(storeInDatabase.toJson());
       await FirebaseFirestore.instance
           .collection('people') // Collection name
@@ -91,34 +112,40 @@ bool isLoading = true; // To show loading indicator
           .set(storeInDatabase.toJson());
     }
   }
-  
+
   Future<void> createInternalUser() async {
-    final user =FirebaseAuth.instance.currentUser;
-    
+    final user = FirebaseAuth.instance.currentUser;
+
     StoreOpeningHoursPeriod dailyHours = StoreOpeningHoursPeriod();
 
     dailyHours.start = "9:00";
     dailyHours.end = "17:00";
     dailyHours.allDay = false;
-    
-    List<StoreOpeningHoursPeriod> hoursList = List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
 
-    StoreWeeklyOpeningHoursPeriod weeklyHours = StoreWeeklyOpeningHoursPeriod(hours: hoursList,isSpecial: false);
-    
-    if (user != null){
-      InternalUser storeInDatabase = InternalUser(firebaseUser: user, userType: "internal", internalID: "12345678", openHours: weeklyHours, title: "employee", calendars: [{}]);
+    List<StoreOpeningHoursPeriod> hoursList =
+        List<StoreOpeningHoursPeriod>.filled(7, dailyHours);
+
+    StoreWeeklyOpeningHoursPeriod weeklyHours =
+        StoreWeeklyOpeningHoursPeriod(hours: hoursList, isSpecial: false);
+
+    if (user != null) {
+      InternalUser storeInDatabase = InternalUser(
+          firebaseUser: user,
+          userType: "internal",
+          internalID: "12345678",
+          openHours: weeklyHours,
+          title: "employee",
+          calendars: [{}]);
       print(storeInDatabase.toJson());
       await FirebaseFirestore.instance
           .collection('people') // Collection name
           .doc('internal') // Document name
           .set(storeInDatabase.toJson());
-
     }
-
   }
 
-  Future<bool> searchForUser() async{
-    final user =FirebaseAuth.instance.currentUser;
+  Future<bool> searchForUser() async {
+    final user = FirebaseAuth.instance.currentUser;
     final databaseSearch = FirebaseFirestore.instance;
     final externalRef = databaseSearch.collection("people");
     final internalRef = databaseSearch.collection("people");
@@ -126,18 +153,18 @@ bool isLoading = true; // To show loading indicator
     final queryInternal = internalRef.where("firebaseUser", isEqualTo: user);
 
     return true;
-  
   }
-  
+
   @override
-  Widget build(BuildContext context)  { // logo
-  return Scaffold(
-    body: Center(
-      child: Image.asset(
-         'assets/images/jewel205.png', 
-        fit: BoxFit.contain,
+  Widget build(BuildContext context) {
+    // logo
+    return Scaffold(
+      body: Center(
+        child: Image.asset(
+          'assets/images/jewel205.png',
+          fit: BoxFit.contain,
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 }
