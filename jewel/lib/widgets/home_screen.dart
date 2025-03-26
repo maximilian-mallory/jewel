@@ -121,7 +121,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    getLocationData();
+    getLocationData(context);
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     _selectedIndex = widget.initialIndex;
     googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async {

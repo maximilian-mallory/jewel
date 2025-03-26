@@ -1,7 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/utils/location.dart';
+import 'package:permission_handler/permission_handler.dart' as handler;
 
 class SettingsScreen extends StatelessWidget {
   final JewelUser? jewelUser;
@@ -24,24 +27,30 @@ class SettingsScreen extends StatelessWidget {
               title: 'Notifications',
               settings: [
                 NumberInputSetting(title: 'Set Snooze Timer'),
-                ToggleSetting(title: 'Do Not Disturb'),
+                ToggleSetting(
+                  title: 'Do Not Disturb',
+                  ),
               ],
             ),
             SettingsCategory(
               title: 'Privacy',
               settings: [
-                ToggleSetting(title: 'Obfuscate Data'),
-                ToggleSetting(title: 'Show Only Shared Events'),
+                ToggleSetting(
+                  title: 'Obfuscate Data',
+                  ),
+                ToggleSetting(
+                  title: 'Show Only Shared Events',
+                  ),
               ],
             ),
             SettingsCategory(
               title: 'Permissions',
               settings: [
                 ToggleSetting(
-                  title: 'Notification Permission', 
+                  title: 'Notification Permission',
                   ),
                 ToggleSetting(
-                  title: 'Location Permission'
+                  title: 'Location Permission',
                   ),
               ],
             ),
@@ -98,18 +107,106 @@ class ToggleSetting extends StatefulWidget {
   _ToggleSettingState createState() => _ToggleSettingState();
 }
 
-class _ToggleSettingState extends State<ToggleSetting> {
+class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserver {
   bool _value = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Check permission status on initialization for both platforms
+    if (widget.title == 'Location Permission') {
+      _updateLocationPermissionStatus();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (widget.title == 'Location Permission' && state == AppLifecycleState.resumed) {
+      _updateLocationPermissionStatus();
+    }
+  }
+  
+  Future<void> _updateLocationPermissionStatus() async {
+    try {
+      bool hasPermission = await checkLocationPermission();
+      if (mounted) {
+        setState(() {
+          _value = hasPermission;
+          print("Location permission status: $hasPermission");
+        });
+      }
+    } catch (e) {
+      print("Error checking location permission: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    // Remove the permission check from build method to prevent infinite loops
     return SwitchListTile(
       title: Text(widget.title),
       value: _value,
-      onChanged: (bool newValue) {
-        setState(() {
-          _value = newValue;
-        });
+      onChanged: (bool newValue) async {
+        if (widget.title == 'Location Permission') {
+          // Don't change the toggle state yet - only after confirming permission change
+          if (newValue) {
+            // User trying to enable location
+            var locationData = await getLocationData(context);
+            // Only update state after we know if permission was successful
+            _updateLocationPermissionStatus();
+          } else {
+            // User trying to disable location
+            if (kIsWeb) {
+              // Show a dialog with instructions for web users
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Permission Required'),
+                    content: Text('Please manually change the location permission in your browser settings to revoke location permissions'),
+                    actions: <Widget>[
+                      ElevatedButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            } else if (!kIsWeb) {
+              // Don't change toggle state yet
+              try {
+                // Request location permission
+                await handler.openAppSettings();
+                
+                // Re-check permission after settings opened
+                // Need a small delay to allow user to change settings
+                Future.delayed(Duration(seconds: 2), () async {
+                  if (mounted) {
+                    _updateLocationPermissionStatus();
+                  }
+                });
+                
+              } catch (e) {
+                print("Error opening app settings: $e");
+              }
+            }
+          }
+        } else {
+          // For non-location toggles, update immediately
+          setState(() {
+            _value = newValue;
+          });
+        }
       },
     );
   }
