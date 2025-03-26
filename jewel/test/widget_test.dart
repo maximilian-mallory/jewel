@@ -7,13 +7,33 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:jewel/google/calendar/mode_toggle.dart';
+import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/user_groups/user_group_provider.dart';
+import 'package:jewel/widgets/home_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:jewel/main.dart';
+import 'package:jewel/utils/text_style_notifier.dart';
 import 'package:jewel/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
-    await tester.pumpWidget(MyApp());
+    await tester.pumpWidget(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => TextStyleNotifier()),
+          // Add other required providers here
+          ChangeNotifierProvider(create: (_) => SelectedIndexNotifier(1)),
+          ChangeNotifierProvider(create: (_) => ModeToggle()),
+          ChangeNotifierProvider(create: (_) => JewelUser()),
+          ChangeNotifierProvider(create: (_) => UserGroupProvider()),
+        ],
+        child: MyApp(),
+      ),
+    );
 
     // Verify that our counter starts at 0.
     expect(find.text('0'), findsOneWidget);

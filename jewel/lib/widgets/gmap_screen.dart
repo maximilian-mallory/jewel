@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/models/jewel_user.dart';
 import 'package:provider/provider.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 
@@ -31,7 +32,6 @@ class MapSampleState extends State<MapSample> {
       Completer<GoogleMapController>();
 
 
-  
   static const CameraPosition _statPos = CameraPosition(
     target: LatLng(44.8742, -91.9195),
     zoom: 14.4746,
@@ -55,7 +55,8 @@ class MapSampleState extends State<MapSample> {
    @override
     void didChangeDependencies() {
       super.didChangeDependencies();
-      final calendarLogic = Provider.of<CalendarLogic>(context); // Access the CalendarLogic instance
+      final JewelUser jewelUser = Provider.of<JewelUser>(context);
+      final calendarLogic = jewelUser.calendarLogicList![0]; // Access the CalendarLogic instance
       drawRouteOnMap(calendarLogic);
     } 
 
@@ -96,47 +97,39 @@ class MapSampleState extends State<MapSample> {
     }
   
   @override
-  Widget build(BuildContext context) {
-    final calendarLogic = Provider.of<CalendarLogic>(context); // app level Calendar Auth object
- 
-  /*List<LatLng> latlen = [];
-
-    calendarLogic.markers.toList().forEach((marker){
-      latlen.add(marker.position);
-    });
-
-    _polylines.add(
-          Polyline(
-            polylineId: PolylineId('1'),
-            points: latlen,
-            color: Colors.green,
-          )
-      );*/
-    
-     return Scaffold(
-      body: Column(
-        children: [
-          // Define a fixed height for the Google Map
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.735, // based on a percentage of the device
-            child: GoogleMap(
-              mapType: MapType.hybrid, // interface type
-              initialCameraPosition: _statPos,
-              onMapCreated: (GoogleMapController controller) async {
-                _controller.complete(controller);
-                //<LatLng> coords = await convertAddressToCoords(calendarLogic.events);
-                //for (int marker = 0; marker < calendarLogic.markers.length; marker++) {
-             
-              },
-              markers: calendarLogic.markers.toSet(), // this adds the list of markers, markers must be of type Set<Marker>
-              polylines: _polylines,
+Widget build(BuildContext context) {
+  return Scaffold(
+    body: Column(
+      children: [
+        // Define a fixed height for the Google Map
+        SizedBox(
+          height: MediaQuery.of(context).size.height * 0.735, // based on a percentage of the device
+          child: Consumer<JewelUser>(
+            builder: (context, jewelUser, child) {
+              final calendarLogic = jewelUser.calendarLogicList?[0];
               
-            ),
+              if (calendarLogic == null) {
+                return const Center(
+                  child: CircularProgressIndicator(),
+                );
+              }
+              
+              return GoogleMap(
+                mapType: MapType.hybrid, // interface type
+                initialCameraPosition: _statPos,
+                onMapCreated: (GoogleMapController controller) async {
+                  _controller.complete(controller);
+                },
+                markers: calendarLogic.markers.toSet(), // this adds the list of markers
+                polylines: _polylines,
+              );
+            },
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
 
   Future<void> _goToTheLake() async { // you can add buttons that will take you to certain locations
     final GoogleMapController controller = await _controller.future;

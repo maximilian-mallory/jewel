@@ -6,11 +6,10 @@ import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 
-import 'home.dart';
+// USED FOR FIRST AUTH
 
 class AuthGate extends StatelessWidget {
-  final CalendarLogic calendarLogic;
-  const AuthGate({super.key, required this.calendarLogic});
+  const AuthGate({super.key, });
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +27,7 @@ class AuthGate extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 child: AspectRatio(
                   aspectRatio: 1,
-                  child: Image.asset('flutterfire_300x.png'),
+                  child: Image.asset('jewel.png'),
                 ),
               );
             },
@@ -54,14 +53,14 @@ class AuthGate extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 child: AspectRatio(
                   aspectRatio: 1,
-                  child: Image.asset('flutterfire_300x.png'),
+                  child: Image.asset('assets/images/jewel205.png'),
                 ),
               );
             },
           );
         }
 
-        return Intermediary(calendarLogic: calendarLogic);
+        return Intermediary();
       },
     );
   }

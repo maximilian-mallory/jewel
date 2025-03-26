@@ -3,7 +3,6 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
-  awesome_notifications
   cloud_firestore
   desktop_webview_auth
   firebase_auth

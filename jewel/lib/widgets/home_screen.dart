@@ -5,6 +5,9 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/user_groups/user_group.dart';
+//import 'package:jewel/google/maps/map_screen.dart';
+import 'package:jewel/utils/location.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/widgets/events_view.dart';
 import 'package:jewel/widgets/gmap_screen.dart';
@@ -12,6 +15,8 @@ import 'package:jewel/widgets/settings.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:provider/provider.dart';
 import 'package:jewel/screens/test_screen1.dart';
+import 'package:jewel/screens/user_group_screen.dart';
+
 import 'package:jewel/screens/test_screen2.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/google_sign_in.dart';
@@ -26,7 +31,11 @@ import 'package:jewel/google/calendar/google_sign_in.dart';
 ///  - < 375px: Small Smartphone
 Map<String, double> getResponsiveValues(BuildContext context) {
   final double screenWidth = MediaQuery.of(context).size.width;
-  double horizontalPadding, verticalPadding, iconSize, buttonPadding, titleFontSize;
+  double horizontalPadding,
+      verticalPadding,
+      iconSize,
+      buttonPadding,
+      titleFontSize;
   if (screenWidth >= 1440) {
     horizontalPadding = 64.0;
     verticalPadding = 40.0;
@@ -122,23 +131,29 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    getLocationData();
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     _selectedIndex = widget.initialIndex;
-    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
+    googleSignIn.onCurrentUserChanged
+        .listen((GoogleSignInAccount? account) async {
       setState(() {
         widget.calendarLogic.currentUser = account;
         widget.calendarLogic.isAuthorized = account != null;
       });
 
-      widget.jewelUser.calendarLogicList?[0].events = await getGoogleEventsData(widget.calendarLogic, context);
-      
+      widget.jewelUser.calendarLogicList?[0].events =
+          await getGoogleEventsData(widget.calendarLogic, context);
     });
-    _screens = [ // widgets available in the nav bar
-      SettingsScreen(jewelUser: widget.jewelUser,),
-      CalendarEventsView(jewelUser: widget.jewelUser),
+    _screens = [
+      // widgets available in the nav bar
+      SettingsScreen(
+        jewelUser: widget.jewelUser,
+      ),
+      CalendarEventsView(),
       MapSample(),
       Screen1(),
       Screen2(),
+      UserGroupScreen(),
     ];
   }
 
@@ -152,7 +167,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void updateSelectedCalendar(String calendarId) {
     setState(() async {
       widget.calendarLogic.selectedCalendar = calendarId;
-      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
+      widget.calendarLogic.events =
+          await getGoogleEventsData(widget.calendarLogic, context);
     });
   }
 
@@ -183,7 +199,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       height: headerHeight,
       width: double.infinity,
-      padding: EdgeInsets.all(isWeb ? res['horizontalPadding']! : res['horizontalPadding']! * 90.8),
+      padding: EdgeInsets.all(
+          isWeb ? res['horizontalPadding']! : res['horizontalPadding']! * 90.8),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
         boxShadow: [
@@ -197,11 +214,15 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         children: [
           logicList(),
-          SizedBox(width: isWeb ? res['horizontalPadding']! * 0.3 : res['horizontalPadding']! * 0.2),
+          SizedBox(
+              width: isWeb
+                  ? res['horizontalPadding']! * 0.3
+                  : res['horizontalPadding']! * 0.2),
           // calTools container width adjusts based on responsive value
           isWeb
               ? Flexible(child: calTools())
-              : Flexible(child: SizedBox(width: res['horizontalPadding']! * 10)),
+              : Flexible(
+                  child: SizedBox(width: res['horizontalPadding']! * 10)),
           const SizedBox(width: 10),
           // Conditionally display Jewel logo only if not a smartphone.
           if (!isSmartphone)
@@ -220,8 +241,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(12),
                 child: Image.asset(
                   'assets/images/jewel205.png',
-                  height: isWeb ? res['iconSize']! * 1.5 : res['iconSize']! * 0.8,
-                  width: isWeb ? res['iconSize']! * 1.5 : res['iconSize']! * 0.8,
+                  height:
+                      isWeb ? res['iconSize']! * 1.5 : res['iconSize']! * 0.8,
+                  width:
+                      isWeb ? res['iconSize']! * 1.5 : res['iconSize']! * 0.8,
                 ),
               ),
             ),
@@ -242,7 +265,10 @@ class _HomeScreenState extends State<HomeScreen> {
           Consumer<SelectedIndexNotifier>(
             builder: (context, selectedIndexNotifier, _) {
               return SizedBox(
-                height: MediaQuery.of(context).size.height - getHeaderHeight(context) - (kIsWeb ? 0 : 24) - (MediaQuery.of(context).size.height * 0.1325),
+                height: MediaQuery.of(context).size.height -
+                    getHeaderHeight(context) -
+                    (kIsWeb ? 0 : 24) -
+                    (MediaQuery.of(context).size.height * 0.1325),
                 child: _screens[selectedIndexNotifier.selectedIndex],
               );
             },
@@ -323,7 +349,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Align(
             alignment: Alignment.center,
             child: AuthenticatedCalendar(
-              calendarLogic: widget.calendarLogic,
             ),
           ),
         ),

@@ -19,42 +19,58 @@ import 'package:jewel/google/calendar/calendar_logic.dart';
 */
 class CalendarEventsView extends StatefulWidget {
 
-  final JewelUser? jewelUser;
-  const CalendarEventsView({super.key, required this.jewelUser});
+  
+  const CalendarEventsView({super.key,});
   @override
   _CalendarEventsView createState() => _CalendarEventsView();
 }
 
 class _CalendarEventsView extends State<CalendarEventsView> {
   late ScrollController _scrollController;
-
+  late JewelUser? jewelUser;
+  late CalendarLogic calendarLogic;
   @override
   void initState() {
     super.initState();
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
+    jewelUser = Provider.of<JewelUser>(context, listen: false);
+    calendarLogic = jewelUser!.calendarLogicList![0];
     _scrollController = ScrollController(initialScrollOffset: notifier.getScrollPosition(1) );
-    print('[Events View] Jewel user matched to calendar tools: ${widget.jewelUser?.calendarLogicList?[0].events.toString()}');
+    print('[Events View] Jewel user matched to calendar tools: ${jewelUser?.calendarLogicList?[0].selectedCalendar}');
+    print('[Events View] Init State events: ${jewelUser?.calendarLogicList?[0].events.toString()}');
   }
 
   @override
   Widget build(BuildContext context) {
     final isMonthlyViewPrivate = context.watch<ModeToggle>().isMonthlyView;
-    return Column(
-      children: [
-        Expanded(
-          child: isMonthlyViewPrivate
-              ? buildMonthlyView(context)
-              : buildDailyView(context),
-        ),
-      ],
+    return Consumer<JewelUser>(
+      builder: (context, jewelUser, child) {
+        return Column(
+          children: [
+            Expanded(
+              child: isMonthlyViewPrivate
+                  ? buildMonthlyView(context)
+                  : buildDailyView(context),
+            ),
+          ],
+        );
+      }
     );
   }
 
   // Builds the daily view
   Widget buildDailyView(BuildContext context) {
-    final calendarLogic = Provider.of<CalendarLogic>(context);
-
-    return SingleChildScrollView(
+  return FutureBuilder<List<gcal.Event>>(
+    future: getGoogleEventsData(calendarLogic, context), // Create a method that returns your Future<List<Event>>
+    builder: (context, snapshot) {
+      if (snapshot.connectionState == ConnectionState.waiting) {
+        return Center(child: CircularProgressIndicator());
+      } else if (snapshot.hasError) {
+        return Center(child: Text('Error loading events: ${snapshot.error}'));
+      }
+      final events = snapshot.data;
+      
+      return SingleChildScrollView(
       controller: _scrollController,
       scrollDirection: Axis.vertical,
       child: Row(
@@ -79,45 +95,19 @@ class _CalendarEventsView extends State<CalendarEventsView> {
           ),
           // Calendar Events column
           Expanded(
-            child: FutureBuilder<List<gcal.Event>>(
-              // FutureBuilders lets us make asyncronous calls to methods that return lists of widgets with the asynchronously retrieved data
-              future: getGoogleEventsData(calendarLogic, context),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                } else if (snapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'EventsViewError: ${snapshot.error}',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.red),
-                    ),
-                  );
-                } else if (snapshot.hasData) {
-                  return buildEventsList(snapshot
-                      .data!); // this is our list of widgets that we pass the list building method, which returns our second column
-                } else {
-                  return const Center(
-                    child: Text(
-                      'No events found',
-                      textAlign: TextAlign.center,
-                    ),
-                  );
-                }
-              },
-            ),
+            child: buildEventsList(events!)
           ),
         ],
       ),
     );
-  }
+    }
+  );
+}
 
 // Builds the monthly view
   Widget buildMonthlyView(BuildContext context) {
-    final calendarLogic = Provider.of<CalendarLogic>(context);
-    final DateTime now = calendarLogic.selectedDate;
+    final calendarLogic = jewelUser?.calendarLogicList?[0];
+    final DateTime now = calendarLogic!.selectedDate;
     final DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
     final int daysInMonth = DateTime(now.year, now.month + 1, 0).day;
     final int firstWeekday = (firstDayOfMonth.weekday % 7) + 1;
@@ -406,8 +396,8 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   }
 
   Future<void> _editEvent(BuildContext context, gcal.Event event) async {
-    final calendarLogic = Provider.of<CalendarLogic>(context, listen: false);
-    final events = await getGoogleEventsData(calendarLogic, context);
+    final calendarLogic = jewelUser?.calendarLogicList?[0];
+    final events = await getGoogleEventsData(calendarLogic!, context);
 
     TextEditingController titleController =
         TextEditingController(text: event.summary ?? "No Title");
@@ -560,7 +550,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                 }
 
                 final calendarLogic =
-                    Provider.of<CalendarLogic>(context, listen: false);
+                    jewelUser?.calendarLogicList?[0];
 
                 final newSummary = updatedEvent.summary ?? "No Title";
 
@@ -581,7 +571,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                   changeLog += "\nGroup Changed";
                 }
 
-                calendarLogic.addToHistory(event.id!, changeLog);
+                calendarLogic!.addToHistory(event.id!, changeLog);
 
                 try {
                   await calendarLogic.calendarApi.events.patch(
@@ -611,8 +601,8 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   }
 
   void _showHistoryDialog(BuildContext context, String eventId) {
-    final calendarLogic = Provider.of<CalendarLogic>(context, listen: false);
-    final history = calendarLogic.getHistory(eventId);
+    CalendarLogic? calendarLogic = jewelUser!.calendarLogicList?[0];
+    final history = calendarLogic!.getHistory(eventId);
 
     showDialog(
       context: context,
