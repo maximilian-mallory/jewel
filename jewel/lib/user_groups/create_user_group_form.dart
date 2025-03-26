@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'user_group.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:jewel/firebase_ops/user_groups.dart';
 import 'user_group_provider.dart';
 
 class CreateUserGroupForm extends StatefulWidget {
@@ -82,13 +84,20 @@ class _CreateUserGroupFormState extends State<CreateUserGroupForm> {
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
                       _formKey.currentState!.save();
-                      UserGroup newUserGroup = UserGroup(
-                        name: _name,
-                        description: _description,
-                        private: _private,
-                        password: _password,
-                      );
-                      userGroupProvider.addUserGroup(newUserGroup);
+
+                      final user = FirebaseAuth.instance.currentUser;
+
+                      if (user != null) {
+                        UserGroup newUserGroup = UserGroup(
+                          name: _name,
+                          description: _description,
+                          private: _private,
+                          password: _password,
+                          members: [user.email!],
+                        );
+                        userGroupProvider.addUserGroup(newUserGroup);
+                        addGroupToFireBase(newUserGroup);
+                      }
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('User Group Created')),
                       );

@@ -1,0 +1,80 @@
+name: DockerDeploy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build_push_deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        run: |
+          docker buildx create --use
+      
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+            ${{ runner.os }}-
+            default-
+      
+      - name: Build and tag Docker image
+        run: |
+          docker buildx build --file Dockerfile --tag jewel:latest --load --cache-to=type=local,dest=/tmp/.buildx-cache --cache-from=type=local,src=/tmp/.buildx-cache .
+
+      - name: Azure CLI Login Init
+        uses: Azure/login@v2.2.0
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Azure CR Login
+        run: az acr login --name jewelcontainers
+
+      - name: Docker Registry Tag and Push
+        run: | 
+          docker tag jewel jewelcontainers.azurecr.io/jewel:latest
+          docker push jewelcontainers.azurecr.io/jewel:latest
+
+      - name: Deploy Jewel Image
+        run: |
+          az container create \
+            --resource-group JewelHosting \
+            --name jewel \
+            --image jewelcontainers.azurecr.io/jewel:latest \
+            --cpu 1 --memory 1 \
+            --registry-login-server jewelcontainers.azurecr.io \
+            --registry-username ${{ secrets.AZURECR_USERNAME }} \
+            --registry-password ${{ secrets.AZURECR_PASSWORD }} \
+            --ip-address Public \
+            --dns-name-label project-emerald-jewel \
+            --ports 80 443 \
+            --os-type Linux 
+
+  instance_shutdown:
+    runs-on: ubuntu-latest
+    needs: build_push_deploy
+    steps:
+      - name: Azure CLI Login Init
+        uses: Azure/login@v2.2.0
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Azure CR Login
+        run: |
+          az acr login --name jewelcontainers
+
+      - name: Save My Credits
+        run: |
+          az container stop \
+          --resource-group JewelHosting \
+          --name jewel
+      
