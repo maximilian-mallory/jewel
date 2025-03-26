@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:jewel/google_events/events_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
+import 'package:jewel/google/calendar/calendar_logic.dart';
 
 // Screen2 class to display the AddEvent widget
 class Screen2 extends StatelessWidget {

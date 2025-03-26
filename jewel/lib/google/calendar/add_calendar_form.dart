@@ -12,6 +12,8 @@ import 'package:jewel/google/calendar/mode_toggle.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
+import 'package:jewel/google/calendar/google_sign_in.dart';
 
 /// Returns a map of responsive values based on screen width.
 /// Breakpoints based on specific device widths:

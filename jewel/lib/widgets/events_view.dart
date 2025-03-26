@@ -11,6 +11,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/widgets/color_picker.dart';
 import 'package:jewel/widgets/event_grouping.dart';
 import 'package:jewel/models/event_group.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
 
 /*
   This widget class builds a Calendar widget

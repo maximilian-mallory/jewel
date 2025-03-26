@@ -4,6 +4,7 @@ import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart'; // new
 import 'package:flutter/material.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/screens/intermediary.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
 
 // USED FOR FIRST AUTH
 
