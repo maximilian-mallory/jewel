@@ -173,7 +173,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   void initState() {
     super.initState();
     jewelUser = Provider.of<JewelUser>(context, listen: false);
-    calendarLogic = jewelUser.calendarLogicList![0];
+    calendarLogic = jewelUser.calendarLogicList![jewelUser.selectedCalendarIndex!];
     // Listen for authentication state changes.
     googleSignInList[jewelUser.calendarLogicList!.length - 1].onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
       setState(() {

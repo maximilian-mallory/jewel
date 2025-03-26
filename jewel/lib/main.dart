@@ -57,7 +57,7 @@ Future<void> main() async {
       providers: [
         ChangeNotifierProvider(
           // for the auth object
-          create: (_) => JewelUser(selectedCalendarIndex: 0),
+          create: (_) => JewelUser(),
         ),
         ChangeNotifierProvider(
           // keeps track of what screen the user is on

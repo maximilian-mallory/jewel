@@ -73,8 +73,7 @@ bool isLoading = true; // To show loading indicator
   Future<JewelUser> getCurrentJewelUser() async {
     User? firebaseUser = FirebaseAuth.instance.currentUser;
     return JewelUser.fromFirebaseUser(
-      firebaseUser!,
-      selectedCalendarIndex: 0
+      firebaseUser!
     );
  // User is not logged in
   }
