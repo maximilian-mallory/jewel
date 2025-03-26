@@ -66,7 +66,6 @@ Future<EventHistory> getHistoryFromFireBase(String eventId) async {
     print('No history found for eventId: $eventId');
     return EventHistory(
       eventId: eventId,
-      Id: '',
       changelog: [],
     );
   }

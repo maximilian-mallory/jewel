@@ -252,7 +252,6 @@ class CalendarLogic extends ChangeNotifier {
       // If the event doesn't exist, create a new one
       createHistoryInFireBase(EventHistory(
         eventId: eventId,
-        Id: '',
         changelog: [change],
       ));
     } else {
