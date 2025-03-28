@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
+import 'package:flutter/foundation.dart';
 // new
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -9,12 +10,14 @@ import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/external_user.dart';
 import 'package:jewel/models/internal_user.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/utils/background_deployer.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/google_sign_in.dart';
-
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 /*
   This widget class returns the loading screen. The loading screen opens when the app launches, forcing the user to log in
 */
@@ -48,6 +51,22 @@ bool isLoading = true; // To show loading indicator
   calendarLogic.currentUser = await handleSignIn(); // googleapi.dart
   calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
   
+  // Add these lines to store calendar API globally and register background tasks
+  if (!kIsWeb) {
+    final auth = await calendarLogic.currentUser!.authentication;
+    if (auth.accessToken != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('calendar_access_token', auth.accessToken!);
+      
+      // Request notification permissions and register background tasks
+      await Permission.notification.request();
+      registerBackgroundTasks();
+      
+      print("[BACKGROUND] Registered background tasks with access token");
+    }
+  }
+
+
   JewelUser ourUser = await getCurrentJewelUser();
   ourUser.addCalendarLogic(calendarLogic);
   print('[Jewel Factory] Our user signed in: ${ourUser.email}');

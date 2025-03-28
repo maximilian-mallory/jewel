@@ -9,8 +9,11 @@ import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/screens/firebase_login_screen.dart';
 import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/screens/test_screen1.dart';
+import 'package:jewel/utils/background_deployer.dart';
 import 'package:jewel/widgets/home_screen.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:jewel/notifications.dart';
 import 'package:flutter/foundation.dart';
@@ -34,6 +37,14 @@ Future<void> main() async {
     await dotenv.load(fileName: "assets/.env");
   } else {
     await dotenv.load(fileName: ".env");
+  }
+  if(!kIsWeb) {
+    final prefs = await SharedPreferences.getInstance();
+    if(prefs.getString('calendar_access_token') != null) {
+      print("Found access token, so intermediary screen will be skipped ");
+      await Permission.notification.request();
+      registerBackgroundTasks();
+    }
   }
 
   // Initialize Firebase
