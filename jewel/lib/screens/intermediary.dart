@@ -54,7 +54,7 @@ bool isLoading = true; // To show loading indicator
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => HomeScreen(jewelUser: jewelUser, calendarLogic: calendarLogic, initialIndex: 1,), // Use named parameter
+        builder: (context) => HomeScreen(initialIndex: 1,), // Use named parameter
       ),
     );
   }

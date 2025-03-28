@@ -73,9 +73,9 @@ class JewelUser extends ChangeNotifier{
     notifyListeners();
   }
 
-  void updateCalendarLogic(CalendarLogic updated)
+  void updateCalendarLogic(CalendarLogic updated, int index)
   {
-    calendarLogicList![0] = updated;
+    calendarLogicList![index] = updated;
     notifyListeners();
   }
 

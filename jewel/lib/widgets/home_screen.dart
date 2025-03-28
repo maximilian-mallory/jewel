@@ -110,14 +110,10 @@ class SelectedIndexNotifier extends ChangeNotifier {
 }
 
 class HomeScreen extends StatefulWidget {
-  final CalendarLogic calendarLogic;
   final int initialIndex;
-  final JewelUser jewelUser;
 
   const HomeScreen({
     super.key,
-    required this.jewelUser,
-    required this.calendarLogic,
     required this.initialIndex,
   });
 
@@ -129,6 +125,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late int _selectedIndex = widget.initialIndex;
   late gcal.CalendarApi calendarApi;
   late final List<Widget> _screens;
+  late JewelUser jewelUser;
+  late CalendarLogic calendarLogic;
   bool isWeb = kIsWeb;
 
   @override
@@ -136,21 +134,23 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     getLocationData();
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
+    jewelUser = Provider.of<JewelUser>(context, listen:false);
+    int selectedCalendarIndex = jewelUser.calendarLogicList!.length -1;
     _selectedIndex = widget.initialIndex;
-    googleSignInList[0].onCurrentUserChanged
+    googleSignInList[selectedCalendarIndex].onCurrentUserChanged
         .listen((GoogleSignInAccount? account) async {
       setState(() {
-        widget.calendarLogic.currentUser = account;
-        widget.calendarLogic.isAuthorized = account != null;
+        calendarLogic.currentUser = account;
+        calendarLogic.isAuthorized = account != null;
       });
 
-      widget.jewelUser.calendarLogicList?[0].events =
-          await getGoogleEventsData(widget.calendarLogic, context);
+      jewelUser.calendarLogicList?[selectedCalendarIndex].events =
+          await getGoogleEventsData(calendarLogic, context);
     });
     _screens = [
       // widgets available in the nav bar
       SettingsScreen(
-        jewelUser: widget.jewelUser,
+        jewelUser: jewelUser,
       ),
       CalendarEventsView(),
       MapSample(),
@@ -169,9 +169,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void updateSelectedCalendar(String calendarId) {
     setState(() async {
-      widget.calendarLogic.selectedCalendar = calendarId;
-      widget.calendarLogic.events =
-          await getGoogleEventsData(widget.calendarLogic, context);
+      calendarLogic.selectedCalendar = calendarId;
+      calendarLogic.events =
+          await getGoogleEventsData(calendarLogic, context);
     });
   }
 
