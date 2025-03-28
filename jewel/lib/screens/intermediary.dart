@@ -1,10 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
-// new
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
-
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/external_user.dart';
 import 'package:jewel/models/internal_user.dart';
@@ -49,6 +47,7 @@ bool isLoading = true; // To show loading indicator
     calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
 
     jewelUser.addCalendarLogic(calendarLogic);
+    jewelUser.updateUserGroups(await getUsersGroups(jewelUser.email!));
     print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
     // After signing in, navigate to the next screen
     Navigator.of(context).pushAndRemoveUntil(

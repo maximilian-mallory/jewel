@@ -56,3 +56,17 @@ Future<void> updateGroupMembersInFireBase(UserGroup group) async {
     print('Error updating group members: $error');
   });
 }
+
+Future<List<UserGroup>> getUsersGroups(String user) async {
+  List<UserGroup> groups = [];
+  await FirebaseFirestore.instance
+      .collection('user_group')
+      .where('members', arrayContains: user)
+      .get()
+      .then((groupSnapshot) {
+    for (var docSnapshot in groupSnapshot.docs) {
+      groups.add(UserGroup.fromJson(docSnapshot.data()));
+    }
+  });
+  return groups;
+}
