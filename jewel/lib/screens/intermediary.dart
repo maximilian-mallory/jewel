@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
+import 'package:jewel/firebase_ops/user_groups.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/external_user.dart';
 import 'package:jewel/models/internal_user.dart';
