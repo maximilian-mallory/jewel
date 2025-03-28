@@ -7,45 +7,7 @@ import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
-
-// Define the scopes for the Google Calendar API
-const List<String> scopes = <String>[
-  'https://www.googleapis.com/auth/calendar',
-];
-
-// Method returns an instance of a calendar API for a users Gmail
-Future<gcal.CalendarApi> createCalendarApiInstance(
-    CalendarLogic calendarLogic) async {
-  if (calendarLogic.currentUser == null) {
-    print('No current user found.');
-  }
-
-  final auth = await calendarLogic
-      .currentUser?.authentication; // Authenticated against the active user
-  final accessToken = auth?.accessToken;
-
-  if (accessToken == null) {
-    throw Exception('Access token is null.');
-  }
-
-  final httpClient = http.Client();
-  final authClient = authenticatedClient(
-    httpClient,
-    AccessCredentials(
-      AccessToken(
-          'Bearer',
-          accessToken,
-          DateTime.now()
-              .toUtc()
-              .add(const Duration(hours: 1))), // One hour session
-      null,
-      scopes,
-    ),
-  );
-
-  return gcal.CalendarApi(
-      authClient); // This is used to make requests to the Google Calendar API
-}
+import 'package:jewel/google/calendar/googleapi.dart';
 
 // CalendarLogic Class
 class CalendarLogic extends ChangeNotifier {

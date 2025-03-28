@@ -12,12 +12,44 @@ import 'package:jewel/google/calendar/event_snap.dart'; // Unused
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 
-/* --- Google API Variables --- */
-
-// GoogleSignInAccount object
-GoogleSignInAccount? currentUser;
-
 /* --- Google API Functions --- */
+// Define the scopes for the Google Calendar API
+const List<String> scopes = <String>[
+  'https://www.googleapis.com/auth/calendar',
+];
+
+// Method returns an instance of a calendar API for a users Gmail
+Future<gcal.CalendarApi> createCalendarApiInstance(
+    CalendarLogic calendarLogic) async {
+  if (calendarLogic.currentUser == null) {
+    print('No current user found.');
+  }
+
+  final auth = await calendarLogic.currentUser?.authentication; // Authenticated against the active user
+  final accessToken = auth?.accessToken;
+
+  if (accessToken == null) {
+    throw Exception('Access token is null.');
+  }
+
+  final httpClient = http.Client();
+  final authClient = authenticatedClient(
+    httpClient,
+    AccessCredentials(
+      AccessToken(
+          'Bearer',
+          accessToken,
+          DateTime.now()
+              .toUtc()
+              .add(const Duration(hours: 1))), // One hour session
+      null,
+      scopes,
+    ),
+  );
+
+  return gcal.CalendarApi(
+      authClient); // This is used to make requests to the Google Calendar API
+}
 
 // Function to get events for the current selected day
 Future<List<gcal.Event>> getGoogleEventsData(
