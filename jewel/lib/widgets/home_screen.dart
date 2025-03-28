@@ -132,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    getLocationData();
+    getLocationData(context);
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     jewelUser = Provider.of<JewelUser>(context, listen:false);
     int selectedCalendarIndex = jewelUser.calendarLogicList!.length -1;
