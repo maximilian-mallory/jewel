@@ -62,6 +62,8 @@ class MapSampleState extends State<MapSample> {
 
     void drawRouteOnMap(CalendarLogic calendarLogic) async {
       try{
+      List<gcal.Event> events = await getGoogleEventsData(calendarLogic, context);
+      calendarLogic.events = events;
       // Get the polyline coordinates. drawRouteOnMap helper function in google_routes.dart
       List<LatLng> polylineCoordinates = getCoordFromMarker(calendarLogic.markers.toList());
       List<LatLng> allCoords = [];

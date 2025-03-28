@@ -33,22 +33,22 @@ List<LatLng> getCoordFromMarker(List<Marker> eventList) {
 }
 
 List<DateTime> getDepatureTime(CalendarLogic calendarLogic) {
-  final allEvents = calendarLogic.events;
-
-  return allEvents
-  .where((event) =>event.end?.dateTime != null)
-  .map((event) => event.end!.dateTime!)
-  .toList();
-
+  final allEvents = calendarLogic.events
+      .where((event) => event.end?.dateTime != null)
+      .toList()
+    ..sort((a, b) => a.start!.dateTime!.compareTo(b.start!.dateTime!)); // Sort by start time for alignment
+  for (var event in allEvents) {
+    print('Event: ${event.summary}, Start: ${event.start?.dateTime}, End: ${event.end?.dateTime}');
 }
+  return allEvents.map((event) => event.end!.dateTime!.toLocal()).toList();
+}
+
 List<DateTime> getArrivalTime(CalendarLogic calendarLogic) {
-  final allEvents = calendarLogic.events;
-
-  return allEvents
-  .where((event) =>event.start?.dateTime != null)
-  .map((event) => event.start!.dateTime!)
-  .toList();
-
+  final allEvents = calendarLogic.events
+      .where((event) => event.start?.dateTime != null)
+      .toList()
+    ..sort((a, b) => a.start!.dateTime!.compareTo(b.start!.dateTime!));
+  return allEvents.map((event) => event.start!.dateTime!.toLocal()).toList();
 }
 
 Future<void> checkUserHasEnoughTime(CalendarLogic calendarLogic, int totalDuration, int i) async {
@@ -58,9 +58,9 @@ Future<void> checkUserHasEnoughTime(CalendarLogic calendarLogic, int totalDurati
 
   int eventDifference = eventDepartureTimes[i].difference(eventArrivalTimes[i+1]).inSeconds.abs();
   
-  print("Event ${i+1} Departure Time: ${eventDepartureTimes[i]}\n");
-  print("Event ${i+2} Arrival Time: ${eventArrivalTimes[i+1]}\n");
-  print("Event Difference: $eventDifference seconds\n");
+  //print("Event ${i+1} Departure Time: ${eventDepartureTimes[i]}\n");
+  //print("Event ${i+2} Arrival Time: ${eventArrivalTimes[i+1]}\n");
+  //print("Event Difference: $eventDifference seconds\n");
   if(eventDifference < totalDuration + 300){ // 5 minutes buffer
     print("DEBUG: Not enough time between events ${i+1} and ${i+2}\n");
   }
