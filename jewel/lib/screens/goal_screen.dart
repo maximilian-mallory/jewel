@@ -69,91 +69,91 @@ class _GoalScreenState extends State<GoalScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(currentValue == null ? 'Goals' : '$currentValue Goals'),
-        actions: <Widget>[
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 10),
-            child: Tooltip(
-              message: "Select a category to filter goals",
-              child: DropdownButton(
-                value: currentValue,
-                hint: const Text("Choose Category"),
-                icon: const Icon(Icons.keyboard_arrow_down),
-                items: goalCategories.map((String items) {
-                  return DropdownMenuItem(
-                    value: items,
-                    child: Text(items),
+Widget build(BuildContext context) {
+  return Scaffold(
+    appBar: AppBar(
+      title: Text(currentValue == null ? 'Goals' : '$currentValue Goals'),
+      actions: <Widget>[
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          child: Tooltip(
+            message: "Select a category to filter goals",
+            child: DropdownButton(
+              value: currentValue,
+              hint: const Text("Choose Category"),
+              icon: const Icon(Icons.keyboard_arrow_down),
+              items: goalCategories.map((String items) {
+                return DropdownMenuItem(
+                  value: items,
+                  child: Text(items),
+                );
+              }).toList(),
+              onChanged: (String? newValue) {
+                if (newValue != null) {
+                  setState(() {
+                    currentValue = newValue;
+                  });
+                  fetchGoals();
+                }
+              },
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.only(left: 10, right: 10),
+          child: FloatingActionButton(
+            elevation: 5.0,
+            backgroundColor: Colors.green,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AddPersonalGoal()),
+              ).then((_) => fetchGoals()); // Refresh goals after adding a new goal
+            },
+            tooltip: 'Create Goal',
+            mini: true,
+            child: Icon(Icons.add),
+          ),
+        ),
+      ],
+    ),
+    body: isLoading
+        ? Center(child: CircularProgressIndicator())
+        : Padding(
+            padding: const EdgeInsets.all(10),
+            child: Center(
+              child: ListView.builder(
+                itemCount: goals.length,
+                itemBuilder: (context, index) {
+                  String docId = goals.keys.elementAt(index);
+                  PersonalGoals goal = goals[docId]!;
+
+                  return GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => EditPersonalGoal(docId: docId, goal: goal),
+                        ),
+                      ).then((_) => fetchGoals()); // Refresh goals after editing
+                    },
+                    child: Card(
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        color: Color.fromARGB(255, 57, 145, 102),
+                        child: Center(
+                          child: Text(
+                            goal.title,
+                          ),
+                        ),
+                      ),
+                    ),
                   );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  if (newValue != null) {
-                    setState(() {
-                      currentValue = newValue;
-                    });
-                    fetchGoals();
-                  }
                 },
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 10, right: 10),
-            child: FloatingActionButton(
-              elevation: 5.0,
-              backgroundColor: Colors.green,
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AddPersonalGoal()),
-                );
-              },
-              tooltip: 'Create Goal',
-              mini: true,
-              child: Icon(Icons.add),
-            ),
-          ),
-        ],
-      ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
-              padding: const EdgeInsets.all(10),
-              child: Center(
-                child: ListView.builder(
-                  itemCount: goals.length,
-                  itemBuilder: (context, index) {
-                    String docId = goals.keys.elementAt(index);
-                    PersonalGoals goal = goals[docId]!;
-
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditPersonalGoal(docId: docId, goal: goal),
-                          ),
-                        ).then((_) => fetchGoals()); // Refresh goals after editing
-                      },
-                      child: Card(
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(20),
-                          color: Color.fromARGB(255, 57, 145, 102),
-                          child: Center(
-                            child: Text(
-                              goal.title,
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
-    );
-  }
+  );
+}
 }
