@@ -1,4 +1,3 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -36,10 +35,13 @@ Map<String, double> getResponsiveValues(BuildContext context) {
     verticalPadding = 10.0;
     titleFontSize = 14.0;
   }
+  // settingFontSize is 2 points smaller than the category title
+  final double settingFontSize = titleFontSize - 2.0;
   return {
     'horizontalPadding': horizontalPadding,
     'verticalPadding': verticalPadding,
     'titleFontSize': titleFontSize,
+    'settingFontSize': settingFontSize,
   };
 }
 
@@ -96,12 +98,8 @@ class SettingsScreen extends StatelessWidget {
             SettingsCategory(
               title: 'Permissions',
               settings: [
-                ToggleSetting(
-                  title: 'Notification Permission', 
-                  ),
-                ToggleSetting(
-                  title: 'Location Permission'
-                  ),
+                ToggleSetting(title: 'Notification Permission'),
+                ToggleSetting(title: 'Location Permission'),
               ],
             ),
             SettingsCategory(
@@ -144,7 +142,7 @@ class SettingsCategory extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Wrap title with Consumer to apply global multiplier
+        // This is the category header; it uses titleFontSize.
         Consumer<TextStyleNotifier>(
           builder: (context, textStyleNotifier, child) {
             double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
@@ -181,14 +179,23 @@ class _ToggleSettingState extends State<ToggleSetting> {
 
   @override
   Widget build(BuildContext context) {
-    // This text will inherit the global text theme – already modified by multiplier.
-    return SwitchListTile(
-      title: Text(widget.title),
-      value: _value,
-      onChanged: (bool newValue) {
-        setState(() {
-          _value = newValue;
-        });
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        // Use settingFontSize for individual setting widget titles.
+        return SwitchListTile(
+          title: Text(
+            widget.title,
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
+          ),
+          value: _value,
+          onChanged: (bool newValue) {
+            setState(() {
+              _value = newValue;
+            });
+          },
+        );
       },
     );
   }
@@ -236,17 +243,27 @@ class _ColorPickerSettingState extends State<ColorPickerSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.title),
-      trailing: Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          color: _currentColor,
-          shape: BoxShape.circle,
-        ),
-      ),
-      onTap: _pickColor,
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        // Use settingFontSize here.
+        return ListTile(
+          title: Text(
+            widget.title,
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
+          ),
+          trailing: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: _currentColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          onTap: _pickColor,
+        );
+      },
     );
   }
 }
@@ -264,36 +281,51 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.title),
-      trailing: SizedBox(
-        width: 100,
-        child: TextField(
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            hintText: 'Enter number',
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        // Use settingFontSize for the individual setting title.
+        return ListTile(
+          title: Text(
+            widget.title,
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
           ),
-          onChanged: (String value) {
-            setState(() {
-              _currentValue = int.tryParse(value) ?? 0;
-            });
-          },
-        ),
-      ),
+          trailing: SizedBox(
+            width: 100,
+            child: TextField(
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                hintText: 'Enter number',
+              ),
+              onChanged: (String value) {
+                setState(() {
+                  _currentValue = int.tryParse(value) ?? 0;
+                });
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
-// Updated widget for selecting text style using Provider.
 class TextStyleSetting extends StatelessWidget {
   const TextStyleSetting({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final res = getResponsiveValues(context);
     return Consumer<TextStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        // Use settingFontSize for the widget title.
         return ListTile(
-          title: const Text('Select Text Style'),
+          title: Text(
+            'Select Text Style',
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
+          ),
           trailing: DropdownButton<String>(
             value: textStyleNotifier.textStyle,
             items: ['default', 'extra Large', 'large', 'small'].map((String style) {
@@ -312,4 +344,4 @@ class TextStyleSetting extends StatelessWidget {
       },
     );
   }
-}
+} 

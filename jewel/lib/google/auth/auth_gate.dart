@@ -3,8 +3,10 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart'; // new
 import 'package:flutter/material.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
+import 'package:provider/provider.dart';
 
 // USED FOR FIRST AUTH
 
@@ -59,6 +61,14 @@ class AuthGate extends StatelessWidget {
             },
           );
         }
+      User? firebaseUser = FirebaseAuth.instance.currentUser;
+      JewelUser jewelUser = Provider.of<JewelUser>(context, listen:false);
+      jewelUser.updateFrom(
+        JewelUser.fromFirebaseUser(
+          firebaseUser!,
+        )
+      );
+      
 
         return Intermediary();
       },

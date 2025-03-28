@@ -1,11 +1,11 @@
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/personal_goals/personal_goals.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
+import 'package:jewel/user_groups/user_group.dart';
 
 class JewelUser extends ChangeNotifier{
   String? uid;
@@ -14,6 +14,7 @@ class JewelUser extends ChangeNotifier{
   String? photoUrl;
   List<CalendarLogic>? calendarLogicList;
   List<PersonalGoals>? personalGoalsList;
+  List<UserGroup>? userGroupList;
 
 
   JewelUser({
@@ -22,18 +23,20 @@ class JewelUser extends ChangeNotifier{
     this.personalGoalsList,
     this.displayName,
     this.photoUrl,
-    this.calendarLogicList
+    this.calendarLogicList,
+    this.userGroupList
   });
 
   // Factory constructor to create JewelUser from Firebase User
-  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList, List<PersonalGoals>? personalGoalsList}) {
+  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList, List<PersonalGoals>? personalGoalsList, List<UserGroup>? userGroupList}) {
     return JewelUser(
       uid: user.uid,
       email: user.email!,
       displayName: user.displayName,
       photoUrl: user.photoURL,
       calendarLogicList: calendarLogicList,
-      personalGoalsList: personalGoalsList
+      personalGoalsList: personalGoalsList,
+      userGroupList: userGroupList
     );
   }
 
@@ -62,7 +65,10 @@ class JewelUser extends ChangeNotifier{
     if (other.personalGoalsList != null) {
       personalGoalsList = other.personalGoalsList;
     }
-    
+
+    if (other.userGroupList != null) {
+      userGroupList = other.userGroupList;
+    }
     // Notify listeners about the changes
     notifyListeners();
   }
@@ -73,9 +79,15 @@ class JewelUser extends ChangeNotifier{
     notifyListeners();
   }
 
-  void updateCalendarLogic(CalendarLogic updated)
+  void updateCalendarLogic(CalendarLogic updated, int index)
   {
-    calendarLogicList![0] = updated;
+    calendarLogicList![index] = updated;
+    notifyListeners();
+  }
+
+  void updateUserGroups(List<UserGroup> groups)
+  {
+    userGroupList = groups;
     notifyListeners();
   }
 
