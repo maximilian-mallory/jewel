@@ -7,6 +7,8 @@ import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
 import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:jewel/event_history/event_history.dart';
+import 'package:jewel/firebase_ops/event_history_ops.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 
 // CalendarLogic Class
@@ -18,16 +20,24 @@ class CalendarLogic extends ChangeNotifier {
   DateTime get selectedDate => _selectedDate;
 
   // Function to add to history
-  void addToHistory(String eventId, String change) {
-    if (!eventHistory.containsKey(eventId)) {
-      eventHistory[eventId] = [];
+  Future<void> addToHistory(String eventId, String change) async {
+    final event = await getHistoryFromFireBase(eventId);
+    if (event.getChangelog.isEmpty) {
+      // If the event doesn't exist, create a new one
+      createHistoryInFireBase(EventHistory(
+        eventId: eventId,
+        changelog: [change],
+      ));
+    } else {
+      updateChangeLogInFireBase(event, change);
     }
-    eventHistory[eventId]!.add(change);
+
     notifyListeners(); // Notify UI of changes
   }
 
-  List<String> getHistory(String eventId) {
-    return eventHistory[eventId] ?? [];
+  Future<List<String>> getHistory(String eventId) async {
+    final event = await getHistoryFromFireBase(eventId);
+    return event.getChangelog;
   }
 
   set selectedDate(DateTime newDate) {
@@ -87,10 +97,6 @@ class CalendarLogic extends ChangeNotifier {
   DateTime currentDate = DateTime.now();
   bool isDayMode = true;
   Map<String, dynamic> calendars = {};
-
-  // This list is a JSON List of events as Maps
-
-  // Method starts the signIn process externally with a Google Modal
 
   // This method returns a Firebase-Stored list of Calendars belonging to a user
   Future<void> getAllCalendars(GoogleSignInAccount? account) async {

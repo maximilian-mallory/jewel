@@ -51,11 +51,9 @@ bool isLoading = true; // To show loading indicator
     jewelUser.addCalendarLogic(calendarLogic);
     print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
     // After signing in, navigate to the next screen
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => HomeScreen(initialIndex: 1,), // Use named parameter
-      ),
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => HomeScreen(initialIndex: 1)),
+      (Route<dynamic> route) => false, // Removes all previous routes
     );
   }
 

@@ -55,7 +55,8 @@ Future<gcal.CalendarApi> createCalendarApiInstance(
 Future<List<gcal.Event>> getGoogleEventsData(
     CalendarLogic calendarLogic, BuildContext context) async {
   // Get the current date at midnight local time
-  print("[GET EVENTS DayMode] JewelUser CalendarLogic is: ${calendarLogic.calendarApi}");
+  print(
+      "[GET EVENTS DayMode] JewelUser CalendarLogic is: ${calendarLogic.calendarApi}");
   DateTime now = calendarLogic.selectedDate;
   DateTime startOfDay = DateTime(now.year, now.month, now.day);
   // Midnight local time today
