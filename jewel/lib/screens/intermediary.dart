@@ -37,23 +37,20 @@ bool isLoading = true; // To show loading indicator
     //     widget.calendarLogic.isAuthorized = account != null;
     //   });
     // });
-     User? firebaseUser = FirebaseAuth.instance.currentUser;
+    User? firebaseUser = FirebaseAuth.instance.currentUser;
     print('[Firebase Auth] Firebase user successfully signed in: ${firebaseUser!.email}');
     signIn(); //force signin
   }
 
   Future<void> signIn() async {
-  JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
-  CalendarLogic calendarLogic = CalendarLogic();
-  calendarLogic.currentUser = await handleSignIn(); // googleapi.dart
-  calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
-  
-  JewelUser ourUser = await getCurrentJewelUser();
-  ourUser.addCalendarLogic(calendarLogic);
-  print('[Jewel Factory] Our user signed in: ${ourUser.email}');
-  jewelUser.updateFrom(ourUser);
-  print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
-  // After signing in, navigate to the next screen
+    JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
+    CalendarLogic calendarLogic = CalendarLogic();
+    calendarLogic.currentUser = await handleSignIn(jewelUser); // googleapi.dart
+    calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
+
+    jewelUser.addCalendarLogic(calendarLogic);
+    print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
+    // After signing in, navigate to the next screen
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
