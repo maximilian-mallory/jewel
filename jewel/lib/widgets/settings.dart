@@ -3,8 +3,65 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:provider/provider.dart';
+import 'package:jewel/utils/text_style_notifier.dart';
 import 'package:jewel/utils/location.dart';
 import 'package:permission_handler/permission_handler.dart' as handler;
+/// Returns responsive values based on the current screen width.
+/// These breakpoints match those used in add_calendar_form.dart.
+Map<String, double> getResponsiveValues(BuildContext context) {
+  final double screenWidth = MediaQuery.of(context).size.width;
+  double horizontalPadding, verticalPadding, titleFontSize;
+  if (screenWidth >= 1440) {
+    horizontalPadding = 64.0;
+    verticalPadding = 40.0;
+    titleFontSize = 22.0;
+  } else if (screenWidth >= 1024) {
+    horizontalPadding = 48.0;
+    verticalPadding = 32.0;
+    titleFontSize = 20.0;
+  } else if (screenWidth >= 768) {
+    horizontalPadding = 32.0;
+    verticalPadding = 24.0;
+    titleFontSize = 18.0;
+  } else if (screenWidth >= 425) {
+    horizontalPadding = 24.0;
+    verticalPadding = 16.0;
+    titleFontSize = 16.0;
+  } else if (screenWidth >= 375) {
+    horizontalPadding = 16.0;
+    verticalPadding = 12.0;
+    titleFontSize = 16.0;
+  } else {
+    horizontalPadding = 14.0;
+    verticalPadding = 10.0;
+    titleFontSize = 14.0;
+  };
+  // settingFontSize is 2 points smaller than the category title
+  final double settingFontSize = titleFontSize - 2.0;
+  return {
+    'horizontalPadding': horizontalPadding,
+    'verticalPadding': verticalPadding,
+    'titleFontSize': titleFontSize,
+    'settingFontSize': settingFontSize,
+  };
+}
+
+/// Helper function to convert the selected text style value to a multiplier.
+double getTextStyleMultiplier(String textStyle) {
+  switch (textStyle) {
+    case 'extra Large':
+      return 1.2;
+    case 'large':
+      return 1.1;
+    case 'small':
+      return 0.8;
+    case 'default':
+    default:
+      return 1.0;
+  }
+}
+
 
 class SettingsScreen extends StatelessWidget {
   final JewelUser? jewelUser;
@@ -12,10 +69,14 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final res = getResponsiveValues(context);
     return Scaffold(
       body: Center(
         child: ListView(
-          padding: EdgeInsets.all(16.0),
+          padding: EdgeInsets.symmetric(
+            horizontal: res['horizontalPadding']!,
+            vertical: res['verticalPadding']!,
+          ),
           children: [
             SettingsCategory(
               title: 'Calendar',
@@ -46,6 +107,14 @@ class SettingsScreen extends StatelessWidget {
             SettingsCategory(
               title: 'Permissions',
               settings: [
+                ToggleSetting(title: 'Notification Permission'),
+                ToggleSetting(title: 'Location Permission'),
+              ],
+            ),
+            SettingsCategory(
+              title: 'Text Style',
+              settings: [
+                TextStyleSetting(),
                 ToggleSetting(
                   title: 'Notification Permission',
                   ),
@@ -54,12 +123,12 @@ class SettingsScreen extends StatelessWidget {
                   ),
               ],
             ),
-            SizedBox(height: 20), // Adds some space before the button
+            SizedBox(height: res['verticalPadding']),
             ElevatedButton(
               onPressed: () {
                 saveUserToFirestore(jewelUser!);
               },
-              child: Text('Save Settings'),
+              child: const Text('Save Settings'),
             ),
           ],
         ),
@@ -67,9 +136,13 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+
 Future<void> saveUserToFirestore(JewelUser user) async {
-    final docId = user.email; // Use email as document ID
-    await FirebaseFirestore.instance.collection('users').doc(docId).set(user.toJson());
+  final docId = user.email; // Use email as document ID
+  await FirebaseFirestore.instance
+      .collection('users')
+      .doc(docId)
+      .set(user.toJson());
 }
 
 class SettingsCategory extends StatelessWidget {
@@ -80,19 +153,29 @@ class SettingsCategory extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final res = getResponsiveValues(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0),
-          child: Text(
-            title,
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
+        // This is the category header; it uses titleFontSize.
+        Consumer<TextStyleNotifier>(
+          builder: (context, textStyleNotifier, child) {
+            double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Text(
+                title,
+                style: TextStyle(
+                  fontSize: res['titleFontSize']! * multiplier,
+                  fontWeight: FontWeight.bold,
+                ),
+                textAlign: TextAlign.center,
+              ),
+            );
+          },
         ),
         ...settings,
-        Divider(),
+        const Divider(),
       ],
     );
   }
@@ -100,7 +183,6 @@ class SettingsCategory extends StatelessWidget {
 
 class ToggleSetting extends StatefulWidget {
   final String title;
-
   const ToggleSetting({super.key, required this.title});
 
   @override
@@ -149,9 +231,13 @@ class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserv
 
   @override
   Widget build(BuildContext context) {
-    // Remove the permission check from build method to prevent infinite loops
-    return SwitchListTile(
-      title: Text(widget.title),
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        // Use settingFontSize for individual setting widget titles.
+        return SwitchListTile(
+      title: Text(widget.title, style: TextStyle(fontSize: res['settingFontSize']! * multiplier),),
       value: _value,
       onChanged: (bool newValue) async {
         if (widget.title == 'Location Permission') {
@@ -206,15 +292,16 @@ class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserv
           setState(() {
             _value = newValue;
           });
-        }
-      },
+            }
+          },
+        );
+      }
     );
   }
 }
 
 class ColorPickerSetting extends StatefulWidget {
   final String title;
-
   const ColorPickerSetting({super.key, required this.title});
 
   @override
@@ -222,7 +309,7 @@ class ColorPickerSetting extends StatefulWidget {
 }
 
 class _ColorPickerSettingState extends State<ColorPickerSetting> {
-  Color _currentColor = Colors.blue;
+  Color _currentColor = Colors.green;
 
   void _pickColor() {
     showDialog(
@@ -242,7 +329,7 @@ class _ColorPickerSettingState extends State<ColorPickerSetting> {
           ),
           actions: <Widget>[
             ElevatedButton(
-              child: Text('Done'),
+              child: const Text('Done'),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -255,24 +342,33 @@ class _ColorPickerSettingState extends State<ColorPickerSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.title),
-      trailing: Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          color: _currentColor,
-          shape: BoxShape.circle,
-        ),
-      ),
-      onTap: _pickColor,
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        // Use settingFontSize here.
+        return ListTile(
+          title: Text(
+            widget.title,
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
+          ),
+          trailing: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: _currentColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          onTap: _pickColor,
+        );
+      },
     );
   }
 }
 
 class NumberInputSetting extends StatefulWidget {
   final String title;
-
   const NumberInputSetting({super.key, required this.title});
 
   @override
@@ -284,22 +380,67 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.title),
-      trailing: SizedBox(
-        width: 100,
-        child: TextField(
-          keyboardType: TextInputType.number,
-          decoration: InputDecoration(
-            hintText: 'Enter number',
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        // Use settingFontSize for the individual setting title.
+        return ListTile(
+          title: Text(
+            widget.title,
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
           ),
-          onChanged: (String value) {
-            setState(() {
-              _currentValue = int.tryParse(value) ?? 0;
-            });
-          },
-        ),
-      ),
+          trailing: SizedBox(
+            width: 100,
+            child: TextField(
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                hintText: 'Enter number',
+              ),
+              onChanged: (String value) {
+                setState(() {
+                  _currentValue = int.tryParse(value) ?? 0;
+                });
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }
+
+class TextStyleSetting extends StatelessWidget {
+  const TextStyleSetting({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final res = getResponsiveValues(context);
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        // Use settingFontSize for the widget title.
+        return ListTile(
+          title: Text(
+            'Select Text Style',
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
+          ),
+          trailing: DropdownButton<String>(
+            value: textStyleNotifier.textStyle,
+            items: ['default', 'extra Large', 'large', 'small'].map((String style) {
+              return DropdownMenuItem<String>(
+                value: style,
+                child: Text(style[0].toUpperCase() + style.substring(1)),
+              );
+            }).toList(),
+            onChanged: (String? newStyle) {
+              if (newStyle != null) {
+                textStyleNotifier.updateTextStyle(newStyle);
+              }
+            },
+          ),
+        );
+      },
+    );
+  }
+} 

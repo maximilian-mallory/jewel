@@ -9,8 +9,11 @@ import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:intl/intl.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/google/calendar/mode_toggle.dart';
+import 'package:jewel/models/jewel_user.dart';
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
+import 'package:jewel/google/calendar/google_sign_in.dart';
 
 /// Returns a map of responsive values based on screen width.
 /// Breakpoints based on specific device widths:
@@ -155,9 +158,8 @@ class _AddCalendarFormState extends State<AddCalendarForm> {
 }
 
 class AuthenticatedCalendar extends StatefulWidget {
-  final CalendarLogic calendarLogic;
 
-  const AuthenticatedCalendar({super.key, required this.calendarLogic});
+  const AuthenticatedCalendar({super.key,});
 
   @override
   State createState() => _AuthenticatedCalendarState();
@@ -166,35 +168,41 @@ class AuthenticatedCalendar extends StatefulWidget {
 class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   String? selectedCalendar;
   late gcal.CalendarApi calendarApi;
+  late JewelUser jewelUser; 
+  late CalendarLogic calendarLogic;
+  late int selectedCalendarIndex;
 
   @override
   void initState() {
     super.initState();
+    jewelUser = Provider.of<JewelUser>(context, listen: false);
+    selectedCalendarIndex = jewelUser.calendarLogicList!.length -1;
+    calendarLogic = jewelUser.calendarLogicList![selectedCalendarIndex];
     // Listen for authentication state changes.
-    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
+    googleSignInList[selectedCalendarIndex].onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
       setState(() {
-        widget.calendarLogic.currentUser = account;
-        widget.calendarLogic.isAuthorized = account != null;
+        calendarLogic.currentUser = account;
+        calendarLogic.isAuthorized = account != null;
       });
       if (account != null) {
         // Fetch events once authenticated.
-        widget.calendarLogic.events =
-            await getGoogleEventsData(widget.calendarLogic, context);
+        calendarLogic.events =
+            await getGoogleEventsData(calendarLogic, context);
         setState(() {});
       }
     });
   }
 
   Future<void> getAllCalendars(gcal.CalendarApi calendarApi) async {
-    if (widget.calendarLogic.currentUser == null) {
-      widget.calendarLogic.calendars.clear();
+    if (calendarLogic.currentUser == null) {
+      calendarLogic.calendars.clear();
       return;
     }
     try {
       var calendarList = await calendarApi.calendarList.list();
-      widget.calendarLogic.calendars.clear(); // Clear any old data
+      calendarLogic.calendars.clear(); // Clear any old data
       for (var calendarEntry in calendarList.items ?? []) {
-        widget.calendarLogic.calendars[calendarEntry.id ?? "unknown"] =
+        calendarLogic.calendars[calendarEntry.id ?? "unknown"] =
             calendarEntry.summary ?? "Unnamed Calendar";
       }
     } catch (e) {
@@ -205,40 +213,39 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   /// Builds the main scaffold with an adaptive AppBar.
   Widget buildCalendarUI() {
     final res = getResponsiveValues(context);
-
-    return Scaffold(
-      appBar: AppBar(
-        title: LayoutBuilder(
-          builder: (context, constraints) {
-            return Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                daymonthBackButton(res),
-                loadCalendarMenu(res),
-                Column(
+    return Consumer<JewelUser>(
+      builder: (context, jewelUser, child) {
+        return Scaffold(
+          appBar: AppBar(
+            title: LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Consumer<CalendarLogic>(
-                      builder: (context, calendarLogic, child) {
-                        return Text(
-                          DateFormat('MM/dd/yyyy')
-                              .format(calendarLogic.selectedDate),
-                          style: TextStyle(
-                            fontSize: res['titleFontSize'],
-                            fontWeight: FontWeight.bold,
-                          ),
-                        );
-                      },
+                    daymonthBackButton(res),
+                    loadCalendarMenu(res),
+                    Column(
+                      children: [
+                            Text(
+                              DateFormat('MM/dd/yyyy')
+                                  .format(calendarLogic.selectedDate),
+                              style: TextStyle(
+                                fontSize: res['titleFontSize'],
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                      ],
                     ),
+                    dateToggle(res),
+                    modeToggleButton(res),
+                    daymonthForwardButton(res),
                   ],
-                ),
-                dateToggle(res),
-                modeToggleButton(res),
-                daymonthForwardButton(res),
-              ],
-            );
-          },
-        ),
-      ),
+                );
+              },
+            ),
+          ),
+        );
+      }
     );
   }
 
@@ -246,11 +253,13 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   Widget daymonthBackButton(Map<String, double> res) {
     return InkWell(
       onTap: () async {
-        widget.calendarLogic.selectedDate =
-            changeDateBy(-1, widget.calendarLogic);
-        widget.calendarLogic.events =
-            await getGoogleEventsData(widget.calendarLogic, context);
-        setState(() {});
+        calendarLogic.selectedDate =
+            changeDateBy(-1, calendarLogic);
+        calendarLogic.events =
+            await getGoogleEventsData(calendarLogic, context);
+        setState(() {
+          jewelUser.updateCalendarLogic(calendarLogic, selectedCalendarIndex);
+        });
       },
       child: Container(
         padding: EdgeInsets.all(res['buttonPadding']!),
@@ -271,11 +280,13 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   Widget daymonthForwardButton(Map<String, double> res) {
     return InkWell(
       onTap: () async {
-        widget.calendarLogic.selectedDate =
-            changeDateBy(1, widget.calendarLogic);
-        widget.calendarLogic.events =
-            await getGoogleEventsData(widget.calendarLogic, context);
-        setState(() {});
+        calendarLogic.selectedDate =
+            changeDateBy(1, calendarLogic);
+        calendarLogic.events =
+            await getGoogleEventsData(calendarLogic, context);
+        setState(() {
+          jewelUser.updateCalendarLogic(calendarLogic, selectedCalendarIndex);
+        });
       },
       child: Container(
         padding: EdgeInsets.all(res['buttonPadding']!),
@@ -312,29 +323,38 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
 
   /// Date picker toggle.
   Widget dateToggle(Map<String, double> res) {
-    return Padding(
-      padding: EdgeInsets.all(res['buttonPadding']! * 1.5),
-      child: GestureDetector(
-        onTap: () async {
-          DateTime? selectedDate = await showDatePicker(
-            context: context,
-            initialDate: widget.calendarLogic.currentDate,
-            firstDate: DateTime(2000),
-            lastDate: DateTime(2100),
-          );
-          if (selectedDate != null) {
-            widget.calendarLogic.selectedDate = selectedDate;
-            setState(() {});
-          }
-        },
-        child: Icon(
-          Icons.calendar_today,
-          size: res['iconSize'],
-          color: Colors.green,
+  return Consumer<JewelUser>(
+    builder: (context, user, child) {
+      return Padding(
+        padding: EdgeInsets.all(res['buttonPadding']! * 1.5),
+        child: GestureDetector(
+          onTap: () async {
+            DateTime? selectedDate = await showDatePicker(
+              context: context,
+              initialDate: calendarLogic.selectedDate,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+            );
+            if (selectedDate != null) {
+              calendarLogic.selectedDate = selectedDate;
+              calendarLogic.events = await getGoogleEventsData(calendarLogic, context);
+              
+              // Update the provider
+              user.updateCalendarLogic(calendarLogic, selectedCalendarIndex);
+              
+              print('[DATE PICKER] SelectedDate: ${calendarLogic.selectedDate} should match JewelUser SelectedDate: ${user.calendarLogicList![0].selectedDate}');
+            }
+          },
+          child: Icon(
+            Icons.calendar_today,
+            size: res['iconSize'],
+            color: Colors.green,
+          ),
         ),
-      ),
-    );
-  }
+      );
+    },
+  );
+}
 
   /// Loads calendar menu with responsive design.
   Widget loadCalendarMenu(Map<String, double> res) {
@@ -343,7 +363,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12.0),
         child: FutureBuilder<void>(
-          future: getAllCalendars(widget.calendarLogic.calendarApi),
+          future: getAllCalendars(calendarLogic.calendarApi),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return SizedBox(
@@ -355,7 +375,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
             } else if (snapshot.hasError) {
               return const Text("Error loading calendars");
             }
-            return calendarSelectMenu(widget.calendarLogic, res);
+            return calendarSelectMenu(calendarLogic, res);
           },
         ),
       ),
@@ -492,9 +512,9 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
                         calendarLogic.selectedCalendar = newValue;
                       });
                       final newEvents =
-                          await getGoogleEventsData(widget.calendarLogic, context);
+                          await getGoogleEventsData(calendarLogic, context);
                       setState(() {
-                        widget.calendarLogic.events = newEvents;
+                        calendarLogic.events = newEvents;
                       });
                     }
                   },
@@ -572,7 +592,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
 
   void _saveIcalFeedLink(String name, String url) async {
     try {
-      String? userEmail = widget.calendarLogic.currentUser?.email;
+      String? userEmail = calendarLogic.currentUser?.email;
       if (userEmail == null) {
         print('User is not logged in.');
         return;
@@ -592,7 +612,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
 
   Future<List<String>> _getIcalFeeds() async {
     try {
-      String? userEmail = widget.calendarLogic.currentUser?.email;
+      String? userEmail = calendarLogic.currentUser?.email;
       if (userEmail == null) {
         print('User is not logged in.');
         return [];
@@ -654,7 +674,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
             );
             setState(() {
               calendarLogic.calendars = {};
-              getAllCalendars(widget.calendarLogic.calendarApi);
+              getAllCalendars(calendarLogic.calendarApi);
             });
           } catch (error) {
             Navigator.of(context).pop();

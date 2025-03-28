@@ -3,13 +3,15 @@ import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart'; // new
 import 'package:flutter/material.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/screens/intermediary.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
+import 'package:provider/provider.dart';
 
-import 'home.dart';
+// USED FOR FIRST AUTH
 
 class AuthGate extends StatelessWidget {
-  final CalendarLogic calendarLogic;
-  const AuthGate({super.key, required this.calendarLogic});
+  const AuthGate({super.key, });
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,7 @@ class AuthGate extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 child: AspectRatio(
                   aspectRatio: 1,
-                  child: Image.asset('flutterfire_300x.png'),
+                  child: Image.asset('jewel.png'),
                 ),
               );
             },
@@ -53,14 +55,22 @@ class AuthGate extends StatelessWidget {
                 padding: const EdgeInsets.all(20),
                 child: AspectRatio(
                   aspectRatio: 1,
-                  child: Image.asset('flutterfire_300x.png'),
+                  child: Image.asset('assets/images/jewel205.png'),
                 ),
               );
             },
           );
         }
+      User? firebaseUser = FirebaseAuth.instance.currentUser;
+      JewelUser jewelUser = Provider.of<JewelUser>(context, listen:false);
+      jewelUser.updateFrom(
+        JewelUser.fromFirebaseUser(
+          firebaseUser!,
+        )
+      );
+      
 
-        return Intermediary(calendarLogic: calendarLogic);
+        return Intermediary();
       },
     );
   }

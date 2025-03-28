@@ -5,6 +5,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/screens/goal_screen.dart';
+import 'package:jewel/screens/intermediary.dart';
+import 'package:jewel/user_groups/user_group.dart';
+//import 'package:jewel/google/maps/map_screen.dart';
 import 'package:jewel/utils/location.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/widgets/events_view.dart';
@@ -13,7 +17,11 @@ import 'package:jewel/widgets/settings.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:provider/provider.dart';
 import 'package:jewel/screens/test_screen1.dart';
+import 'package:jewel/screens/user_group_screen.dart';
+
 import 'package:jewel/screens/test_screen2.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
+import 'package:jewel/google/calendar/google_sign_in.dart';
 
 /// Returns a map of responsive values based on screen width.
 /// Breakpoints:
@@ -25,7 +33,11 @@ import 'package:jewel/screens/test_screen2.dart';
 ///  - < 375px: Small Smartphone
 Map<String, double> getResponsiveValues(BuildContext context) {
   final double screenWidth = MediaQuery.of(context).size.width;
-  double horizontalPadding, verticalPadding, iconSize, buttonPadding, titleFontSize;
+  double horizontalPadding,
+      verticalPadding,
+      iconSize,
+      buttonPadding,
+      titleFontSize;
   if (screenWidth >= 1440) {
     horizontalPadding = 64.0;
     verticalPadding = 40.0;
@@ -72,7 +84,8 @@ Map<String, double> getResponsiveValues(BuildContext context) {
   };
 }
 
-/// SelectedIndexNotifier tracks the selected index and scroll positions.
+/// SelectedIndexNotifier tracks the selected index and scroll positions.import 'package:jewel/screens/goal_screen.dart';
+
 class SelectedIndexNotifier extends ChangeNotifier {
   int _selectedIndex;
   Map<int, double> _scrollPositions = {};
@@ -97,14 +110,10 @@ class SelectedIndexNotifier extends ChangeNotifier {
 }
 
 class HomeScreen extends StatefulWidget {
-  final CalendarLogic calendarLogic;
   final int initialIndex;
-  final JewelUser jewelUser;
 
   const HomeScreen({
     super.key,
-    required this.jewelUser,
-    required this.calendarLogic,
     required this.initialIndex,
   });
 
@@ -116,6 +125,8 @@ class _HomeScreenState extends State<HomeScreen> {
   late int _selectedIndex = widget.initialIndex;
   late gcal.CalendarApi calendarApi;
   late final List<Widget> _screens;
+  late JewelUser jewelUser;
+  late CalendarLogic calendarLogic;
   bool isWeb = kIsWeb;
 
   @override
@@ -123,22 +134,29 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     getLocationData(context);
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
+    jewelUser = Provider.of<JewelUser>(context, listen:false);
+    int selectedCalendarIndex = jewelUser.calendarLogicList!.length -1;
     _selectedIndex = widget.initialIndex;
-    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
+    googleSignInList[selectedCalendarIndex].onCurrentUserChanged
+        .listen((GoogleSignInAccount? account) async {
       setState(() {
-        widget.calendarLogic.currentUser = account;
-        widget.calendarLogic.isAuthorized = account != null;
+        calendarLogic.currentUser = account;
+        calendarLogic.isAuthorized = account != null;
       });
 
-      widget.jewelUser.calendarLogicList?[0].events = await getGoogleEventsData(widget.calendarLogic, context);
-      
+      jewelUser.calendarLogicList?[selectedCalendarIndex].events =
+          await getGoogleEventsData(calendarLogic, context);
     });
-    _screens = [ // widgets available in the nav bar
-      SettingsScreen(jewelUser: widget.jewelUser,),
-      CalendarEventsView(jewelUser: widget.jewelUser),
+    _screens = [
+      // widgets available in the nav bar
+      SettingsScreen(
+        jewelUser: jewelUser,
+      ),
+      CalendarEventsView(),
       MapSample(),
-      Screen1(),
+      GoalScreen(),
       Screen2(),
+      UserGroupScreen(),
     ];
   }
 
@@ -151,8 +169,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void updateSelectedCalendar(String calendarId) {
     setState(() async {
-      widget.calendarLogic.selectedCalendar = calendarId;
-      widget.calendarLogic.events = await getGoogleEventsData(widget.calendarLogic, context);
+      calendarLogic.selectedCalendar = calendarId;
+      calendarLogic.events =
+          await getGoogleEventsData(calendarLogic, context);
     });
   }
 
@@ -183,7 +202,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       height: headerHeight,
       width: double.infinity,
-      padding: EdgeInsets.all(isWeb ? res['horizontalPadding']! : res['horizontalPadding']! * 90.8),
+      padding: EdgeInsets.all(
+          isWeb ? res['horizontalPadding']! : res['horizontalPadding']! * 90.8),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
         boxShadow: [
@@ -196,12 +216,16 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          logicList(),
-          SizedBox(width: isWeb ? res['horizontalPadding']! * 0.3 : res['horizontalPadding']! * 0.2),
+          accountList(),
+          SizedBox(
+              width: isWeb
+                  ? res['horizontalPadding']! * 0.3
+                  : res['horizontalPadding']! * 0.2),
           // calTools container width adjusts based on responsive value
           isWeb
               ? Flexible(child: calTools())
-              : Flexible(child: SizedBox(width: res['horizontalPadding']! * 10)),
+              : Flexible(
+                  child: SizedBox(width: res['horizontalPadding']! * 10)),
           const SizedBox(width: 10),
           // Conditionally display Jewel logo only if not a smartphone.
           if (!isSmartphone)
@@ -220,8 +244,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(12),
                 child: Image.asset(
                   'assets/images/jewel205.png',
-                  height: isWeb ? res['iconSize']! * 1.5 : res['iconSize']! * 0.8,
-                  width: isWeb ? res['iconSize']! * 1.5 : res['iconSize']! * 0.8,
+                  height:
+                      isWeb ? res['iconSize']! * 1.5 : res['iconSize']! * 0.8,
+                  width:
+                      isWeb ? res['iconSize']! * 1.5 : res['iconSize']! * 0.8,
                 ),
               ),
             ),
@@ -242,7 +268,10 @@ class _HomeScreenState extends State<HomeScreen> {
           Consumer<SelectedIndexNotifier>(
             builder: (context, selectedIndexNotifier, _) {
               return SizedBox(
-                height: MediaQuery.of(context).size.height - getHeaderHeight(context) - (kIsWeb ? 0 : 24) - (MediaQuery.of(context).size.height * 0.1325),
+                height: MediaQuery.of(context).size.height -
+                    getHeaderHeight(context) -
+                    (kIsWeb ? 0 : 24) -
+                    (MediaQuery.of(context).size.height * 0.1325),
                 child: _screens[selectedIndexNotifier.selectedIndex],
               );
             },
@@ -261,36 +290,41 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  PopupMenuButton<int> logicList() {
+  PopupMenuButton<int> accountList() {
+    JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
     return PopupMenuButton<int>(
       icon: FaIcon(
         FontAwesomeIcons.google,
         size: 28,
         color: Colors.green,
       ),
-      onSelected: (value) async {
-        if (value == 1) {
-          await handleSignIn();
-        } else if (value == 2) {
-          await handleSignOut();
-        }
-      },
       itemBuilder: (context) {
         List<PopupMenuEntry<int>> menuItems = [];
-        if (widget.jewelUser?.calendarLogicList != null) {
-          for (var calendarLogic in widget.jewelUser!.calendarLogicList!) {
+        if (jewelUser.calendarLogicList != null) {
+          int i = 0;
+          for (var calendarLogic in jewelUser.calendarLogicList!) {
+
             menuItems.add(
               PopupMenuItem<int>(
                 value: 0,
                 child: Text(calendarLogic.currentUser!.email),
+                onTap: () {
+                  //jewelUser.updateSelectedCalendarIndex(i);
+                }
               ),
             );
+          i++;
           }
         }
         menuItems.add(
-          const PopupMenuItem<int>(
+          PopupMenuItem<int>(
             value: 1,
             child: Text('Add Account'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => Intermediary()),
+              );
+            }
           ),
         );
         menuItems.add(
@@ -323,7 +357,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Align(
             alignment: Alignment.center,
             child: AuthenticatedCalendar(
-              calendarLogic: widget.calendarLogic,
             ),
           ),
         ),
