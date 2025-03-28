@@ -24,8 +24,28 @@ class PersonalGoals{
   factory PersonalGoals.fromJson(Map<String, dynamic> json) => _$PersonalGoalsFromJson(json);
   Map<String, dynamic> toJson() => _$PersonalGoalsToJson(this);
   //Puts Map<String, dynamic> into firebase
-  Future<void> storeGoal() async{
+  Future<void> storeGoal() async {
     ownerEmail = FirebaseAuth.instance.currentUser?.email;
-    await FirebaseFirestore.instance.collection('goals').doc(category).collection(ownerEmail!).doc().set(toJson());
+    await FirebaseFirestore.instance
+        .collection('goals')
+        .doc(category)
+        .collection(ownerEmail!)
+        .doc()
+        .set(toJson());
+  }
+
+  // Updates an existing goal in Firebase
+  Future<void> updateGoal(String docId) async {
+    ownerEmail = FirebaseAuth.instance.currentUser?.email;
+    if (ownerEmail == null) {
+      throw Exception("User is not logged in.");
+    }
+
+    await FirebaseFirestore.instance
+        .collection('goals')
+        .doc(category)
+        .collection(ownerEmail!)
+        .doc(docId)
+        .update(toJson());
   }
 }
