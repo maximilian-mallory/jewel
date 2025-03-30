@@ -96,7 +96,7 @@ Future<List<LatLng>> getRouteCoordinates(LatLng start, LatLng end, CalendarLogic
     //print("Departure Timestamp: $EndTimestamp\n");
     
 
-    String url = 'https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=$EndTimestamp';
+    String url = 'https://project-emerald-jewel.eastus.azurecontainer.io/google-maps/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=$EndTimestamp';
     http.Response response = await http.get(Uri.parse(url));
     Map<String, dynamic> data = json.decode(response.body); //Map with a key of type String and a value of type dynamic(any type) stores in the API response
     
