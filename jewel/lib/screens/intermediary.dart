@@ -8,12 +8,14 @@ import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/external_user.dart';
 import 'package:jewel/models/internal_user.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/utils/background_deployer.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/google_sign_in.dart';
-
+import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 /*
   This widget class returns the loading screen. The loading screen opens when the app launches, forcing the user to log in
 */
@@ -46,6 +48,16 @@ bool isLoading = true; // To show loading indicator
     CalendarLogic calendarLogic = CalendarLogic();
     calendarLogic.currentUser = await handleSignIn(jewelUser); // googleapi.dart
     calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
+
+    if (calendarLogic.currentUser != null) {
+    final auth = await calendarLogic.currentUser!.authentication;
+    final accessToken = auth.accessToken;
+    if (accessToken != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('calendar_access_token', accessToken);
+      print("Access token saved for background tasks: ${accessToken.substring(0, 10)}...");
+    }
+  }
 
     jewelUser.addCalendarLogic(calendarLogic);
     jewelUser.updateUserGroups(await getUsersGroups(jewelUser.email!));
