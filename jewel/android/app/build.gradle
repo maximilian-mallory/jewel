@@ -40,8 +40,8 @@ def googleMapsApiKey = secretProperties['googleMapsApiKey']
 
 android {
     namespace = "com.jewel.app"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 35
+    ndkVersion = "25.1.8937393"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
