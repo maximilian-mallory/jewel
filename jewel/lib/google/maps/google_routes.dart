@@ -117,8 +117,11 @@ Future<List<LatLng>> getRouteCoordinates(
     print("Using START time for event $eventIndex: $eventUtc");
     int departureTimestamp = (eventUtc.millisecondsSinceEpoch / 1000).round();
  
-    // Build the API URL with the correct timestamp
+    // used on local version of the app
     String url = 'https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=$departureTimestamp';
+    
+    // Used in the live version of the app
+    //String url = 'https://project-emerald-jewel.eastus.azurecontainer.io/google-maps/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=$EndTimestamp';
    
     print("Calling Directions API for event $eventIndex with departure_time=$departureTimestamp");
    
