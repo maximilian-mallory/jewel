@@ -80,31 +80,52 @@ Future<void> checkUserHasEnoughTime(CalendarLogic calendarLogic, int totalDurati
 
 
 
-Future<List<LatLng>> getRouteCoordinates(LatLng start, LatLng end, CalendarLogic calendarLogic, int i) async {
-  /*TODO:
-  Fix polyline snapping by decoding the encoded polyline_overview from the API response
-  */
-  try{
-    //final arrivalTimes = getArrivalTime(calendarLogic);
-    //arrivalTimes[i];
-    //DateTime eventStart = DateTime.parse(jewelEvent.arrivalTime!);
-    //String? arrivalTime = jewelEvent.arrivalTime;
-    //print("Jewel Event arrival time: $arrivalTimes");
-
+Future<List<LatLng>> getRouteCoordinates(
+    LatLng start,
+    LatLng end,
+    CalendarLogic calendarLogic,
+    int eventIndex) async {
+  try {
     String apiKey = dotenv.env['GOOGLE_MAPS_KEY']!;
+    final allEvents = calendarLogic.events;
+   
+    // Safety check
+    if (eventIndex >= allEvents.length) {
+      print("ERROR: Event index $eventIndex is out of bounds (max: ${allEvents.length - 1})");
+      return [];
+    }
+   
+    // Get the actual event
+    final event = allEvents[eventIndex];
+   
+    // Use the START time of the event for route planning
+    final eventStart = event.start?.dateTime;
+    if (eventStart == null) {
+      print("ERROR: Event $eventIndex has no start time");
+      return [];
+    }
+   
+    // Ensure this is a future time
+    DateTime now = DateTime.now();
+    if (eventStart.isBefore(now)) {
+      print("ERROR: Event $eventIndex ($eventStart) start time is in the past compared to $now");
+      return [];
+    }
+   
+    // Convert to timestamp
+    final eventUtc = eventStart.toUtc();
+    print("Using START time for event $eventIndex: $eventUtc");
+    int departureTimestamp = (eventUtc.millisecondsSinceEpoch / 1000).round();
+ 
+    // used on local version of the app
+    //String url = 'https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=$departureTimestamp';
 
-    List<DateTime> allEvents = getDepatureTime(calendarLogic);
-    print("All Events departure times: $allEvents\n");
-    DateTime eventEnd = allEvents[i];
-    print("Event end of event ${i+1}: $eventEnd\n");
-
-    final eventUtc = eventEnd.toUtc();
-    //print("Event UTC: $eventUtc\n");
-    int EndTimestamp = (eventUtc.millisecondsSinceEpoch / 1000).round();
-    //print("Departure Timestamp: $EndTimestamp\n");
-    
-
-    String url = 'https://project-emerald-jewel.eastus.azurecontainer.io/google-maps/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=$EndTimestamp';
+    // Used in the live version of the app
+    String url = 'https://project-emerald-jewel.eastus.azurecontainer.io/google-maps/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=$departureTimestamp';
+   
+    print("Calling Directions API for event $eventIndex with departure_time=$departureTimestamp");
+   
+    // Make the API call
     http.Response response = await http.get(Uri.parse(url));
     Map<String, dynamic> data = json.decode(response.body);
    
