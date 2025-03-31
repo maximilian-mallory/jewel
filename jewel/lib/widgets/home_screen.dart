@@ -6,6 +6,7 @@ import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/screens/goal_screen.dart';
+import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/user_groups/user_group.dart';
 //import 'package:jewel/google/maps/map_screen.dart';
 import 'package:jewel/utils/location.dart';
@@ -109,14 +110,10 @@ class SelectedIndexNotifier extends ChangeNotifier {
 }
 
 class HomeScreen extends StatefulWidget {
-  final CalendarLogic calendarLogic;
   final int initialIndex;
-  final JewelUser jewelUser;
 
   const HomeScreen({
     super.key,
-    required this.jewelUser,
-    required this.calendarLogic,
     required this.initialIndex,
   });
 
@@ -128,28 +125,32 @@ class _HomeScreenState extends State<HomeScreen> {
   late int _selectedIndex = widget.initialIndex;
   late gcal.CalendarApi calendarApi;
   late final List<Widget> _screens;
+  late JewelUser jewelUser;
+  late CalendarLogic calendarLogic;
   bool isWeb = kIsWeb;
 
   @override
   void initState() {
     super.initState();
-    getLocationData();
+    getLocationData(context);
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
+    jewelUser = Provider.of<JewelUser>(context, listen:false);
+    int selectedCalendarIndex = jewelUser.calendarLogicList!.length -1;
     _selectedIndex = widget.initialIndex;
-    googleSignIn.onCurrentUserChanged
+    googleSignInList[selectedCalendarIndex].onCurrentUserChanged
         .listen((GoogleSignInAccount? account) async {
       setState(() {
-        widget.calendarLogic.currentUser = account;
-        widget.calendarLogic.isAuthorized = account != null;
+        calendarLogic.currentUser = account;
+        calendarLogic.isAuthorized = account != null;
       });
 
-      widget.jewelUser.calendarLogicList?[0].events =
-          await getGoogleEventsData(widget.calendarLogic, context);
+      jewelUser.calendarLogicList?[selectedCalendarIndex].events =
+          await getGoogleEventsData(calendarLogic, context);
     });
     _screens = [
       // widgets available in the nav bar
       SettingsScreen(
-        jewelUser: widget.jewelUser,
+        jewelUser: jewelUser,
       ),
       CalendarEventsView(),
       MapSample(),
@@ -168,9 +169,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void updateSelectedCalendar(String calendarId) {
     setState(() async {
-      widget.calendarLogic.selectedCalendar = calendarId;
-      widget.calendarLogic.events =
-          await getGoogleEventsData(widget.calendarLogic, context);
+      calendarLogic.selectedCalendar = calendarId;
+      calendarLogic.events =
+          await getGoogleEventsData(calendarLogic, context);
     });
   }
 
@@ -215,7 +216,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Row(
         children: [
-          logicList(),
+          accountList(),
           SizedBox(
               width: isWeb
                   ? res['horizontalPadding']! * 0.3
@@ -289,36 +290,41 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  PopupMenuButton<int> logicList() {
+  PopupMenuButton<int> accountList() {
+    JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
     return PopupMenuButton<int>(
       icon: FaIcon(
         FontAwesomeIcons.google,
         size: 28,
         color: Colors.green,
       ),
-      onSelected: (value) async {
-        if (value == 1) {
-          await handleSignIn();
-        } else if (value == 2) {
-          await handleSignOut();
-        }
-      },
       itemBuilder: (context) {
         List<PopupMenuEntry<int>> menuItems = [];
-        if (widget.jewelUser?.calendarLogicList != null) {
-          for (var calendarLogic in widget.jewelUser!.calendarLogicList!) {
+        if (jewelUser.calendarLogicList != null) {
+          int i = 0;
+          for (var calendarLogic in jewelUser.calendarLogicList!) {
+
             menuItems.add(
               PopupMenuItem<int>(
                 value: 0,
                 child: Text(calendarLogic.currentUser!.email),
+                onTap: () {
+                  //jewelUser.updateSelectedCalendarIndex(i);
+                }
               ),
             );
+          i++;
           }
         }
         menuItems.add(
-          const PopupMenuItem<int>(
+          PopupMenuItem<int>(
             value: 1,
             child: Text('Add Account'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => Intermediary()),
+              );
+            }
           ),
         );
         menuItems.add(

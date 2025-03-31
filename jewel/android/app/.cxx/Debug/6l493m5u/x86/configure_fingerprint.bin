@@ -2,6 +2,7 @@ C/C++ Structured LogS
 Q
 OC:\Flutter\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
+<<<<<<< HEAD
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	Ó›èÝ2§ Õºñ”Ô2o
 m
 kC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\additional_project_files.txt	Ó›èÝ2 ï²©Ý2l
@@ -26,3 +27,29 @@ c
 aC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\prefab_config.json	Ó›èÝ2( ¢ï²©Ý2j
 h
 fC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\symbol_folder_index.txt	Ó›èÝ2] ¢ï²©Ý2
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	›ì ìÝ2§ Õºñ”Ô2o
+m
+kC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\additional_project_files.txt	›ì ìÝ2 ÅÀþëÝ2l
+j
+hC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\android_gradle_build.json	›ì ìÝ2Ý ÆÀþëÝ2q
+o
+mC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\android_gradle_build_mini.json	›ì ìÝ2¨ ÈÀþëÝ2^
+\
+ZC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\build.ninja	›ì ìÝ2á õ¾þëÝ2b
+`
+^C:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\build.ninja.txt	›ì ìÝ2g
+e
+cC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\build_file_index.txt	›ì ìÝ2O ÊÀþëÝ2h
+f
+dC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\compile_commands.json	›ì ìÝ2	l
+j
+hC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\compile_commands.json.bin	›ì ìÝ2
+r
+p
+nC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\metadata_generation_command.txt	›ì ìÝ2ç ÉÀþëÝ2e
+c
+aC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\prefab_config.json	›ì ìÝ2( ÊÀþëÝ2j
+h
+fC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\x86\symbol_folder_index.txt	›ì ìÝ2] ÊÀþëÝ2
+>>>>>>> 3d56fcc07ecce896e98fc6431680fd7ab029f3a1

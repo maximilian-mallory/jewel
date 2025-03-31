@@ -2,6 +2,7 @@ C/C++ Structured LogS
 Q
 OC:\Flutter\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
+<<<<<<< HEAD
 ?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	°›θέ2§ ΥΊρ”Τ2u
 s
 qC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\additional_project_files.txt	°›θέ2 Ò²©έ2r
@@ -26,3 +27,29 @@ i
 gC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\prefab_config.json	°›θέ2( ΄Ò²©έ2p
 n
 lC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\symbol_folder_index.txt	°›θέ2c µÒ²©έ2
+=======
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	ίλ μέ2§ ΥΊρ”Τ2u
+s
+qC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\additional_project_files.txt	ίλ μέ2 Χƒχλέ2r
+p
+nC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\android_gradle_build.json	ίλ μέ2ι Ωƒχλέ2w
+u
+sC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\android_gradle_build_mini.json	ίλ μέ2΄ άƒχλέ2d
+b
+`C:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\build.ninja	ίλ μέ2»α ¦‚χλέ2h
+f
+dC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\build.ninja.txt	ίλ μέ2m
+k
+iC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\build_file_index.txt	ίλ μέ2O ΰƒχλέ2n
+l
+jC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\compile_commands.json	ίλ μέ2	r
+p
+nC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\compile_commands.json.bin	ίλ μέ2
+x
+v
+tC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\metadata_generation_command.txt	ίλ μέ2…	 ήƒχλέ2k
+i
+gC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\prefab_config.json	ίλ μέ2( ήƒχλέ2p
+n
+lC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\arm64-v8a\symbol_folder_index.txt	ίλ μέ2c ίƒχλέ2
+>>>>>>> 3d56fcc07ecce896e98fc6431680fd7ab029f3a1

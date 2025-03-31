@@ -66,9 +66,13 @@ dependencies:
   flutter_polyline_points: ^1.0.0
   google_maps_routes: ^1.1.2
   location: ^5.0.0
+<<<<<<< HEAD
   flutter_local_notifications: ^19.0.0
   permission_handler: ^11.4.0
   shared_preferences: ^2.2.2
+=======
+  permission_handler: ^11.4.0
+>>>>>>> 3d56fcc07ecce896e98fc6431680fd7ab029f3a1
 dev_dependencies:
   flutter_test:
     sdk: flutter

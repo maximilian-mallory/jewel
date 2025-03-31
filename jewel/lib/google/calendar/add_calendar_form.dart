@@ -170,14 +170,16 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   late gcal.CalendarApi calendarApi;
   late JewelUser jewelUser; 
   late CalendarLogic calendarLogic;
+  late int selectedCalendarIndex;
 
   @override
   void initState() {
     super.initState();
     jewelUser = Provider.of<JewelUser>(context, listen: false);
-    calendarLogic = jewelUser.calendarLogicList![0];
+    selectedCalendarIndex = jewelUser.calendarLogicList!.length -1;
+    calendarLogic = jewelUser.calendarLogicList![selectedCalendarIndex];
     // Listen for authentication state changes.
-    googleSignIn.onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
+    googleSignInList[selectedCalendarIndex].onCurrentUserChanged.listen((GoogleSignInAccount? account) async {
       setState(() {
         calendarLogic.currentUser = account;
         calendarLogic.isAuthorized = account != null;
@@ -256,7 +258,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
         calendarLogic.events =
             await getGoogleEventsData(calendarLogic, context);
         setState(() {
-          jewelUser.updateCalendarLogic(calendarLogic);
+          jewelUser.updateCalendarLogic(calendarLogic, selectedCalendarIndex);
         });
       },
       child: Container(
@@ -283,7 +285,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
         calendarLogic.events =
             await getGoogleEventsData(calendarLogic, context);
         setState(() {
-          jewelUser.updateCalendarLogic(calendarLogic);
+          jewelUser.updateCalendarLogic(calendarLogic, selectedCalendarIndex);
         });
       },
       child: Container(
@@ -338,7 +340,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
               calendarLogic.events = await getGoogleEventsData(calendarLogic, context);
               
               // Update the provider
-              user.updateCalendarLogic(calendarLogic);
+              user.updateCalendarLogic(calendarLogic, selectedCalendarIndex);
               
               print('[DATE PICKER] SelectedDate: ${calendarLogic.selectedDate} should match JewelUser SelectedDate: ${user.calendarLogicList![0].selectedDate}');
             }

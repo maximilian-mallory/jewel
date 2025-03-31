@@ -1,11 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
+<<<<<<< HEAD
 import 'package:flutter/foundation.dart';
 // new
+=======
+>>>>>>> 3d56fcc07ecce896e98fc6431680fd7ab029f3a1
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
-
+import 'package:jewel/firebase_ops/user_groups.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/external_user.dart';
 import 'package:jewel/models/internal_user.dart';
@@ -40,12 +43,13 @@ bool isLoading = true; // To show loading indicator
     //     widget.calendarLogic.isAuthorized = account != null;
     //   });
     // });
-     User? firebaseUser = FirebaseAuth.instance.currentUser;
+    User? firebaseUser = FirebaseAuth.instance.currentUser;
     print('[Firebase Auth] Firebase user successfully signed in: ${firebaseUser!.email}');
     signIn(); //force signin
   }
 
   Future<void> signIn() async {
+<<<<<<< HEAD
   JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
   CalendarLogic calendarLogic = CalendarLogic();
   calendarLogic.currentUser = await handleSignIn(); // googleapi.dart
@@ -78,6 +82,20 @@ bool isLoading = true; // To show loading indicator
       MaterialPageRoute(
         builder: (context) => HomeScreen(jewelUser: jewelUser, calendarLogic: calendarLogic, initialIndex: 1,), // Use named parameter
       ),
+=======
+    JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
+    CalendarLogic calendarLogic = CalendarLogic();
+    calendarLogic.currentUser = await handleSignIn(jewelUser); // googleapi.dart
+    calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
+
+    jewelUser.addCalendarLogic(calendarLogic);
+    jewelUser.updateUserGroups(await getUsersGroups(jewelUser.email!));
+    print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
+    // After signing in, navigate to the next screen
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => HomeScreen(initialIndex: 1)),
+      (Route<dynamic> route) => false, // Removes all previous routes
+>>>>>>> 3d56fcc07ecce896e98fc6431680fd7ab029f3a1
     );
   }
 

@@ -1,11 +1,12 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:provider/provider.dart';
 import 'package:jewel/utils/text_style_notifier.dart';
-
+import 'package:jewel/utils/location.dart';
+import 'package:permission_handler/permission_handler.dart' as handler;
 /// Returns responsive values based on the current screen width.
 /// These breakpoints match those used in add_calendar_form.dart.
 Map<String, double> getResponsiveValues(BuildContext context) {
@@ -35,11 +36,14 @@ Map<String, double> getResponsiveValues(BuildContext context) {
     horizontalPadding = 14.0;
     verticalPadding = 10.0;
     titleFontSize = 14.0;
-  }
+  };
+  // settingFontSize is 2 points smaller than the category title
+  final double settingFontSize = titleFontSize - 2.0;
   return {
     'horizontalPadding': horizontalPadding,
     'verticalPadding': verticalPadding,
     'titleFontSize': titleFontSize,
+    'settingFontSize': settingFontSize,
   };
 }
 
@@ -57,6 +61,7 @@ double getTextStyleMultiplier(String textStyle) {
       return 1.0;
   }
 }
+
 
 class SettingsScreen extends StatelessWidget {
   final JewelUser? jewelUser;
@@ -83,31 +88,39 @@ class SettingsScreen extends StatelessWidget {
               title: 'Notifications',
               settings: [
                 NumberInputSetting(title: 'Set Snooze Timer'),
-                ToggleSetting(title: 'Do Not Disturb'),
+                ToggleSetting(
+                  title: 'Do Not Disturb',
+                  ),
               ],
             ),
             SettingsCategory(
               title: 'Privacy',
               settings: [
-                ToggleSetting(title: 'Obfuscate Data'),
-                ToggleSetting(title: 'Show Only Shared Events'),
+                ToggleSetting(
+                  title: 'Obfuscate Data',
+                  ),
+                ToggleSetting(
+                  title: 'Show Only Shared Events',
+                  ),
               ],
             ),
             SettingsCategory(
               title: 'Permissions',
               settings: [
-                ToggleSetting(
-                  title: 'Notification Permission', 
-                  ),
-                ToggleSetting(
-                  title: 'Location Permission'
-                  ),
+                ToggleSetting(title: 'Notification Permission'),
+                ToggleSetting(title: 'Location Permission'),
               ],
             ),
             SettingsCategory(
               title: 'Text Style',
               settings: [
                 TextStyleSetting(),
+                ToggleSetting(
+                  title: 'Notification Permission',
+                  ),
+                ToggleSetting(
+                  title: 'Location Permission',
+                  ),
               ],
             ),
             SizedBox(height: res['verticalPadding']),
@@ -144,7 +157,7 @@ class SettingsCategory extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        // Wrap title with Consumer to apply global multiplier
+        // This is the category header; it uses titleFontSize.
         Consumer<TextStyleNotifier>(
           builder: (context, textStyleNotifier, child) {
             double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
@@ -176,20 +189,113 @@ class ToggleSetting extends StatefulWidget {
   _ToggleSettingState createState() => _ToggleSettingState();
 }
 
-class _ToggleSettingState extends State<ToggleSetting> {
+class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserver {
   bool _value = false;
+  
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    // Check permission status on initialization for both platforms
+    if (widget.title == 'Location Permission') {
+      _updateLocationPermissionStatus();
+    }
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (widget.title == 'Location Permission' && state == AppLifecycleState.resumed) {
+      _updateLocationPermissionStatus();
+    }
+  }
+  
+  Future<void> _updateLocationPermissionStatus() async {
+    try {
+      bool hasPermission = await checkLocationPermission();
+      if (mounted) {
+        setState(() {
+          _value = hasPermission;
+          print("Location permission status: $hasPermission");
+        });
+      }
+    } catch (e) {
+      print("Error checking location permission: $e");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // This text will inherit the global text theme – already modified by multiplier.
-    return SwitchListTile(
-      title: Text(widget.title),
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        // Use settingFontSize for individual setting widget titles.
+        return SwitchListTile(
+      title: Text(widget.title, style: TextStyle(fontSize: res['settingFontSize']! * multiplier),),
       value: _value,
-      onChanged: (bool newValue) {
-        setState(() {
-          _value = newValue;
-        });
-      },
+      onChanged: (bool newValue) async {
+        if (widget.title == 'Location Permission') {
+          // Don't change the toggle state yet - only after confirming permission change
+          if (newValue) {
+            // User trying to enable location
+            var locationData = await getLocationData(context);
+            // Only update state after we know if permission was successful
+            _updateLocationPermissionStatus();
+          } else {
+            // User trying to disable location
+            if (kIsWeb) {
+              // Show a dialog with instructions for web users
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Permission Required'),
+                    content: Text('Please manually change the location permission in your browser settings to revoke location permissions'),
+                    actions: <Widget>[
+                      ElevatedButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            } else if (!kIsWeb) {
+              // Don't change toggle state yet
+              try {
+                // Request location permission
+                await handler.openAppSettings();
+                
+                // Re-check permission after settings opened
+                // Need a small delay to allow user to change settings
+                Future.delayed(Duration(seconds: 2), () async {
+                  if (mounted) {
+                    _updateLocationPermissionStatus();
+                  }
+                });
+                
+              } catch (e) {
+                print("Error opening app settings: $e");
+              }
+            }
+          }
+        } else {
+          // For non-location toggles, update immediately
+          setState(() {
+            _value = newValue;
+          });
+            }
+          },
+        );
+      }
     );
   }
 }
@@ -236,17 +342,27 @@ class _ColorPickerSettingState extends State<ColorPickerSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.title),
-      trailing: Container(
-        width: 24,
-        height: 24,
-        decoration: BoxDecoration(
-          color: _currentColor,
-          shape: BoxShape.circle,
-        ),
-      ),
-      onTap: _pickColor,
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        // Use settingFontSize here.
+        return ListTile(
+          title: Text(
+            widget.title,
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
+          ),
+          trailing: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: _currentColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          onTap: _pickColor,
+        );
+      },
     );
   }
 }
@@ -264,36 +380,51 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(widget.title),
-      trailing: SizedBox(
-        width: 100,
-        child: TextField(
-          keyboardType: TextInputType.number,
-          decoration: const InputDecoration(
-            hintText: 'Enter number',
+    return Consumer<TextStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        // Use settingFontSize for the individual setting title.
+        return ListTile(
+          title: Text(
+            widget.title,
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
           ),
-          onChanged: (String value) {
-            setState(() {
-              _currentValue = int.tryParse(value) ?? 0;
-            });
-          },
-        ),
-      ),
+          trailing: SizedBox(
+            width: 100,
+            child: TextField(
+              keyboardType: TextInputType.number,
+              decoration: const InputDecoration(
+                hintText: 'Enter number',
+              ),
+              onChanged: (String value) {
+                setState(() {
+                  _currentValue = int.tryParse(value) ?? 0;
+                });
+              },
+            ),
+          ),
+        );
+      },
     );
   }
 }
 
-// Updated widget for selecting text style using Provider.
 class TextStyleSetting extends StatelessWidget {
   const TextStyleSetting({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final res = getResponsiveValues(context);
     return Consumer<TextStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        // Use settingFontSize for the widget title.
         return ListTile(
-          title: const Text('Select Text Style'),
+          title: Text(
+            'Select Text Style',
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
+          ),
           trailing: DropdownButton<String>(
             value: textStyleNotifier.textStyle,
             items: ['default', 'extra Large', 'large', 'small'].map((String style) {
@@ -312,4 +443,4 @@ class TextStyleSetting extends StatelessWidget {
       },
     );
   }
-}
+} 
