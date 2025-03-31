@@ -73,7 +73,6 @@ class MapSampleState extends State<MapSample> {
     if (jewelUser.calendarLogicList == null || jewelUser.calendarLogicList!.isEmpty) return;
     
     final calendarLogic = jewelUser.calendarLogicList![0];
-   
     String markerKey = calendarLogic.markers.map((m) => m.markerId.value).join('_');
     String newDrawKey = "${calendarLogic.selectedDate}_${calendarLogic.events.length}_$markerKey";
  

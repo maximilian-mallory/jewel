@@ -1,10 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
-<<<<<<< HEAD
-import 'package:flutter/foundation.dart';
-// new
-=======
->>>>>>> 3d56fcc07ecce896e98fc6431680fd7ab029f3a1
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
@@ -49,44 +44,20 @@ bool isLoading = true; // To show loading indicator
   }
 
   Future<void> signIn() async {
-<<<<<<< HEAD
-  JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
-  CalendarLogic calendarLogic = CalendarLogic();
-  calendarLogic.currentUser = await handleSignIn(); // googleapi.dart
-  calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
-  
-  // Add these lines to store calendar API globally and register background tasks
-  if (!kIsWeb) {
-    final auth = await calendarLogic.currentUser!.authentication;
-    if (auth.accessToken != null) {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString('calendar_access_token', auth.accessToken!);
-      
-      // Request notification permissions and register background tasks
-      await Permission.notification.request();
-      registerBackgroundTasks();
-      
-      print("[BACKGROUND] Registered background tasks with access token");
-    }
-  }
-
-
-  JewelUser ourUser = await getCurrentJewelUser();
-  ourUser.addCalendarLogic(calendarLogic);
-  print('[Jewel Factory] Our user signed in: ${ourUser.email}');
-  jewelUser.updateFrom(ourUser);
-  print('[CHANGE PROVIDER] Jewel User updated: ${jewelUser.email}');
-  // After signing in, navigate to the next screen
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (context) => HomeScreen(jewelUser: jewelUser, calendarLogic: calendarLogic, initialIndex: 1,), // Use named parameter
-      ),
-=======
     JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
     CalendarLogic calendarLogic = CalendarLogic();
     calendarLogic.currentUser = await handleSignIn(jewelUser); // googleapi.dart
     calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
+
+    if (calendarLogic.currentUser != null) {
+    final auth = await calendarLogic.currentUser!.authentication;
+    final accessToken = auth.accessToken;
+    if (accessToken != null) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('calendar_access_token', accessToken);
+      print("Access token saved for background tasks: ${accessToken.substring(0, 10)}...");
+    }
+  }
 
     jewelUser.addCalendarLogic(calendarLogic);
     jewelUser.updateUserGroups(await getUsersGroups(jewelUser.email!));
@@ -95,7 +66,6 @@ bool isLoading = true; // To show loading indicator
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (context) => HomeScreen(initialIndex: 1)),
       (Route<dynamic> route) => false, // Removes all previous routes
->>>>>>> 3d56fcc07ecce896e98fc6431680fd7ab029f3a1
     );
   }
 

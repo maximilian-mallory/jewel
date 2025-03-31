@@ -38,13 +38,22 @@ Future<void> main() async {
   } else {
     await dotenv.load(fileName: ".env");
   }
-  if(!kIsWeb) {
-    final prefs = await SharedPreferences.getInstance();
-    if(prefs.getString('calendar_access_token') != null) {
-      print("Found access token, so intermediary screen will be skipped ");
-      await Permission.notification.request();
-      registerBackgroundTasks();
-    }
+  if (!kIsWeb) {
+    // Request permissions first
+      PermissionStatus status = await Permission.notification.request();
+    
+      // Check if permission was granted
+      if (status.isGranted) {
+        // Use try-catch to prevent crashes during registration
+        try {
+          await registerBackgroundTasks();
+        } catch (e) {
+          print("Failed to register background tasks: $e");
+        }
+      } else {
+        print("Notification permission denied. Background tasks may not work properly.");
+      }
+    
   }
 
   // Initialize Firebase
