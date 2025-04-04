@@ -1,7 +1,8 @@
 import 'dart:async';
 import 'dart:isolate';
 import 'dart:ui';
-import 'package:jewel/notifications.dart';
+import 'package:jewel/google/maps/google_routes.dart';
+import 'package:jewel/utils/platform/notifications.dart';
 import 'package:workmanager/workmanager.dart';
 
 // Add this background port name
@@ -39,6 +40,11 @@ void callbackDispatcher() {
           await checkUpcomingEvents();
           //print("BACKGROUND TASK: Finished checking events");
           break;
+        case "Time checker task":
+          print("BACKGROUND TASK: About to send start notification");
+          await sendBasicNotification("Background Task", "Checking for time between events");
+          print("BACKGROUND TASK: About to check times between events");
+          await checkUserHasEnoughTime(calendarlogic, );
           
         default:
           print("BACKGROUND TASK: Unknown task $task");
@@ -116,7 +122,24 @@ Future<void> registerBackgroundTasks() async {
         requiresStorageNotLow: false,
       ),
     );
-    print("Registered periodic background task");
+    print("Registered periodic background task for pre event reminders");
+    await Workmanager().registerPeriodicTask(
+      "time_checker_task",
+      "Time checker task",
+      frequency: Duration(minutes: 15),
+      initialDelay: Duration(seconds: 30),
+      existingWorkPolicy: ExistingWorkPolicy.replace,
+      backoffPolicy: BackoffPolicy.linear,
+      constraints: Constraints(
+        networkType: NetworkType.not_required,
+        requiresBatteryNotLow: false,
+        requiresCharging: false,
+        requiresDeviceIdle: false,
+        requiresStorageNotLow: false,
+      ),
+    );
+    print("Registered periodic background task for checking times between events");
+    
     
     // Add a one-time task for immediate testing
     await Workmanager().registerOneOffTask(
@@ -128,13 +151,9 @@ Future<void> registerBackgroundTasks() async {
         requiresBatteryNotLow: false,
       ),
     );
-    print("Registered one-time background task");
+    print("Registered one-time background task for pre event reminders");
     
-    // Show a notification to confirm tasks were registered
-    /*await sendBasicNotification(
-      "Background Tasks", 
-      "Calendar reminders registered successfully"
-    );*/
+    
   } catch (e) {
     print("ERROR registering background tasks: $e");
     await sendBasicNotification(

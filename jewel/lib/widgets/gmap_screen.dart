@@ -238,9 +238,10 @@ class MapSampleState extends State<MapSample> {
                           CircularProgressIndicator(color: Colors.white),
                           SizedBox(height: 8),
                           Text(
-                            'Calculating routes...',
+                            'Requires atleast two future events to calculate routes...',
                             style: TextStyle(color: Colors.white),
                           ),
+                          
                         ],
                       ),
                     ),

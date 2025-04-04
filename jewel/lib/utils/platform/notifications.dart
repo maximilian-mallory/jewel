@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:http/http.dart' as http;
 import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:permission_handler/permission_handler.dart' as handler;
 import 'package:shared_preferences/shared_preferences.dart';
 
 // Global plugin instance for use across the app
@@ -191,8 +193,8 @@ Future<void> checkUpcomingEvents() async {
       "Checking calendar events now"
     );*/
     
-    final prefs = await SharedPreferences.getInstance();
-    final accessToken = prefs.getString('calendar_access_token');
+    final prefs = await SharedPreferencesAsync();
+    final accessToken = await prefs.getString('calendar_access_token');
     
     if (accessToken != null) {
       try {
@@ -293,18 +295,14 @@ Future<void> checkUpcomingEvents() async {
           await Future.delayed(Duration(milliseconds: 300));
         }
       } catch (e) {
-        print('Calendar API error: $e');
-        await sendBasicNotification(
-          "API Error", 
-          "Calendar API error: ${e.toString().substring(0, 50)}..."
-        );
-      }
-    } else {
-      await sendBasicNotification(
-        "No Token",
-        "Access token not found for calendar access"
-      );
-    }
+          print('Calendar API error: $e');
+              await sendBasicNotification(
+              "API Error", 
+              "Calendar API error: ${e.toString().substring(0, 50)}..."
+              );
+            }
+            
+          }  
   } catch (e) {
     print('Error in background task: $e');
     await sendBasicNotification(
@@ -342,5 +340,18 @@ class GoogleHttpClient extends http.BaseClient {
   void close() {
     _client.close();
     super.close();
+  }
+}
+Future<bool> checkNotificationPermission() async {
+  try {
+    // Check if the notification permission is granted
+    PermissionStatus status = await Permission.notification.status;
+    if(status == PermissionStatus.denied && !kIsWeb) {
+      handler.openAppSettings();
+    }
+    return status == PermissionStatus.granted || status == PermissionStatus.limited;
+  } catch (e) {
+    print("Error checking notification permission: $e");
+    return false;
   }
 }

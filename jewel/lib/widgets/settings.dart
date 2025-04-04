@@ -3,9 +3,10 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/utils/platform/notifications.dart';
 import 'package:provider/provider.dart';
 import 'package:jewel/utils/text_style_notifier.dart';
-import 'package:jewel/utils/location.dart';
+import 'package:jewel/utils/platform/location.dart';
 import 'package:permission_handler/permission_handler.dart' as handler;
 /// Returns responsive values based on the current screen width.
 /// These breakpoints match those used in add_calendar_form.dart.
@@ -115,12 +116,6 @@ class SettingsScreen extends StatelessWidget {
               title: 'Text Style',
               settings: [
                 TextStyleSetting(),
-                ToggleSetting(
-                  title: 'Notification Permission',
-                  ),
-                ToggleSetting(
-                  title: 'Location Permission',
-                  ),
               ],
             ),
             SizedBox(height: res['verticalPadding']),
@@ -200,6 +195,9 @@ class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserv
     if (widget.title == 'Location Permission') {
       _updateLocationPermissionStatus();
     }
+    if(widget.title == 'Notification Permission') {
+      _updateNotificationPermissionStatus();
+    }
   }
 
   @override
@@ -212,6 +210,9 @@ class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserv
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (widget.title == 'Location Permission' && state == AppLifecycleState.resumed) {
       _updateLocationPermissionStatus();
+    }
+    if (widget.title == 'Notification Permission' && state == AppLifecycleState.resumed) {
+      _updateNotificationPermissionStatus();
     }
   }
   
@@ -226,6 +227,20 @@ class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserv
       }
     } catch (e) {
       print("Error checking location permission: $e");
+    }
+  }
+
+  Future<void> _updateNotificationPermissionStatus() async{
+    try {
+      bool hasPermission = await checkNotificationPermission();
+      if (mounted) {
+        setState(() {
+          _value = hasPermission;
+          print("Notification permission status: $hasPermission");
+        });
+      }
+    } catch (e) {
+      print("Error checking notification permission: $e");
     }
   }
 
@@ -287,7 +302,75 @@ class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserv
               }
             }
           }
-        } else {
+        } if(widget.title == 'Notification Permission') {
+          // Don't change the toggle state yet - only after confirming permission change
+          if (newValue) {
+            // User trying to enable notifications
+            
+            // Only update state after we know if permission was successful
+            var status =await handler.Permission.notification.request();
+              if(status.isPermanentlyDenied){
+                // User denied permission
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: Text('Permission Denied'),
+                      content: Text('Notification permission is denied. Please enable it from the app settings.'),
+                      actions: <Widget>[
+                        ElevatedButton(
+                          child: Text('OK'),
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                          },
+                        ),
+                      ],
+                    );
+                  },
+                );
+              }
+            _updateNotificationPermissionStatus();
+          } else {
+            // User trying to disable notifications
+            if (kIsWeb) {
+              // Show a dialog with instructions for web users
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    title: Text('Permission Required'),
+                    content: Text('Please manually change the notification permission in your browser settings to revoke notification permissions'),
+                    actions: <Widget>[
+                      ElevatedButton(
+                        child: Text('OK'),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  );
+                },
+              );
+            } else if (!kIsWeb) {
+              // Don't change toggle state yet
+              try {
+                // Request notification permission
+                await handler.openAppSettings();
+                
+                // Re-check permission after settings opened
+                // Need a small delay to allow user to change settings
+                Future.delayed(Duration(seconds: 2), () async {
+                  if (mounted) {
+                    _updateNotificationPermissionStatus();
+                  }
+                });
+                
+              } catch (e) {
+                print("Error opening app settings: $e");
+              }
+            }
+          }
+        }else {
           // For non-location toggles, update immediately
           setState(() {
             _value = newValue;

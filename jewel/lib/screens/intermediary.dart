@@ -8,7 +8,7 @@ import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/external_user.dart';
 import 'package:jewel/models/internal_user.dart';
 import 'package:jewel/models/jewel_user.dart';
-import 'package:jewel/utils/background_deployer.dart';
+import 'package:jewel/utils/platform/background_deployer.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';

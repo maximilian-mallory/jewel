@@ -59,7 +59,7 @@ List<DateTime> getArrivalTime(CalendarLogic calendarLogic) {
 
 }
 
-Future<void> checkUserHasEnoughTime(CalendarLogic calendarLogic, int totalDuration, int i) async {
+Future<bool> checkUserHasEnoughTime(CalendarLogic calendarLogic, int totalDuration, int i) async {
   List<DateTime> eventDepartureTimes = getDepatureTime(calendarLogic);
   List<DateTime> eventArrivalTimes = getArrivalTime(calendarLogic);
 
@@ -70,10 +70,13 @@ Future<void> checkUserHasEnoughTime(CalendarLogic calendarLogic, int totalDurati
   print("Event ${i+2} Arrival Time: ${eventArrivalTimes[i+1]}\n");
   print("Event Difference: $eventDifference seconds\n");
   if(eventDifference < totalDuration + 300){ // 5 minutes buffer
+  // totalDuration is the
     print("DEBUG: Not enough time between events ${i+1} and ${i+2}\n");
+    return false;
   }
   else{
     print("DEBUG: Enough time between events ${i+1} and ${i+2}\n");
+    return true;
   }
 
 }

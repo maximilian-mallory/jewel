@@ -41,7 +41,7 @@ Future<gcal.CalendarApi> createCalendarApiInstance(
           accessToken,
           DateTime.now()
               .toUtc()
-              .add(const Duration(hours: 1))), // One hour session
+              .add(const Duration(hours: 24))), // One day session
       null,
       scopes,
     ),
