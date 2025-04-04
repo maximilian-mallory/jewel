@@ -156,10 +156,13 @@ class MapSampleState extends State<MapSample> {
         LatLng endCoord = markerCoordinates[nextMarkerPos];
        
         List<LatLng> segmentCoords = await getRouteCoordinates(
+          getRouteData(
           startCoord,
           endCoord,
           calendarLogic,
-          currentEventIndex
+          currentEventIndex,
+          "getRouteCoordinates"
+          )
         );
        
         if (segmentCoords.isNotEmpty) {

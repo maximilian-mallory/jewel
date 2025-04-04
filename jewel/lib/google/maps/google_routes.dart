@@ -10,6 +10,7 @@ import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/event_snap.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
+import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
 import '../calendar/g_g_merge.dart';
@@ -59,35 +60,100 @@ List<DateTime> getArrivalTime(CalendarLogic calendarLogic) {
 
 }
 
-Future<bool> checkUserHasEnoughTime(CalendarLogic calendarLogic, int totalDuration, int i) async {
+Future<List<Map<int, bool>>> checkUserHasEnoughTime() async {
+  CalendarLogic calendarLogic = CalendarLogic();
   List<DateTime> eventDepartureTimes = getDepatureTime(calendarLogic);
   List<DateTime> eventArrivalTimes = getArrivalTime(calendarLogic);
 
-
-  int eventDifference = eventDepartureTimes[i].difference(eventArrivalTimes[i+1]).inSeconds.abs();
+  final now = DateTime.now();
+  List<LatLng> markerCoordinates = getCoordFromMarker(calendarLogic.markers.toList());
   
-  print("Event ${i+1} Departure Time: ${eventDepartureTimes[i]}\n");
-  print("Event ${i+2} Arrival Time: ${eventArrivalTimes[i+1]}\n");
-  print("Event Difference: $eventDifference seconds\n");
-  if(eventDifference < totalDuration + 300){ // 5 minutes buffer
-  // totalDuration is the
-    print("DEBUG: Not enough time between events ${i+1} and ${i+2}\n");
-    return false;
+  /*
+   * Event Processing
+   */
+  final allEvents = calendarLogic.events.where((event) =>
+    event.start?.dateTime != null && event.end?.dateTime != null).toList();
+  
+  final Map<int, gcal.Event> futureEvents = {};
+  for (int i = 0; i < allEvents.length; i++) {
+    final event = allEvents[i];
+    final startTime = event.start?.dateTime;
+    
+    if (startTime != null && startTime.isAfter(now)) {
+      futureEvents[i] = event;
+    }
   }
-  else{
-    print("DEBUG: Enough time between events ${i+1} and ${i+2}\n");
-    return true;
+  
+  if (futureEvents.isEmpty) {
+    print("DEBUG: No future events found; returning empty list");
+    return [];
   }
+  
+  /*
+   * Event-to-Marker Mapping
+   */
+  Map<int, int> eventToMarkerMap = {};
+  
+  for (final eventIndex in futureEvents.keys) {
+    if (eventIndex < markerCoordinates.length) {
+      eventToMarkerMap[eventIndex] = eventIndex;
+    }
+  }
+  
+  /*
+   * Route Drawing
+   */
+  List<int> sortedEventIndices = futureEvents.keys.toList()..sort();
+  List<Map<int, bool>> eventStatus = [];
+  for (int i = 0; i < sortedEventIndices.length - 1; i++) {
+    int currentEventIndex = sortedEventIndices[i];
+    int nextEventIndex = sortedEventIndices[i + 1];
+    
+    int currentMarkerPos = eventToMarkerMap[currentEventIndex]!;
+    int nextMarkerPos = eventToMarkerMap[nextEventIndex]!;
+    
+    if (currentMarkerPos >= markerCoordinates.length ||
+        nextMarkerPos >= markerCoordinates.length) {
+      continue;
+    }
+    
+    LatLng startCoord = markerCoordinates[currentMarkerPos];
+    LatLng endCoord = markerCoordinates[nextMarkerPos];
+    
+    List<dynamic> eventDurations = await getRouteData(
+      startCoord, 
+      endCoord, 
+      calendarLogic, 
+      0, 
+      "getTrafficDurationOfEvents");
 
+    print("Event Arrival Time: ${eventArrivalTimes[i]} Event Departure Time: ${eventDepartureTimes[i]} of event ${i+1}\n");
+    print("Event Departure Time: ${eventDepartureTimes[i+1]} Event Arrival Time: ${eventArrivalTimes[i+1]} of event ${i+2}\n");
+
+    int eventDifference = eventDepartureTimes[i].difference(eventArrivalTimes[i+1]).inSeconds.abs();
+    
+    print("Event ${i+1} Departure Time: ${eventDepartureTimes[i]}\n");
+    print("Event ${i+2} Arrival Time: ${eventArrivalTimes[i+1]}\n");
+    print("Event Difference: $eventDifference seconds\n");
+    if (eventDifference < eventDurations[i] + 300) { // 5 minutes buffer
+      print("DEBUG: Not enough time between events ${i+1} and ${i+2}\n");
+      eventStatus.add({i: false});
+    }
+    else {
+      print("DEBUG: Enough time between events ${i+1} and ${i+2}\n");
+      eventStatus.add({i: true});
+    }
+  }
+  return eventStatus;
 }
 
-
-
-Future<List<LatLng>> getRouteCoordinates(
+Future<List<dynamic>> getRouteData (
     LatLng start,
     LatLng end,
     CalendarLogic calendarLogic,
-    int eventIndex) async {
+    int eventIndex,
+    String command
+    ) async {
   try {
     String apiKey = dotenv.env['GOOGLE_MAPS_KEY']!;
     final allEvents = calendarLogic.events;
@@ -121,24 +187,46 @@ Future<List<LatLng>> getRouteCoordinates(
     int departureTimestamp = (eventUtc.millisecondsSinceEpoch / 1000).round();
  
     // used on local version of the app
-    //String url = 'https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=$departureTimestamp';
+    String url = 'https://maps.googleapis.com/maps/api/directions/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=$departureTimestamp';
 
     // Used in the live version of the app
-    String url = 'https://project-emerald-jewel.eastus.azurecontainer.io/google-maps/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=$departureTimestamp';
+    //String url = 'https://project-emerald-jewel.eastus.azurecontainer.io/google-maps/json?origin=${start.latitude},${start.longitude}&destination=${end.latitude},${end.longitude}&key=$apiKey&departure_time=$departureTimestamp';
    
     print("Calling Directions API for event $eventIndex with departure_time=$departureTimestamp");
    
     // Make the API call
     http.Response response = await http.get(Uri.parse(url));
     Map<String, dynamic> data = json.decode(response.body);
-   
+
+    
     if (data['status'] != 'OK') {
       print("Error: ${data['status']} - ${data['error_message'] ?? 'No error details'}");
       return [];
     }
- 
+    /*final durationTrafficSec = data['routes'][0]['legs'][0]['duration_in_traffic']['value'] ?? 0;
+      print("Total Duration in Traffic: $durationTrafficSec seconds\n\n\n\n");
+      checkUserHasEnoughTime(calendarLogic, durationTrafficSec);*/
+      // Commands to decide what to do with the data
+      if(command == "getRouteCoordinates"){
+        return getRouteCoordinates(data);
+      }
+      if(command == "getTrafficDurationOfEvents"){
+        return getTrafficDurationOfEvents(data);
+      }else {
+        return [data];
+      }
+      // Return the top level just in case its needed in the future
+      //return data;
     // Extract route coordinates from the response
-    List<LatLng> routeCoordinates = [];
+    
+  } catch (e) {
+    print("Error in getRouteData: $e");
+    return [];
+  }
+}
+
+List<LatLng> getRouteCoordinates(data) {
+List<LatLng> routeCoordinates = [];
     if (data['routes'] != null && data['routes'].isNotEmpty) {
       final steps = data['routes'][0]['legs'][0]['steps'];
       for (var step in steps) {
@@ -152,10 +240,17 @@ Future<List<LatLng>> getRouteCoordinates(
         ));
       }
     }
-   
     return routeCoordinates;
-  } catch (e) {
-    print("Error in getRouteCoordinates: $e");
-    return [];
+}
+
+List<int> getTrafficDurationOfEvents(data){
+  List<int> eventDurations = [];
+  if (data['routes'] != null && data['routes'].isNotEmpty) {
+    final legs = data['routes'][0]['legs'];
+    for (var leg in legs) {
+      eventDurations.add(leg['duration_in_traffic']['value']);
+    }
   }
+
+  return eventDurations;
 }

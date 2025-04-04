@@ -44,8 +44,15 @@ void callbackDispatcher() {
           print("BACKGROUND TASK: About to send start notification");
           await sendBasicNotification("Background Task", "Checking for time between events");
           print("BACKGROUND TASK: About to check times between events");
-          await checkUserHasEnoughTime(calendarlogic, );
-          
+          List<Map<int, bool>> eventStatus = await checkUserHasEnoughTime();
+          for(int i = 0; i < eventStatus.length; i++) {
+            if(eventStatus[i].values.contains(false)) {
+              print("BACKGROUND TASK: Not enough time between events ${i+1} and ${i+2}");
+              await sendBasicNotification("Background Task", "WARNING: Not enough time between events ${i+1} and ${i+2}");
+            } else {
+              print("BACKGROUND TASK: Enough time between events ${i+1} and ${i+2}");
+            }
+          }
         default:
           print("BACKGROUND TASK: Unknown task $task");
           break;
