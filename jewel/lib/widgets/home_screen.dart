@@ -18,7 +18,7 @@ import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:provider/provider.dart';
 import 'package:jewel/screens/test_screen1.dart';
 import 'package:jewel/screens/user_group_screen.dart';
-
+import 'package:jewel/screens/analytics_screen.dart';
 import 'package:jewel/screens/test_screen2.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/google_sign_in.dart';
@@ -157,6 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
       GoalScreen(),
       Screen2(),
       UserGroupScreen(),
+      AnalyticsScreen(),
     ];
   }
 
