@@ -6,6 +6,8 @@ import 'package:jewel/models/jewel_user.dart';
 import 'package:provider/provider.dart';
 import 'package:jewel/utils/text_style_notifier.dart';
 import 'package:jewel/widgets/settings_provider.dart';
+import 'package:jewel/utils/location.dart';
+import 'package:jewel/utils/app_themes.dart'; // New import for updating theme colors
 
 /// Returns responsive values based on the current screen width.
 /// These breakpoints match those used in add_calendar_form.dart.
@@ -75,8 +77,8 @@ class SettingsScreen extends StatelessWidget {
     final settingsProvider = Provider.of<SettingsProvider>(
         context); // Access the SettingsProvider without listening to changes
     return Scaffold(
-      body: Center(
-        child: ListView(
+        body: Center(
+      child: ListView(
           padding: EdgeInsets.symmetric(
             horizontal: res['horizontalPadding']!,
             vertical: res['verticalPadding']!,
@@ -142,19 +144,23 @@ class SettingsScreen extends StatelessWidget {
               title: 'Text Style',
               settings: [
                 TextStyleSetting(),
+                SettingsCategory(
+                  title: 'Appearance',
+                  settings: [
+                    BackgroundColorToggle(),
+                  ],
+                ),
+                SizedBox(height: res['verticalPadding']),
+                ElevatedButton(
+                  onPressed: () {
+                    saveUserToFirestore(jewelUser!);
+                  },
+                  child: const Text('Save Settings'),
+                ),
               ],
             ),
-            SizedBox(height: res['verticalPadding']),
-            ElevatedButton(
-              onPressed: () {
-                saveUserToFirestore(jewelUser!);
-              },
-              child: const Text('Save Settings'),
-            ),
-          ],
-        ),
-      ),
-    );
+          ]),
+    ));
   }
 }
 
@@ -180,7 +186,7 @@ class SettingsCategory extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // This is the category header; it uses titleFontSize.
-        Consumer<TextStyleNotifier>(
+        Consumer<ThemeStyleNotifier>(
           builder: (context, textStyleNotifier, child) {
             double multiplier =
                 getTextStyleMultiplier(textStyleNotifier.textStyle);
@@ -223,7 +229,7 @@ class _ToggleSettingState extends State<ToggleSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer2<TextStyleNotifier, SettingsProvider>(
+    return Consumer2<ThemeStyleNotifier, SettingsProvider>(
       builder: (context, textStyleNotifier, settingsProvider, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         final res = getResponsiveValues(context);
@@ -235,9 +241,11 @@ class _ToggleSettingState extends State<ToggleSetting> {
             widget.title,
             style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
           ),
-          value: currentValue,
+          value: _value,
           onChanged: (bool newValue) {
-            settingsProvider.setSetting(widget.title, newValue);
+            setState(() {
+              _value = newValue;
+            });
           },
         );
       },
@@ -287,7 +295,7 @@ class _ColorPickerSettingState extends State<ColorPickerSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         final res = getResponsiveValues(context);
@@ -325,7 +333,7 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         final res = getResponsiveValues(context);
@@ -361,7 +369,7 @@ class TextStyleSetting extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final res = getResponsiveValues(context);
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         // Use settingFontSize for the widget title.
@@ -385,6 +393,77 @@ class TextStyleSetting extends StatelessWidget {
               }
             },
           ),
+        );
+      },
+    );
+  }
+}
+
+/// New widget that lets the user pick a background color
+/// Once selected, it updates the lightgreen and darkgreen variables in app_themes.dart.
+class BackgroundColorToggle extends StatefulWidget {
+  const BackgroundColorToggle({super.key});
+
+  @override
+  _BackgroundColorToggleState createState() => _BackgroundColorToggleState();
+}
+
+class _BackgroundColorToggleState extends State<BackgroundColorToggle> {
+  // Initialize the selected color with the current lightgreen color from AppThemes.
+  Color _selectedColor = AppThemes.lightcolor;
+
+  void _pickColor() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Pick a background color'),
+          content: SingleChildScrollView(
+            child: ColorPicker(
+              pickerColor: _selectedColor,
+              onColorChanged: (Color color) {
+                setState(() {
+                  _selectedColor = color;
+                });
+              },
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              child: const Text('Done'),
+              onPressed: () {
+                // Instead of only updating AppThemes, notify ThemeNotifier.
+                Provider.of<ThemeStyleNotifier>(context, listen: false)
+                    .updateThemeColor(_selectedColor);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ThemeStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        return ListTile(
+          title: Text(
+            'Background Color',
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
+          ),
+          trailing: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: _selectedColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          onTap: _pickColor,
         );
       },
     );

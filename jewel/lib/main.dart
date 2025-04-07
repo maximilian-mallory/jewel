@@ -71,7 +71,7 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           // provides the selected text style for the app
-          create: (_) => TextStyleNotifier(),
+          create: (_) => ThemeStyleNotifier(),
         ),
         ChangeNotifierProvider(
           // Keeps track of what calendar mode the user is in
@@ -97,15 +97,14 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Jewel',
-          theme:
-              MyAppThemes.lightThemeWithTextStyle(textStyleNotifier.textStyle),
+          theme: AppThemes.lightThemeWithTextStyle(textStyleNotifier.textStyle),
           darkTheme:
-              MyAppThemes.darkThemeWithTextStyle(textStyleNotifier.textStyle),
+              AppThemes.darkThemeWithTextStyle(textStyleNotifier.textStyle),
           themeMode: ThemeMode.system,
           home: AuthGate(),
         );
