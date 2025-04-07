@@ -241,11 +241,9 @@ class _ToggleSettingState extends State<ToggleSetting> {
             widget.title,
             style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
           ),
-          value: _value,
+          value: currentValue,
           onChanged: (bool newValue) {
-            setState(() {
-              _value = newValue;
-            });
+            settingsProvider.setSetting(widget.title, newValue);
           },
         );
       },
