@@ -1,6 +1,5 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/models/jewel_user.dart';
@@ -9,6 +8,7 @@ import 'package:jewel/utils/text_style_notifier.dart';
 import 'package:jewel/utils/location.dart';
 import 'package:permission_handler/permission_handler.dart' as handler;
 import 'package:jewel/utils/app_themes.dart';  // New import for updating theme colors
+
 
 /// Returns responsive values based on the current screen width.
 /// These breakpoints match those used in add_calendar_form.dart.
@@ -39,7 +39,7 @@ Map<String, double> getResponsiveValues(BuildContext context) {
     horizontalPadding = 14.0;
     verticalPadding = 10.0;
     titleFontSize = 14.0;
-  };
+  }
   // settingFontSize is 2 points smaller than the category title
   final double settingFontSize = titleFontSize - 2.0;
   return {
@@ -90,20 +90,14 @@ class SettingsScreen extends StatelessWidget {
               title: 'Notifications',
               settings: [
                 NumberInputSetting(title: 'Set Snooze Timer'),
-                ToggleSetting(
-                  title: 'Do Not Disturb',
-                ),
+                ToggleSetting(title: 'Do Not Disturb'),
               ],
             ),
             SettingsCategory(
               title: 'Privacy',
               settings: [
-                ToggleSetting(
-                  title: 'Obfuscate Data',
-                ),
-                ToggleSetting(
-                  title: 'Show Only Shared Events',
-                ),
+                ToggleSetting(title: 'Obfuscate Data'),
+                ToggleSetting(title: 'Show Only Shared Events'),
               ],
             ),
             SettingsCategory(
@@ -117,15 +111,6 @@ class SettingsScreen extends StatelessWidget {
               title: 'Text Style',
               settings: [
                 TextStyleSetting(),
-                ToggleSetting(
-                  title: 'Notification Permission',
-                ),
-                ToggleSetting(
-                  title: 'Location Permission',
-                ),
-              ],
-            ),
-            // New Appearance category with Background Color toggle
             SettingsCategory(
               title: 'Appearance',
               settings: [
@@ -198,45 +183,8 @@ class ToggleSetting extends StatefulWidget {
   _ToggleSettingState createState() => _ToggleSettingState();
 }
 
-class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserver {
+class _ToggleSettingState extends State<ToggleSetting> {
   bool _value = false;
-  
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addObserver(this);
-    // Check permission status on initialization for both platforms
-    if (widget.title == 'Location Permission') {
-      _updateLocationPermissionStatus();
-    }
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (widget.title == 'Location Permission' && state == AppLifecycleState.resumed) {
-      _updateLocationPermissionStatus();
-    }
-  }
-  
-  Future<void> _updateLocationPermissionStatus() async {
-    try {
-      bool hasPermission = await checkLocationPermission();
-      if (mounted) {
-        setState(() {
-          _value = hasPermission;
-          print("Location permission status: $hasPermission");
-        });
-      }
-    } catch (e) {
-      print("Error checking location permission: $e");
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -307,7 +255,7 @@ class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserv
             }
           },
         );
-      }
+      },
     );
   }
 }
