@@ -5,9 +5,7 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:provider/provider.dart';
 import 'package:jewel/utils/text_style_notifier.dart';
-import 'package:jewel/utils/location.dart';
-import 'package:permission_handler/permission_handler.dart' as handler;
-import 'package:jewel/utils/app_themes.dart';  // New import for updating theme colors
+import 'package:jewel/utils/app_themes.dart'; 
 
 
 /// Returns responsive values based on the current screen width.
@@ -66,70 +64,70 @@ double getTextStyleMultiplier(String textStyle) {
 }
 
 class SettingsScreen extends StatelessWidget {
-  final JewelUser? jewelUser;
-  const SettingsScreen({super.key, required this.jewelUser});
-
-  @override
-  Widget build(BuildContext context) {
-    final res = getResponsiveValues(context);
-    return Scaffold(
-      body: Center(
-        child: ListView(
-          padding: EdgeInsets.symmetric(
-            horizontal: res['horizontalPadding']!,
-            vertical: res['verticalPadding']!,
-          ),
-          children: [
-            SettingsCategory(
-              title: 'Calendar',
-              settings: [
-                ColorPickerSetting(title: 'Event Color'),
-              ],
-            ),
-            SettingsCategory(
-              title: 'Notifications',
-              settings: [
-                NumberInputSetting(title: 'Set Snooze Timer'),
-                ToggleSetting(title: 'Do Not Disturb'),
-              ],
-            ),
-            SettingsCategory(
-              title: 'Privacy',
-              settings: [
-                ToggleSetting(title: 'Obfuscate Data'),
-                ToggleSetting(title: 'Show Only Shared Events'),
-              ],
-            ),
-            SettingsCategory(
-              title: 'Permissions',
-              settings: [
-                ToggleSetting(title: 'Notification Permission'),
-                ToggleSetting(title: 'Location Permission'),
-              ],
-            ),
-            SettingsCategory(
-              title: 'Text Style',
-              settings: [
-                TextStyleSetting(),
-            SettingsCategory(
-              title: 'Appearance',
-              settings: [
-                BackgroundColorToggle(),
-              ],
-            ),
-            SizedBox(height: res['verticalPadding']),
-            ElevatedButton(
-              onPressed: () {
-                saveUserToFirestore(jewelUser!);
-              },
-              child: const Text('Save Settings'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+   final JewelUser? jewelUser;
+   const SettingsScreen({super.key, required this.jewelUser});
+ 
+   @override
+   Widget build(BuildContext context) {
+     final res = getResponsiveValues(context);
+     return Scaffold(
+       body: Center(
+         child: ListView(
+           padding: EdgeInsets.symmetric(
+             horizontal: res['horizontalPadding']!,
+             vertical: res['verticalPadding']!,
+           ),
+           children: [
+             SettingsCategory(
+               title: 'Calendar',
+               settings: [
+                 ColorPickerSetting(title: 'Event Color'),
+               ],
+             ),
+             SettingsCategory(
+               title: 'Notifications',
+               settings: [
+                 NumberInputSetting(title: 'Set Snooze Timer'),
+                 ToggleSetting(title: 'Do Not Disturb'),
+               ],
+             ),
+             SettingsCategory(
+               title: 'Privacy',
+               settings: [
+                 ToggleSetting(title: 'Obfuscate Data'),
+                 ToggleSetting(title: 'Show Only Shared Events'),
+               ],
+             ),
+             SettingsCategory(
+               title: 'Permissions',
+               settings: [
+                 ToggleSetting(title: 'Notification Permission'),
+                 ToggleSetting(title: 'Location Permission'),
+               ],
+             ),
+             SettingsCategory(
+               title: 'Text Style',
+               settings: [
+                 TextStyleSetting(),
+             SettingsCategory(
+               title: 'Appearance',
+               settings: [
+                 BackgroundColorToggle(),
+               ],
+             ),
+             SizedBox(height: res['verticalPadding']),
+             ElevatedButton(
+               onPressed: () {
+                 saveUserToFirestore(jewelUser!);
+               },
+               child: const Text('Save Settings'),
+             ),
+           ],
+         ),
+       ]),
+     ));
+   }
+ }
 
 Future<void> saveUserToFirestore(JewelUser user) async {
   final docId = user.email; // Use email as document ID
@@ -199,60 +197,10 @@ class _ToggleSettingState extends State<ToggleSetting> {
             style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
           ),
           value: _value,
-          onChanged: (bool newValue) async {
-            if (widget.title == 'Location Permission') {
-              // Don't change the toggle state yet - only after confirming permission change
-              if (newValue) {
-                // User trying to enable location
-                var locationData = await getLocationData(context);
-                // Only update state after we know if permission was successful
-                _updateLocationPermissionStatus();
-              } else {
-                // User trying to disable location
-                if (kIsWeb) {
-                  // Show a dialog with instructions for web users
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Permission Required'),
-                        content: Text('Please manually change the location permission in your browser settings to revoke location permissions'),
-                        actions: <Widget>[
-                          ElevatedButton(
-                            child: Text('OK'),
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                } else if (!kIsWeb) {
-                  // Don't change toggle state yet
-                  try {
-                    // Request location permission
-                    await handler.openAppSettings();
-                    
-                    // Re-check permission after settings opened
-                    // Need a small delay to allow user to change settings
-                    Future.delayed(Duration(seconds: 2), () async {
-                      if (mounted) {
-                        _updateLocationPermissionStatus();
-                      }
-                    });
-                    
-                  } catch (e) {
-                    print("Error opening app settings: $e");
-                  }
-                }
-              }
-            } else {
-              // For non-location toggles, update immediately
-              setState(() {
-                _value = newValue;
-              });
-            }
+           onChanged: (bool newValue) {
+            setState(() {
+              _value = newValue;
+            });
           },
         );
       },
