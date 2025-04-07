@@ -104,9 +104,9 @@ class SettingsScreen extends StatelessWidget {
             SettingsCategory(
               title: 'Privacy',
               settings: [
-                SwitchListTile(
-                  title: const Text('Obfuscate Event Info'),
-                  value: settingsProvider.isObfuscationEnabled,
+                ToggleSetting(
+                  title: 'Obfuscate Event Info',
+                  initialValue: settingsProvider.isObfuscationEnabled,
                   onChanged: (value) {
                     settingsProvider.toggleObfuscation(value);
                   },
@@ -223,21 +223,21 @@ class _ToggleSettingState extends State<ToggleSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TextStyleNotifier>(
-      builder: (context, textStyleNotifier, child) {
+    return Consumer2<TextStyleNotifier, SettingsProvider>(
+      builder: (context, textStyleNotifier, settingsProvider, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         final res = getResponsiveValues(context);
+        final bool currentValue =
+            settingsProvider.getSetting(widget.title) ?? widget.initialValue;
         // Use settingFontSize for individual setting widget titles.
         return SwitchListTile(
           title: Text(
             widget.title,
             style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
           ),
-          value: _value,
+          value: currentValue,
           onChanged: (bool newValue) {
-            setState(() {
-              _value = newValue;
-            });
+            settingsProvider.setSetting(widget.title, newValue);
           },
         );
       },

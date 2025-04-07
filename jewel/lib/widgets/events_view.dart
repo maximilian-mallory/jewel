@@ -51,7 +51,8 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   Widget build(BuildContext context) {
     final isMonthlyViewPrivate = context.watch<ModeToggle>().isMonthlyView;
     final isObfuscationEnabled =
-        context.watch<SettingsProvider>().isObfuscationEnabled;
+        context.watch<SettingsProvider>().getSetting('Obfuscate Event Info') ??
+            false;
     return Consumer<JewelUser>(builder: (context, jewelUser, child) {
       return Column(
         children: [
