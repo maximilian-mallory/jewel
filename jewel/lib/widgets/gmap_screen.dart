@@ -120,8 +120,6 @@ class MapSampleState extends State<MapSample> {
           ],
         ),
       ),
-      // Optional: keep any bottom navigation bar if needed.
-      // bottomNavigationBar: ...,
     );
   }
 
