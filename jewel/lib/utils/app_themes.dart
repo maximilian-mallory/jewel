@@ -1,12 +1,11 @@
 
 import 'package:flutter/material.dart';
 
-class MyAppColors {
-  static final darkGreen = Colors.green;
-  static final lightGreen = Colors.green;
-}
+class AppThemes {
+  // Changed from final to mutable variables so they can be updated via settings.
+  static Color darkcolor = Colors.green;
+  static Color lightcolor = Colors.green;
 
-class MyAppThemes {
   static ThemeData lightThemeWithTextStyle(String textStyle) {
     TextTheme baseTextTheme = ThemeData.light().textTheme;
     // Determine the modifier based on the chosen text style option.
@@ -16,7 +15,7 @@ class MyAppThemes {
     baseTextTheme = _applyModifier(baseTextTheme, multiplier);
 
     return ThemeData(
-      primaryColor: MyAppColors.lightGreen,
+      primaryColor: lightcolor,
       brightness: Brightness.light,
       textTheme: baseTextTheme,
     );
@@ -28,7 +27,7 @@ class MyAppThemes {
     baseTextTheme = _applyModifier(baseTextTheme, multiplier);
 
     return ThemeData(
-      primaryColor: MyAppColors.darkGreen,
+      primaryColor: darkcolor,
       brightness: Brightness.dark,
       textTheme: baseTextTheme,
     );

@@ -1,9 +1,14 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:provider/provider.dart';
 import 'package:jewel/utils/text_style_notifier.dart';
+import 'package:jewel/utils/location.dart';
+import 'package:permission_handler/permission_handler.dart' as handler;
+import 'package:jewel/utils/app_themes.dart';  // New import for updating theme colors
+
 
 /// Returns responsive values based on the current screen width.
 /// These breakpoints match those used in add_calendar_form.dart.
@@ -106,6 +111,10 @@ class SettingsScreen extends StatelessWidget {
               title: 'Text Style',
               settings: [
                 TextStyleSetting(),
+            SettingsCategory(
+              title: 'Appearance',
+              settings: [
+                BackgroundColorToggle(),
               ],
             ),
             SizedBox(height: res['verticalPadding']),
@@ -143,7 +152,7 @@ class SettingsCategory extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // This is the category header; it uses titleFontSize.
-        Consumer<TextStyleNotifier>(
+        Consumer<ThemeStyleNotifier>(
           builder: (context, textStyleNotifier, child) {
             double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
             return Padding(
@@ -179,21 +188,71 @@ class _ToggleSettingState extends State<ToggleSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         final res = getResponsiveValues(context);
         // Use settingFontSize for individual setting widget titles.
         return SwitchListTile(
           title: Text(
-            widget.title,
+            widget.title, 
             style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
           ),
           value: _value,
-          onChanged: (bool newValue) {
-            setState(() {
-              _value = newValue;
-            });
+          onChanged: (bool newValue) async {
+            if (widget.title == 'Location Permission') {
+              // Don't change the toggle state yet - only after confirming permission change
+              if (newValue) {
+                // User trying to enable location
+                var locationData = await getLocationData(context);
+                // Only update state after we know if permission was successful
+                _updateLocationPermissionStatus();
+              } else {
+                // User trying to disable location
+                if (kIsWeb) {
+                  // Show a dialog with instructions for web users
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        title: Text('Permission Required'),
+                        content: Text('Please manually change the location permission in your browser settings to revoke location permissions'),
+                        actions: <Widget>[
+                          ElevatedButton(
+                            child: Text('OK'),
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  );
+                } else if (!kIsWeb) {
+                  // Don't change toggle state yet
+                  try {
+                    // Request location permission
+                    await handler.openAppSettings();
+                    
+                    // Re-check permission after settings opened
+                    // Need a small delay to allow user to change settings
+                    Future.delayed(Duration(seconds: 2), () async {
+                      if (mounted) {
+                        _updateLocationPermissionStatus();
+                      }
+                    });
+                    
+                  } catch (e) {
+                    print("Error opening app settings: $e");
+                  }
+                }
+              }
+            } else {
+              // For non-location toggles, update immediately
+              setState(() {
+                _value = newValue;
+              });
+            }
           },
         );
       },
@@ -243,7 +302,7 @@ class _ColorPickerSettingState extends State<ColorPickerSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         final res = getResponsiveValues(context);
@@ -281,7 +340,7 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         final res = getResponsiveValues(context);
@@ -317,7 +376,7 @@ class TextStyleSetting extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final res = getResponsiveValues(context);
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         // Use settingFontSize for the widget title.
@@ -344,4 +403,75 @@ class TextStyleSetting extends StatelessWidget {
       },
     );
   }
-} 
+}
+
+/// New widget that lets the user pick a background color
+/// Once selected, it updates the lightgreen and darkgreen variables in app_themes.dart.
+class BackgroundColorToggle extends StatefulWidget {
+  const BackgroundColorToggle({super.key});
+
+  @override
+  _BackgroundColorToggleState createState() => _BackgroundColorToggleState();
+}
+
+class _BackgroundColorToggleState extends State<BackgroundColorToggle> {
+  // Initialize the selected color with the current lightgreen color from AppThemes.
+  Color _selectedColor = AppThemes.lightcolor;
+
+  void _pickColor() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Pick a background color'),
+          content: SingleChildScrollView(
+            child: ColorPicker(
+              pickerColor: _selectedColor,
+              onColorChanged: (Color color) {
+                setState(() {
+                  _selectedColor = color;
+                });
+              },
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              child: const Text('Done'),
+              onPressed: () {
+                // Instead of only updating AppThemes, notify ThemeNotifier.
+                Provider.of<ThemeStyleNotifier>(context, listen: false)
+                    .updateThemeColor(_selectedColor);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ThemeStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        return ListTile(
+          title: Text(
+            'Background Color',
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
+          ),
+          trailing: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: _selectedColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          onTap: _pickColor,
+        );
+      },
+    );
+  }
+}
