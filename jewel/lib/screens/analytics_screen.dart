@@ -1,32 +1,84 @@
 import 'package:flutter/material.dart';
 import 'package:syncfusion_flutter_charts/charts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:jewel/personal_goals/personal_goals.dart';
+import 'package:jewel/firebase_ops/goals.dart';
+import 'package:jewel/models/goal_models.dart';
 
-class AnalyticsScreen extends StatelessWidget {
+class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
-    // Sample data
-    final List<GoalData> goals = [
-      GoalData('Health', true, 'Morning Run', 30, 'user1@example.com', 'Run 5km'),
-      GoalData('Work', false, 'Project Deadline', 120, 'user2@example.com', 'Complete Project'),
-      GoalData('Personal Growth', true, 'Read a Book', 15, 'user3@example.com', 'Read 50 pages'),
-      GoalData('Finance', false, 'Save Money', 60, 'user4@example.com', 'Save \$500'),
-      GoalData('Education', true, 'Online Course', 90, 'user5@example.com', 'Complete Module 1'),
-      GoalData('Hobby', false, 'Painting', 45, 'user6@example.com', 'Finish Artwork'),
-      GoalData('Other', true, 'Volunteer Work', 20, 'user7@example.com', 'Help at Shelter'),
-    ];
+  _AnalyticsScreenState createState() => _AnalyticsScreenState();
+}
 
+class _AnalyticsScreenState extends State<AnalyticsScreen> {
+  final List<String> goalCategories = [
+    "Health",
+    "Work",
+    "Personal Growth",
+    "Finance",
+    "Education",
+    "Hobby",
+    "Other",
+    "All"
+  ];
+  String? currentValue;
+  Map<String, PersonalGoals> goals = {};
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchGoals();
+  }
+
+  Future<void> fetchGoals() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    goals.clear();
+
+    final String? userEmail = FirebaseAuth.instance.currentUser?.email;
+
+    if (userEmail == null) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    for (String category in goalCategories) {
+      if (category != "All") {
+        Map<String, PersonalGoals> categoryGoalsMap =
+            await getGoalsFromFireBase(category, userEmail);
+        goals.addAll(categoryGoalsMap);
+      }
+    }
+
+    setState(() {
+      isLoading = false;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // Processed data for charts
-    final completedGoals = goals.where((goal) => goal.completed).length;
+    final completedGoals = goals.values.where((goal) => goal.completed).length;
     final pendingGoals = goals.length - completedGoals;
 
-    final categoryData = goals.fold<Map<String, int>>({}, (map, goal) {
-      map[goal.category] = (map[goal.category] ?? 0) + 1;
-      return map;
-    }).entries.map((entry) => CategoryData(entry.key, entry.value)).toList();
+    final categoryData = goals.values
+        .fold<Map<String, int>>({}, (map, goal) {
+          map[goal.category] = (map[goal.category] ?? 0) + 1;
+          return map;
+        })
+        .entries
+        .map((entry) => CategoryData(entry.key, entry.value))
+        .toList();
 
-    final averageDuration = goals.fold<int>(0, (sum, goal) => sum + goal.duration) / goals.length;
+    final averageDuration =
+        goals.values.fold<int>(0, (sum, goal) => sum + goal.duration) / goals.length;
 
     return Scaffold(
       appBar: AppBar(
@@ -51,11 +103,12 @@ class AnalyticsScreen extends StatelessWidget {
                 series: <CartesianSeries>[
                   ColumnSeries<GoalStatusData, String>(
                     dataSource: [
-                      GoalStatusData('Completed', completedGoals),
-                      GoalStatusData('Pending', pendingGoals),
+                      GoalStatusData('Completed', completedGoals, Colors.green),
+                      GoalStatusData('Pending', pendingGoals, Colors.red),
                     ],
                     xValueMapper: (GoalStatusData data, _) => data.status,
                     yValueMapper: (GoalStatusData data, _) => data.count,
+                    pointColorMapper: (GoalStatusData data, _) => data.color,
                     name: 'Goals',
                     color: Colors.green,
                   ),
@@ -108,36 +161,4 @@ class AnalyticsScreen extends StatelessWidget {
       ),
     );
   }
-}
-
-class GoalData {
-  final String category;
-  final bool completed;
-  final String description;
-  final int duration;
-  final String ownerEmail;
-  final String title;
-
-  GoalData(this.category, this.completed, this.description, this.duration, this.ownerEmail, this.title);
-}
-
-class GoalStatusData {
-  final String status;
-  final int count;
-
-  GoalStatusData(this.status, this.count);
-}
-
-class CategoryData {
-  final String category;
-  final int count;
-
-  CategoryData(this.category, this.count);
-}
-
-class DurationData {
-  final String label;
-  final double duration;
-
-  DurationData(this.label, this.duration);
 }
