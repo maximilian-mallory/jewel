@@ -126,10 +126,11 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     getLocationData();
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
-    jewelUser = Provider.of<JewelUser>(context, listen:false);
-    int selectedCalendarIndex = jewelUser.calendarLogicList!.length -1;
+    jewelUser = Provider.of<JewelUser>(context, listen: false);
+    int selectedCalendarIndex = jewelUser.calendarLogicList!.length - 1;
     _selectedIndex = widget.initialIndex;
-    googleSignInList[selectedCalendarIndex].onCurrentUserChanged
+    googleSignInList[selectedCalendarIndex]
+        .onCurrentUserChanged
         .listen((GoogleSignInAccount? account) async {
       setState(() {
         calendarLogic.currentUser = account;
@@ -162,8 +163,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void updateSelectedCalendar(String calendarId) {
     setState(() async {
       calendarLogic.selectedCalendar = calendarId;
-      calendarLogic.events =
-          await getGoogleEventsData(calendarLogic, context);
+      calendarLogic.events = await getGoogleEventsData(calendarLogic, context);
     });
   }
 
@@ -281,6 +281,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
+
   PopupMenuButton<int> accountList() {
     JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
     return PopupMenuButton<int>(
@@ -294,29 +295,26 @@ class _HomeScreenState extends State<HomeScreen> {
         if (jewelUser.calendarLogicList != null) {
           int i = 0;
           for (var calendarLogic in jewelUser.calendarLogicList!) {
-
             menuItems.add(
               PopupMenuItem<int>(
-                value: 0,
-                child: Text(calendarLogic.currentUser!.email),
-                onTap: () {
-                  //jewelUser.updateSelectedCalendarIndex(i);
-                }
-              ),
+                  value: 0,
+                  child: Text(calendarLogic.currentUser!.email),
+                  onTap: () {
+                    //jewelUser.updateSelectedCalendarIndex(i);
+                  }),
             );
-          i++;
+            i++;
           }
         }
         menuItems.add(
           PopupMenuItem<int>(
-            value: 1,
-            child: Text('Add Account'),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => Intermediary()),
-              );
-            }
-          ),
+              value: 1,
+              child: Text('Add Account'),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (context) => Intermediary()),
+                );
+              }),
         );
         menuItems.add(
           const PopupMenuItem<int>(
@@ -347,8 +345,7 @@ class _HomeScreenState extends State<HomeScreen> {
           height: isWeb ? 75 : 55,
           child: Align(
             alignment: Alignment.center,
-            child: AuthenticatedCalendar(
-            ),
+            child: AuthenticatedCalendar(),
           ),
         ),
       ),

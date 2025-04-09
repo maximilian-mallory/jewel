@@ -5,8 +5,10 @@ import 'package:jewel/firebase_ops/user_groups.dart';
 
 class UserGroupProvider extends ChangeNotifier {
   List<UserGroup> _userGroups = [];
+  List<UserGroup> _yourGroups = [];
 
   List<UserGroup> get userGroups => _userGroups;
+  List<UserGroup> get yourGroups => _yourGroups;
 
   UserGroupProvider() {
     _loadUserGroups();
@@ -28,5 +30,14 @@ class UserGroupProvider extends ChangeNotifier {
         .where((group) =>
             group.getName.toLowerCase().contains(query.toLowerCase()))
         .toList();
+  }
+
+  Future<void> _loadYourGroups() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      _yourGroups = await getUsersGroups(
+          user.email!); // Fetch groups for the current user
+      notifyListeners();
+    }
   }
 }
