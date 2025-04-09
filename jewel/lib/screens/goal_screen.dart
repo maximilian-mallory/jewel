@@ -5,6 +5,7 @@ import 'package:jewel/personal_goals/edit_personal_goals_form.dart';
 import 'package:jewel/firebase_ops/goals.dart';
 import 'package:jewel/personal_goals/personal_goals.dart';
 
+// GoalScreen class
 class GoalScreen extends StatefulWidget {
   const GoalScreen({super.key});
 
