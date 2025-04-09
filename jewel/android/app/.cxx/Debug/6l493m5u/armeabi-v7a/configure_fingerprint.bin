@@ -2,54 +2,27 @@ C/C++ Structured LogS
 Q
 OC:\Flutter\flutter\packages\flutter_tools\gradle\src\main\groovy\CMakeLists.txtC
 A
-<<<<<<< HEAD
-?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	Â›èÝ2§ Õºñ”Ô2w
+?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	ðê®ÙØ2§ Õºñ”Ô2w
 u
-sC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\additional_project_files.txt	Â›èÝ2 ã²©Ý2t
+sC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\additional_project_files.txt	ðê®ÙØ2 Û×ŠÙØ2t
 r
-pC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\android_gradle_build.json	Â›èÝ2í ’ã²©Ý2y
+pC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\android_gradle_build.json	ðê®ÙØ2í Ý×ŠÙØ2y
 w
-uC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\android_gradle_build_mini.json	Â›èÝ2¸ ”ã²©Ý2f
+uC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\android_gradle_build_mini.json	ðê®ÙØ2¸ ß×ŠÙØ2f
 d
-bC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\build.ninja	Â›èÝ2Åá —â²©Ý2j
+bC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\build.ninja	ðê®ÙØ2Åá áÖŠÙØ2j
 h
-fC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\build.ninja.txt	Â›èÝ2o
+fC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\build.ninja.txt	ðê®ÙØ2o
 m
-kC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\build_file_index.txt	Â›èÝ2O —ã²©Ý2p
+kC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\build_file_index.txt	ðê®ÙØ2O â×ŠÙØ2p
 n
-lC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\compile_commands.json	Â›èÝ2	t
+lC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\compile_commands.json	ðê®ÙØ2	t
 r
-pC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\compile_commands.json.bin	Â›èÝ2
+pC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\compile_commands.json.bin	ðê®ÙØ2
 z
 x
-vC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\metadata_generation_command.txt	Â›èÝ2	 •ã²©Ý2m
+vC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\metadata_generation_command.txt	ðê®ÙØ2	 à×ŠÙØ2m
 k
-iC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\prefab_config.json	Â›èÝ2( •ã²©Ý2r
+iC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\prefab_config.json	ðê®ÙØ2( á×ŠÙØ2r
 p
-nC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\symbol_folder_index.txt	Â›èÝ2e —ã²©Ý2
-=======
-?com.android.build.gradle.internal.cxx.io.EncodedFileFingerPrint	ÿë ìÝ2§ Õºñ”Ô2w
-u
-sC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\additional_project_files.txt	ÿë ìÝ2 ÿ“÷ëÝ2t
-r
-pC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\android_gradle_build.json	ÿë ìÝ2í ‚”÷ëÝ2y
-w
-uC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\android_gradle_build_mini.json	ÿë ìÝ2¸ „”÷ëÝ2f
-d
-bC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\build.ninja	ÿë ìÝ2Åá ˆ“÷ëÝ2j
-h
-fC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\build.ninja.txt	ÿë ìÝ2o
-m
-kC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\build_file_index.txt	ÿë ìÝ2O ‰”÷ëÝ2p
-n
-lC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\compile_commands.json	ÿë ìÝ2	t
-r
-pC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\compile_commands.json.bin	ÿë ìÝ2
-z
-x
-vC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\metadata_generation_command.txt	ÿë ìÝ2	 …”÷ëÝ2m
-k
-iC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\prefab_config.json	ÿë ìÝ2( †”÷ëÝ2r
-p
-nC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\symbol_folder_index.txt	ÿë ìÝ2e †”÷ëÝ2
->>>>>>> 3d56fcc07ecce896e98fc6431680fd7ab029f3a1
+nC:\VSCProjects\Project Emerald\jewel\jewel\android\app\.cxx\Debug\6l493m5u\armeabi-v7a\symbol_folder_index.txt	ðê®ÙØ2e á×ŠÙØ2

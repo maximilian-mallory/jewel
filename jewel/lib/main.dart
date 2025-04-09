@@ -9,11 +9,8 @@ import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/screens/firebase_login_screen.dart';
 import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/screens/test_screen1.dart';
-import 'package:jewel/utils/background_deployer.dart';
 import 'package:jewel/widgets/home_screen.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'firebase_options.dart';
 import 'package:jewel/notifications.dart';
 import 'package:flutter/foundation.dart';
@@ -37,23 +34,6 @@ Future<void> main() async {
     await dotenv.load(fileName: "assets/.env");
   } else {
     await dotenv.load(fileName: ".env");
-  }
-  if (!kIsWeb) {
-    // Request permissions first
-      PermissionStatus status = await Permission.notification.request();
-    
-      // Check if permission was granted
-      if (status.isGranted) {
-        // Use try-catch to prevent crashes during registration
-        try {
-          await registerBackgroundTasks();
-        } catch (e) {
-          print("Failed to register background tasks: $e");
-        }
-      } else {
-        print("Notification permission denied. Background tasks may not work properly.");
-      }
-    
   }
 
   // Initialize Firebase
@@ -90,7 +70,7 @@ Future<void> main() async {
         ),
         ChangeNotifierProvider(
           // provides the selected text style for the app
-          create: (_) => TextStyleNotifier(),
+          create: (_) => ThemeStyleNotifier(),
         ),
         ChangeNotifierProvider(
           // Keeps track of what calendar mode the user is in
@@ -112,13 +92,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'Jewel',
-          theme: MyAppThemes.lightThemeWithTextStyle(textStyleNotifier.textStyle),
-          darkTheme: MyAppThemes.darkThemeWithTextStyle(textStyleNotifier.textStyle),
+          theme: AppThemes.lightThemeWithTextStyle(textStyleNotifier.textStyle),
+          darkTheme: AppThemes.darkThemeWithTextStyle(textStyleNotifier.textStyle),
           themeMode: ThemeMode.system,
           home: AuthGate(),
         );

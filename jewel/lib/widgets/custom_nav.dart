@@ -72,14 +72,14 @@ class CustomNavBar extends StatelessWidget {
           Icon(
             icon,
             size: sizes['iconSize'],
-            color: isSelected ? Colors.green : Colors.grey,
+            color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
           ),
           const SizedBox(height: 4),  // add a little spacing between icon and text
           Text(
             label,
             style: TextStyle(
               fontSize: sizes['fontSize'],
-              color: isSelected ? Colors.green : Colors.grey,
+              color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
             ),
           ),
         ],

@@ -264,12 +264,12 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
       child: Container(
         padding: EdgeInsets.all(res['buttonPadding']!),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(
           Icons.arrow_back,
-          color: Colors.green,
+          color: Theme.of(context).primaryColor,
           size: res['iconSize'],
         ),
       ),
@@ -291,12 +291,12 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
       child: Container(
         padding: EdgeInsets.all(res['buttonPadding']!),
         decoration: BoxDecoration(
-          color: Colors.green.withOpacity(0.1),
+          color: Theme.of(context).primaryColor.withOpacity(0.1),
           shape: BoxShape.circle,
         ),
         child: Icon(
           Icons.arrow_forward,
-          color: Colors.green,
+          color: Theme.of(context).primaryColor,
           size: res['iconSize'],
         ),
       ),
@@ -348,7 +348,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
           child: Icon(
             Icons.calendar_today,
             size: res['iconSize'],
-            color: Colors.green,
+            color: Theme.of(context).primaryColor,
           ),
         ),
       );
@@ -403,7 +403,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
                   value: selectedCalendar,
                   hint: Text(calendarLogic.selectedCalendar),
                   dropdownColor: Colors.white,
-                  iconEnabledColor: Colors.green,
+                  iconEnabledColor: Theme.of(context).primaryColor,
                   iconSize: res['iconSize']!,
                   style: const TextStyle(
                     color: Colors.black,
@@ -412,7 +412,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
                   ),
                   underline: Container(
                     height: 2,
-                    color: Colors.green,
+                    color: Theme.of(context).primaryColor,
                   ),
                   items: [
                     ...calendarLogic.calendars.entries.map((entry) {
