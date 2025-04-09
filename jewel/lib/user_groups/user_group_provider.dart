@@ -12,7 +12,7 @@ class UserGroupProvider extends ChangeNotifier {
 
   UserGroupProvider() {
     _loadUserGroups();
-    print("Loading Groups");
+    _loadYourGroups();
   }
 
   Future<void> _loadUserGroups() async {
@@ -39,5 +39,9 @@ class UserGroupProvider extends ChangeNotifier {
           user.email!); // Fetch groups for the current user
       notifyListeners();
     }
+  }
+
+  Future<void> refreshYourGroups() async {
+    await _loadYourGroups(); // Reload the user's groups
   }
 }

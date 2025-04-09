@@ -23,7 +23,7 @@ class _JoinGroupsState extends State<JoinGroups> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('User Groups'),
+        title: const Text('Join Groups'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -72,16 +72,28 @@ class _JoinGroupsState extends State<JoinGroups> {
                           ],
                         ),
                         TextButton(
-                          onPressed: () {
+                          onPressed: () async {
                             if (group.isPrivate) {
                               _showPasswordDialog(context, group);
                             } else {
                               final email =
                                   FirebaseAuth.instance.currentUser?.email;
                               if (email != null) {
-                                group.addMember(email);
-                                updateGroupMembersInFireBase(group);
-                                print('$email Joined group: ${group.getName}');
+                                try {
+                                  group.addMember(email);
+                                  await updateGroupMembersInFireBase(group);
+                                  await Provider.of<UserGroupProvider>(context,
+                                          listen: false)
+                                      .refreshYourGroups();
+                                  print(
+                                      '$email Joined group: ${group.getName}');
+                                } catch (e) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content:
+                                            Text('Error joining group: $e')),
+                                  );
+                                }
                               } else {
                                 print('Error: User email is null');
                               }
