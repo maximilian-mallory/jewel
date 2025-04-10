@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:flutter/material.dart';
@@ -53,9 +55,23 @@ bool isLoading = true; // To show loading indicator
     final auth = await calendarLogic.currentUser!.authentication;
     final accessToken = auth.accessToken;
     if (accessToken != null) {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = SharedPreferencesAsync();
       await prefs.setString('calendar_access_token', accessToken);
       print("Access token saved for background tasks: ${accessToken.substring(0, 10)}...");
+
+      if(calendarLogic.events.isEmpty){
+      print("DEBUG: No events found. Fetching events...");
+      calendarLogic.events = await getGoogleEventsData(calendarLogic, context);
+     }
+      //print("DEBUG: calendarLogic.markers before saving: ${calendarLogic.markers}");
+      final markerList = calendarLogic.markers.toList().map((marker) => {
+            'id': marker.markerId.value,
+            'lat': marker.position.latitude,
+            'lng': marker.position.longitude,
+          })
+          .toList();
+      await prefs.setString('marker_list', jsonEncode(markerList));
+       print("Markers saved to SharedPreferences: $markerList");
     }
   }
 
@@ -127,6 +143,11 @@ bool isLoading = true; // To show loading indicator
   }
 
   Future<bool> searchForUser() async{
+
+  void drawRouteOnMap() {
+    // TODO: Implement the logic to draw a route on the map
+    print("Drawing route on the map...");
+  }
     final user =FirebaseAuth.instance.currentUser;
     final databaseSearch = FirebaseFirestore.instance;
     final externalRef = databaseSearch.collection("people");

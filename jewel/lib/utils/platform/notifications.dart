@@ -183,6 +183,7 @@ Future<void> sendTestNotification() async {
     print("NOTIFICATION ERROR: Failed to send test notification: $e");
   }
 }
+
 //function for calling events before they start
 //This function is called in the background task
 Future<void> checkUpcomingEvents() async {
@@ -193,7 +194,7 @@ Future<void> checkUpcomingEvents() async {
       "Checking calendar events now"
     );*/
     
-    final prefs = await SharedPreferencesAsync();
+    final prefs = SharedPreferencesAsync();
     final accessToken = await prefs.getString('calendar_access_token');
     
     if (accessToken != null) {

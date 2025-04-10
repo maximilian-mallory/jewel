@@ -26,7 +26,7 @@ class MapSampleState extends State<MapSample> {
   // No change to your class variables
   final Completer<GoogleMapController> _controller = Completer<GoogleMapController>();
   Set<Polyline> _polylines = {};
-  String _lastDrawnKey = "";
+  bool didRun = false;
  
   static const CameraPosition _statPos = CameraPosition(
     target: LatLng(44.8742, -91.9195),
@@ -44,24 +44,6 @@ class MapSampleState extends State<MapSample> {
   void initState() {
     super.initState();
    
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      try {
-        // Only change this line to get JewelUser instead
-        final jewelUser = Provider.of<JewelUser>(context, listen: false);
-        if (jewelUser.calendarLogicList != null && jewelUser.calendarLogicList!.isNotEmpty) {
-          final calendarLogic = jewelUser.calendarLogicList![0];
-        
-          String markerKey = calendarLogic.markers.map((m) => m.markerId.value).join('_');
-          _lastDrawnKey = "${calendarLogic.selectedDate}_${calendarLogic.events.length}_$markerKey";
-        
-          if (calendarLogic.events.isNotEmpty) {
-            drawRouteOnMap(calendarLogic);
-          }
-        }
-      } catch (e) {
-        // Handle error silently
-      }
-    });
   }
  
   @override
@@ -73,47 +55,49 @@ class MapSampleState extends State<MapSample> {
     if (jewelUser.calendarLogicList == null || jewelUser.calendarLogicList!.isEmpty) return;
     
     final calendarLogic = jewelUser.calendarLogicList![0];
-    String markerKey = calendarLogic.markers.map((m) => m.markerId.value).join('_');
-    String newDrawKey = "${calendarLogic.selectedDate}_${calendarLogic.events.length}_$markerKey";
+   // String markerKey = calendarLogic.markers.map((m) => m.markerId.value).join('_');
+   // String newDrawKey = "${calendarLogic.selectedDate}_${calendarLogic.events.length}_$markerKey";
  
-    if(_lastDrawnKey != newDrawKey) {
-      _lastDrawnKey = newDrawKey;
+   /* if(_lastDrawnKey != newDrawKey) {
+      _lastDrawnKey = newDrawKey;*/
+     WidgetsBinding.instance.addPostFrameCallback((_) {
+     setState(() => _polylines.clear());
+     drawRouteOnMap(calendarLogic);
+  });
      
-      setState(() {
-        _polylines = {};
-      });
-     
-      Future.delayed(Duration(milliseconds: 50), () {
-        drawRouteOnMap(calendarLogic);
-      });
-    }
+      
+    //}
   }
  
   /*
    * Main Route Drawing Logic
    */
   void drawRouteOnMap(CalendarLogic calendarLogic) async {
+    calendarLogic.events = await getGoogleEventsData(calendarLogic, context);
     try {
       setState(() {
         _polylines = {};
       });
-     
+      String? apiKey = dotenv.env['GOOGLE_MAPS_KEY'];
       final now = DateTime.now();
+      print("DEBUG MARKERS IDS: ${calendarLogic.markers.map((id)=> id.markerId.value).toList()}");
       List<LatLng> markerCoordinates = getCoordFromMarker(calendarLogic.markers.toList());
-     
+      //print("DEBUG: Marker Coordinates: $markerCoordinates\n");
       /*
        * Event Processing
        */
       final allEvents = calendarLogic.events.where((event) =>
         event.start?.dateTime != null && event.end?.dateTime != null).toList();
-     
+       print("DEBUG: All Events: ${allEvents.map((event) => event.location).toList()}");
+      //print("DEBUG: All Events Length: ${allEvents.length}");
       final Map<int, gcal.Event> futureEvents = {};
       for (int i = 0; i < allEvents.length; i++) {
         final event = allEvents[i];
         final startTime = event.start?.dateTime;
-       
+       print("DEBUG: --------------------------");
         if (startTime != null && startTime.isAfter(now)) {
           futureEvents[i] = event;
+          print("DEBUG: Event $i is in the future: $startTime");
         }
       }
      
@@ -130,6 +114,7 @@ class MapSampleState extends State<MapSample> {
         if (eventIndex < markerCoordinates.length) {
           eventToMarkerMap[eventIndex] = eventIndex;
         }
+        print("DEBUG: Event $eventIndex mapped to marker position ${eventToMarkerMap[eventIndex]}");
       }
      
       /*
@@ -155,16 +140,15 @@ class MapSampleState extends State<MapSample> {
         LatLng startCoord = markerCoordinates[currentMarkerPos];
         LatLng endCoord = markerCoordinates[nextMarkerPos];
        
-        List<LatLng> segmentCoords = await getRouteCoordinates(
-          getRouteData(
+        List<LatLng> segmentCoords = (await getRouteData(
           startCoord,
           endCoord,
           calendarLogic,
           currentEventIndex,
-          "getRouteCoordinates"
-          )
-        );
-       
+          "getRouteCoordinates",
+          apiKey
+        )) as List<LatLng>;
+        //print("DEBUG: Segment Coordinates: $segmentCoords");
         if (segmentCoords.isNotEmpty) {
           if (completeRoute.isNotEmpty && completeRoute.last == segmentCoords.first) {
             segmentCoords.removeAt(0);
@@ -219,9 +203,10 @@ class MapSampleState extends State<MapSample> {
                   onMapCreated: (GoogleMapController controller) {
                     _controller.complete(controller);
                    
-                    if (_polylines.isEmpty && calendarLogic.markers.isNotEmpty) {
+                    /*if (_polylines.isEmpty && calendarLogic.markers.isNotEmpty) {
                       drawRouteOnMap(calendarLogic);
-                    }
+                      print("DEBUG2: All Events: ${calendarLogic.events.map((event) => event.location).toList()}\n");
+                    }*/
                   },
                   markers: calendarLogic.markers.toSet(),
                   polylines: _polylines,
