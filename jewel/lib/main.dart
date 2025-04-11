@@ -25,6 +25,7 @@ import 'package:jewel/utils/text_style_notifier.dart';
 import 'package:jewel/screens/user_group_screen.dart';
 import 'package:jewel/user_groups/user_group.dart';
 import 'package:jewel/user_groups/user_group_provider.dart';
+import 'package:jewel/widgets/settings_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,6 +81,10 @@ Future<void> main() async {
           // Provides access to user groups
           create: (_) => UserGroupProvider(),
         ),
+        ChangeNotifierProvider(
+          // Add the SettingsProvider here
+          create: (_) => SettingsProvider(),
+        ),
       ],
       child: MyApp(),
     ),
@@ -98,7 +103,8 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           title: 'Jewel',
           theme: AppThemes.lightThemeWithTextStyle(textStyleNotifier.textStyle),
-          darkTheme: AppThemes.darkThemeWithTextStyle(textStyleNotifier.textStyle),
+          darkTheme:
+              AppThemes.darkThemeWithTextStyle(textStyleNotifier.textStyle),
           themeMode: ThemeMode.system,
           home: AuthGate(),
         );
