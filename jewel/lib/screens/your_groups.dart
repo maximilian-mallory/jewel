@@ -13,7 +13,6 @@ class YourGroups extends StatelessWidget {
     final userGroupProvider = Provider.of<UserGroupProvider>(context);
     final yourGroups =
         userGroupProvider.yourGroups; // Replace with your actual logic
-    print(yourGroups);
     return ListView.builder(
       itemCount: yourGroups.length,
       itemBuilder: (context, index) {
@@ -35,7 +34,6 @@ class YourGroups extends StatelessWidget {
                   group.removeMember(FirebaseAuth.instance.currentUser!.email!);
                   await updateGroupMembersInFireBase(group);
                   await userGroupProvider.refreshYourGroups();
-                  print('Leaving group: ${group.getName}');
                 } catch (e) {
                   print('Error leaving group: $e');
                 }
