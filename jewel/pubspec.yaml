@@ -63,6 +63,8 @@ dependencies:
   google_maps_routes: ^1.1.2
   location: ^5.0.0
   uni_links: ^0.5.1
+  crypto: ^3.0.6
+  flutter_secure_storage: ^9.2.4
 dev_dependencies:
   flutter_test:
     sdk: flutter
