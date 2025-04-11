@@ -116,21 +116,58 @@ Future<void> sendNotification(String id, String title, String body) async {
     int notificationId = id.hashCode.abs() % 100000;
     print("Sending event notification with ID: $notificationId, title: $title, body: $body");
 
-    await AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        id: createUniqueId(), // Automatically generates an ID
-        channelKey: 'alerts',
-        title: 'Test Notification',
-        body: 'This is a simple notification body',
-        notificationLayout: NotificationLayout.Default,
-      ),
-      actionButtons: [
-        NotificationActionButton(
-          key: 'SNOOZE',
-          label: 'Snooze for 5 minutes',
-        )
-      ]
+    await flutterLocalNotificationsPlugin.show(
+      notificationId,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: 'event_notification',
     );
+    
+    print("NOTIFICATION: Event notification sent successfully with ID: $notificationId");
+  } catch (e) {
+    print("NOTIFICATION ERROR: Failed to send event notification: $e");
+  }
+}
+
+// Send a basic notification for debugging
+Future<void> sendBasicNotification(String title, String body) async {
+  try {
+    print("NOTIFICATION: Sending basic notification: $title | $body");
+    
+    // Enhanced settings for reliable background notifications
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      'debug_channel',
+      'Debug Notifications',
+      channelDescription: 'Channel for debug notifications',
+      importance: Importance.high,
+      priority: Priority.high,
+      visibility: NotificationVisibility.public,
+      ticker: 'debug',
+      showWhen: true,
+      enableVibration: true,
+      playSound: true,
+      category: AndroidNotificationCategory.message, // Key for background delivery
+    );
+
+    const NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    // Generate a unique ID for each notification
+    final notificationId = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
+    await flutterLocalNotificationsPlugin.show(
+      notificationId,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: 'basic_notification',
+    );
+
+    print("NOTIFICATION: Successfully sent notification ID: $notificationId");
+  } catch (e) {
+    print("NOTIFICATION ERROR: Failed to send basic notification: $e");
   }
 }
 

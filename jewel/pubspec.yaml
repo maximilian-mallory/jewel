@@ -66,6 +66,7 @@ dependencies:
   permission_handler: ^11.4.0
   shared_preferences: ^2.2.2
   syncfusion_flutter_charts: ^29.1.35
+  workmanager: ^0.5.2
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,5 +1,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/models/jewel_user.dart';
@@ -184,7 +185,7 @@ class ToggleSetting extends StatefulWidget {
   _ToggleSettingState createState() => _ToggleSettingState();
 }
 
-class _ToggleSettingState extends State<ToggleSetting> {
+class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserver {
   bool _value = false;
   
   @override

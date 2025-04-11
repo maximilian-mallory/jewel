@@ -7,6 +7,7 @@ import 'package:google_geocoding_api/google_geocoding_api.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:googleapis/adsense/v2.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
+import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/event_snap.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
