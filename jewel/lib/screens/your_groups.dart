@@ -97,6 +97,35 @@ class YourGroups extends StatelessWidget {
           ),
           actions: [
             TextButton(
+              onPressed: () async {
+                final shouldLeave =
+                    await _showConfirmationDialog(context, group.getName);
+                if (shouldLeave == true) {
+                  try {
+                    group.removeMember(
+                        FirebaseAuth.instance.currentUser!.email!);
+                    await updateGroupMembersInFireBase(group);
+                    await Provider.of<UserGroupProvider>(context, listen: false)
+                        .refreshYourGroups();
+                    Navigator.of(context)
+                        .pop(); // Close the dialog after leaving
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                          content: Text(
+                              'You have left the group "${group.getName}".')),
+                    );
+                  } catch (e) {
+                    print('Error leaving group: $e');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error leaving group: $e')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Leave Group',
+                  style: TextStyle(color: Colors.red)),
+            ),
+            TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Close the dialog
               },
