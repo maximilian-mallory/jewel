@@ -121,6 +121,13 @@ class _HomeScreenState extends State<HomeScreen> {
   late JewelUser jewelUser;
   late CalendarLogic calendarLogic;
   bool isWeb = kIsWeb;
+  bool _isObfuscationEnabled = false;
+
+  void _toggleObfuscation(bool value) {
+    setState(() {
+      _isObfuscationEnabled = !_isObfuscationEnabled;
+    });
+  }
 
   @override
   void initState() {

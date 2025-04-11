@@ -14,11 +14,13 @@ import 'package:jewel/models/event_group.dart';
 import 'package:jewel/event_history/event_history.dart';
 import 'package:jewel/firebase_ops/event_history_ops.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
+import 'package:jewel/widgets/settings_provider.dart';
 
 /*
   This widget class builds a Calendar widget
   It does not create the controls
 */
+
 class CalendarEventsView extends StatefulWidget {
   const CalendarEventsView({
     super.key,
@@ -48,13 +50,16 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   @override
   Widget build(BuildContext context) {
     final isMonthlyViewPrivate = context.watch<ModeToggle>().isMonthlyView;
+    final isObfuscationEnabled =
+        context.watch<SettingsProvider>().getSetting('Obfuscate Event Info') ??
+            false;
     return Consumer<JewelUser>(builder: (context, jewelUser, child) {
       return Column(
         children: [
           Expanded(
             child: isMonthlyViewPrivate
-                ? buildMonthlyView(context)
-                : buildDailyView(context),
+                ? buildMonthlyView(context, isObfuscationEnabled)
+                : buildDailyView(context, isObfuscationEnabled),
           ),
         ],
       );
@@ -62,7 +67,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   }
 
   // Builds the daily view
-  Widget buildDailyView(BuildContext context) {
+  Widget buildDailyView(BuildContext context, bool isObfuscationEnabled) {
     return FutureBuilder<List<gcal.Event>>(
         future: getGoogleEventsData(calendarLogic,
             context), // Create a method that returns your Future<List<Event>>
@@ -101,7 +106,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                   ),
                 ),
                 // Calendar Events column
-                Expanded(child: buildEventsList(events!)),
+                Expanded(child: buildEventsList(events!, isObfuscationEnabled)),
               ],
             ),
           );
@@ -109,7 +114,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   }
 
 // Builds the monthly view
-  Widget buildMonthlyView(BuildContext context) {
+  Widget buildMonthlyView(BuildContext context, bool isObfuscationEnabled) {
     final calendarLogic = jewelUser?.calendarLogicList?[0];
     final DateTime now = calendarLogic!.selectedDate;
     final DateTime firstDayOfMonth = DateTime(now.year, now.month, 1);
@@ -306,7 +311,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   }
 
   // Builds the list of events for the day view
-  Widget buildEventsList(List<gcal.Event> events) {
+  Widget buildEventsList(List<gcal.Event> events, bool isObfuscationEnabled) {
     return Column(
       children: List.generate(24, (hourIndex) {
         // hourIndex lets us place the events with a startTime of hourIndex and at the corresponding index in the list
@@ -327,6 +332,14 @@ class _CalendarEventsView extends State<CalendarEventsView> {
               // this takes the determined events and processes the cards, then turns them into a list down at .toList()
               final start = event.start?.dateTime?.toLocal();
               final end = event.end?.dateTime?.toLocal();
+
+              final eventTitle;
+              if (isObfuscationEnabled) {
+                eventTitle = "Obfuscated";
+              } else {
+                eventTitle = event.summary ??
+                    'No Title'; // Fallback to 'No Title' if summary is null
+              }
 
               // Calculate the duration of the event to determine how many cards to build
               final durationInHours = end != null && start != null
@@ -370,7 +383,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                     child: (hourIndex == start!.hour)
                         ? ListTile(
                             title: Text(
-                              event.summary ?? 'No Title',
+                              eventTitle ?? 'No Title',
                               style: const TextStyle(color: Colors.white),
                             ),
                             subtitle: Text(
@@ -380,8 +393,11 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                               style: const TextStyle(color: Colors.white70),
                             ),
                             onTap: () {
-                              _editEvent(context, event);
-                              print("Event tapped");
+                              if (isObfuscationEnabled) {
+                                _editEvent(context, event);
+                              } else {
+                                print("Event details are obfuscated.");
+                              }
                             },
                             trailing: IconButton(
                               icon: Icon(Icons.history),
