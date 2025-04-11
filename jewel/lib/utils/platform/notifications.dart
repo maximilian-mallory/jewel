@@ -251,7 +251,7 @@ Future<void> checkUpcomingEvents() async {
           }
           
           final hour = eventStartTime.hour.toString().padLeft(2, '0');
-          final minute = eventStartTime.minute.toString().padLeft(2, '0');
+          final minute = eventStartTime.minute;
           String eventName = event.summary ?? "Untitled event";
           
           // IMPROVED TIME RANGES: This is the key fix
@@ -279,7 +279,7 @@ Future<void> checkUpcomingEvents() async {
           }
           // Event is about 15 minutes away
           else if (minutesToEvent <= 15) {
-            message = "$eventName starts in about 15 minutes at $hour:$minute";
+            message = "$eventName starts in about ${(minute-now.minute).toString()} minutes at $hour:$minute";
             notificationId = "upcoming-15min-${eventStartTime.millisecondsSinceEpoch}";
             await sendNotification(notificationId, "Upcoming Event", message);
           }

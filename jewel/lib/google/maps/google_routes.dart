@@ -130,14 +130,6 @@ Future<List<Map<String, dynamic>>> checkUserHasEnoughTime(
     if (futureEvents.isEmpty) {
       return [];
     }
-    Map<int, int> eventToMarkerMap = {};
-    for (final eventIndex in futureEvents.keys) {
-      if (eventIndex < markerCoordinates.length) {
-        eventToMarkerMap[eventIndex] = eventIndex;
-      }
-      print(
-          "DEBUG: Event $eventIndex mapped to marker position ${eventToMarkerMap[eventIndex]}");
-    }
 
     List<int> sortedEventIndices = futureEvents.keys.toList()..sort();
 
@@ -146,16 +138,14 @@ Future<List<Map<String, dynamic>>> checkUserHasEnoughTime(
       int currentEventIndex = sortedEventIndices[i];
       int nextEventIndex = sortedEventIndices[i + 1];
 
-      int currentMarkerPos = eventToMarkerMap[currentEventIndex]!;
-      int nextMarkerPos = eventToMarkerMap[nextEventIndex]!;
 
-      if (currentMarkerPos >= markerCoordinates.length ||
-          nextMarkerPos >= markerCoordinates.length) {
+      if (currentEventIndex >= markerCoordinates.length ||
+          nextEventIndex >= markerCoordinates.length) {
         continue;
       }
 
-      LatLng startCoord = markerCoordinates[currentMarkerPos];
-      LatLng endCoord = markerCoordinates[nextMarkerPos];
+      LatLng startCoord = markerCoordinates[currentEventIndex];
+      LatLng endCoord = markerCoordinates[nextEventIndex];
 
       print("DEBUG: Start Coord: $startCoord End Coord: $endCoord");
 
