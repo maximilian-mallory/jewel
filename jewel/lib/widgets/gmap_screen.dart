@@ -1,13 +1,13 @@
+
 import 'dart:async';
 import 'dart:math';
-import 'dart:math' as Math;
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:provider/provider.dart';
+import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:google_maps_routes/google_maps_routes.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
@@ -15,12 +15,15 @@ import 'package:jewel/google/maps/google_routes.dart';
 import 'package:jewel/google/calendar/g_g_merge.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 
+
 class MapSample extends StatefulWidget {
   const MapSample({super.key});
+
 
   @override
   State<MapSample> createState() => MapSampleState();
 }
+
 
 class MapSampleState extends State<MapSample> {
   // No change to your class variables
@@ -34,6 +37,7 @@ class MapSampleState extends State<MapSample> {
     zoom: 14.4746,
   );
 
+
   static const CameraPosition _kLake = CameraPosition(
     bearing: 192.8334901395799,
     target: LatLng(44.882, -91.9193),
@@ -46,8 +50,9 @@ class MapSampleState extends State<MapSample> {
     super.initState();
   }
 
+
   @override
-  Future<void> didChangeDependencies() async {
+  void didChangeDependencies() {
     super.didChangeDependencies();
 
     // Only change this line to get JewelUser instead
@@ -160,13 +165,10 @@ class MapSampleState extends State<MapSample> {
         });
       }
     } catch (e) {
-      // Handle error silently
+      print('Error drawing route on map: $e');
     }
   }
-
-  /*
-   * UI Rendering
-   */
+  
   @override
   Widget build(BuildContext context) {
     // Only change this line to get JewelUser instead
@@ -179,56 +181,65 @@ class MapSampleState extends State<MapSample> {
 
     // The rest of your build method remains exactly the same
     return Scaffold(
-      body: Column(
-        children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.735,
-            child: Stack(
-              children: [
-                GoogleMap(
-                  mapType: MapType.hybrid,
-                  initialCameraPosition: _statPos,
-                  onMapCreated: (GoogleMapController controller) {
-                    _controller.complete(controller);
-
-                    /*if (_polylines.isEmpty && calendarLogic.markers.isNotEmpty) {
-                      drawRouteOnMap(calendarLogic);
-                      print("DEBUG2: All Events: ${calendarLogic.events.map((event) => event.location).toList()}\n");
-                    }*/
-                  },
-                  markers: calendarLogic.markers.toSet(),
-                  polylines: _polylines,
-                ),
-                if (_polylines.isEmpty && calendarLogic.markers.length > 1)
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: const [
-                          CircularProgressIndicator(color: Colors.white),
-                          SizedBox(height: 8),
-                          Text(
-                            'Requires atleast two future events to calculate routes...',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                        ],
-                      ),
+      // Wrap the body in SafeArea to respect system UI padding.
+      body: SafeArea(
+        child: Column(
+          children: [
+            // Use an Expanded widget so the map occupies all available space without overflowing.
+            Expanded(
+              child: Consumer<JewelUser>(
+                builder: (context, jewelUser, child) {
+                  final calendarLogic = jewelUser.calendarLogicList?[0];
+                  
+                  if (calendarLogic == null) {
+                    return const Center(
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+                  
+          return Stack(
+            children: [
+              GoogleMap(
+                mapType: MapType.hybrid,
+                initialCameraPosition: _statPos,
+                onMapCreated: (GoogleMapController controller) async {
+                  _controller.complete(controller);
+                },
+                markers: calendarLogic.markers.toSet(),
+                polylines: _polylines,
+              ),
+              if (_polylines.isEmpty && calendarLogic.markers.length > 1)
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black54,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        CircularProgressIndicator(color: Colors.white),
+                        SizedBox(height: 8),
+                        Text(
+                          'Requires at least two future events to calculate routes...',
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
                     ),
                   ),
-              ],
+                ),
+            ],
+          );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  // No changes to _goToTheLake method
   Future<void> _goToTheLake() async {
     final GoogleMapController controller = await _controller.future;
     await controller.animateCamera(CameraUpdate.newCameraPosition(_kLake));

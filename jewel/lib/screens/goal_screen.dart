@@ -4,14 +4,14 @@ import 'package:jewel/personal_goals/personal_goals_form.dart';
 import 'package:jewel/personal_goals/edit_personal_goals_form.dart';
 import 'package:jewel/firebase_ops/goals.dart';
 import 'package:jewel/personal_goals/personal_goals.dart';
-
+ 
 class GoalScreen extends StatefulWidget {
   const GoalScreen({super.key});
-
+ 
   @override
   _GoalScreenState createState() => _GoalScreenState();
 }
-
+ 
 class _GoalScreenState extends State<GoalScreen> {
   final List<String> goalCategories = [
     "Health",
@@ -26,29 +26,29 @@ class _GoalScreenState extends State<GoalScreen> {
   String? currentValue;
   Map<String, PersonalGoals> goals = {};
   bool isLoading = true;
-
+ 
   @override
   void initState() {
     super.initState();
     fetchGoals();
   }
-
+ 
   Future<void> fetchGoals() async {
     setState(() {
       isLoading = true;
     });
-
+ 
     goals.clear();
-
+ 
     final String? userEmail = FirebaseAuth.instance.currentUser?.email;
-
+ 
     if (userEmail == null) {
       setState(() {
         isLoading = false;
       });
       return;
     }
-
+ 
     if (currentValue == null || currentValue == "All") {
       for (String category in goalCategories) {
         if (category != "All") {
@@ -62,12 +62,12 @@ class _GoalScreenState extends State<GoalScreen> {
           await getGoalsFromFireBase(currentValue!, userEmail);
       goals = categoryGoalsMap;
     }
-
+ 
     setState(() {
       isLoading = false;
     });
   }
-
+ 
   @override
 Widget build(BuildContext context) {
   return Scaffold(
@@ -127,7 +127,7 @@ Widget build(BuildContext context) {
                 itemBuilder: (context, index) {
                   String docId = goals.keys.elementAt(index);
                   PersonalGoals goal = goals[docId]!;
-
+ 
                   return GestureDetector(
                     onTap: () {
                       Navigator.push(

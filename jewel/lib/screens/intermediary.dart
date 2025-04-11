@@ -13,11 +13,11 @@ import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/utils/platform/background_deployer.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/google_sign_in.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+
 /*
   This widget class returns the loading screen. The loading screen opens when the app launches, forcing the user to log in
 */

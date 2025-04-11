@@ -12,6 +12,7 @@ class _AddPersonalGoal extends State<AddPersonalGoal> {
   final _formKey = GlobalKey<FormState>();
   final _goalTitleController = TextEditingController();
   final _descriptionController = TextEditingController();
+  final _durationController = TextEditingController();
   String? _selectedCategory;
 
   // List of categories
@@ -29,6 +30,7 @@ class _AddPersonalGoal extends State<AddPersonalGoal> {
   void dispose() {
     _goalTitleController.dispose();
     _descriptionController.dispose();
+    _durationController.dispose();
     super.dispose();
   }
 
@@ -83,6 +85,24 @@ class _AddPersonalGoal extends State<AddPersonalGoal> {
                     validator: (value) => value!.isEmpty ? "Please enter a description" : null,
                   ),
                   const SizedBox(height: 12),
+                  TextFormField(
+                    controller: _durationController,
+                    decoration: const InputDecoration(
+                      labelText: "Time in Minutes",
+                      border: OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return "Please enter the time in minutes";
+                      }
+                      if (int.tryParse(value) == null) {
+                        return "Please enter a valid number";
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 12),
                   DropdownButtonFormField<String>(
                     decoration: const InputDecoration(
                       labelText: "Category",
@@ -112,7 +132,7 @@ class _AddPersonalGoal extends State<AddPersonalGoal> {
                           _descriptionController.text,
                           _selectedCategory ?? "Other",
                           false,
-                          0
+                          int.tryParse(_durationController.text) ?? 0
                         );
                         newGoal.storeGoal();
 
@@ -121,6 +141,7 @@ class _AddPersonalGoal extends State<AddPersonalGoal> {
                           _goalTitleController.clear();
                           _descriptionController.clear();
                           _selectedCategory = null; // Reset dropdown selection
+                          _durationController.clear();
                         });
 
                         // Show success message

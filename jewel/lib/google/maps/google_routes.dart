@@ -1,12 +1,12 @@
 import 'dart:convert';
 
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_geocoding_api/google_geocoding_api.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:googleapis/adsense/v2.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
-import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/event_snap.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
@@ -26,12 +26,14 @@ List<LatLng> getCoordFromMarker(List<Marker> eventList) {
 
   List<LatLng> coords = [];
 
+
   for (var marker in eventList) {
     coords.add(LatLng(marker.position.latitude, marker.position.longitude));
   }
 
   return coords;
 }
+
 
 List<DateTime> getDepatureTime(CalendarLogic calendarLogic) {
   final allEvents = calendarLogic.events;

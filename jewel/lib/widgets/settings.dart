@@ -1,5 +1,5 @@
+
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:jewel/models/jewel_user.dart';
@@ -8,6 +8,9 @@ import 'package:provider/provider.dart';
 import 'package:jewel/utils/text_style_notifier.dart';
 import 'package:jewel/utils/platform/location.dart';
 import 'package:permission_handler/permission_handler.dart' as handler;
+import 'package:jewel/utils/app_themes.dart'; 
+
+
 /// Returns responsive values based on the current screen width.
 /// These breakpoints match those used in add_calendar_form.dart.
 Map<String, double> getResponsiveValues(BuildContext context) {
@@ -37,7 +40,7 @@ Map<String, double> getResponsiveValues(BuildContext context) {
     horizontalPadding = 14.0;
     verticalPadding = 10.0;
     titleFontSize = 14.0;
-  };
+  }
   // settingFontSize is 2 points smaller than the category title
   final double settingFontSize = titleFontSize - 2.0;
   return {
@@ -63,74 +66,71 @@ double getTextStyleMultiplier(String textStyle) {
   }
 }
 
-
 class SettingsScreen extends StatelessWidget {
-  final JewelUser? jewelUser;
-  const SettingsScreen({super.key, required this.jewelUser});
-
-  @override
-  Widget build(BuildContext context) {
-    final res = getResponsiveValues(context);
-    return Scaffold(
-      body: Center(
-        child: ListView(
-          padding: EdgeInsets.symmetric(
-            horizontal: res['horizontalPadding']!,
-            vertical: res['verticalPadding']!,
-          ),
-          children: [
-            SettingsCategory(
-              title: 'Calendar',
-              settings: [
-                ColorPickerSetting(title: 'Event Color'),
-              ],
-            ),
-            SettingsCategory(
-              title: 'Notifications',
-              settings: [
-                NumberInputSetting(title: 'Set Snooze Timer'),
-                ToggleSetting(
-                  title: 'Do Not Disturb',
-                  ),
-              ],
-            ),
-            SettingsCategory(
-              title: 'Privacy',
-              settings: [
-                ToggleSetting(
-                  title: 'Obfuscate Data',
-                  ),
-                ToggleSetting(
-                  title: 'Show Only Shared Events',
-                  ),
-              ],
-            ),
-            SettingsCategory(
-              title: 'Permissions',
-              settings: [
-                ToggleSetting(title: 'Notification Permission'),
-                ToggleSetting(title: 'Location Permission'),
-              ],
-            ),
-            SettingsCategory(
-              title: 'Text Style',
-              settings: [
-                TextStyleSetting(),
-              ],
-            ),
-            SizedBox(height: res['verticalPadding']),
-            ElevatedButton(
-              onPressed: () {
-                saveUserToFirestore(jewelUser!);
-              },
-              child: const Text('Save Settings'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
+   final JewelUser? jewelUser;
+   const SettingsScreen({super.key, required this.jewelUser});
+ 
+   @override
+   Widget build(BuildContext context) {
+     final res = getResponsiveValues(context);
+     return Scaffold(
+       body: Center(
+         child: ListView(
+           padding: EdgeInsets.symmetric(
+             horizontal: res['horizontalPadding']!,
+             vertical: res['verticalPadding']!,
+           ),
+           children: [
+             SettingsCategory(
+               title: 'Calendar',
+               settings: [
+                 ColorPickerSetting(title: 'Event Color'),
+               ],
+             ),
+             SettingsCategory(
+               title: 'Notifications',
+               settings: [
+                 NumberInputSetting(title: 'Set Snooze Timer'),
+                 ToggleSetting(title: 'Do Not Disturb'),
+               ],
+             ),
+             SettingsCategory(
+               title: 'Privacy',
+               settings: [
+                 ToggleSetting(title: 'Obfuscate Data'),
+                 ToggleSetting(title: 'Show Only Shared Events'),
+               ],
+             ),
+             SettingsCategory(
+               title: 'Permissions',
+               settings: [
+                 ToggleSetting(title: 'Notification Permission'),
+                 ToggleSetting(title: 'Location Permission'),
+               ],
+             ),
+             SettingsCategory(
+               title: 'Text Style',
+               settings: [
+                 TextStyleSetting(),
+             SettingsCategory(
+               title: 'Appearance',
+               settings: [
+                 BackgroundColorToggle(),
+               ],
+             ),
+             SizedBox(height: res['verticalPadding']),
+             ElevatedButton(
+               onPressed: () {
+                 saveUserToFirestore(jewelUser!);
+               },
+               child: const Text('Save Settings'),
+             ),
+           ],
+         ),
+       ]),
+     ));
+   }
+ }
 
 Future<void> saveUserToFirestore(JewelUser user) async {
   final docId = user.email; // Use email as document ID
@@ -153,7 +153,7 @@ class SettingsCategory extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         // This is the category header; it uses titleFontSize.
-        Consumer<TextStyleNotifier>(
+        Consumer<ThemeStyleNotifier>(
           builder: (context, textStyleNotifier, child) {
             double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
             return Padding(
@@ -184,7 +184,7 @@ class ToggleSetting extends StatefulWidget {
   _ToggleSettingState createState() => _ToggleSettingState();
 }
 
-class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserver {
+class _ToggleSettingState extends State<ToggleSetting> {
   bool _value = false;
   
   @override
@@ -246,7 +246,7 @@ class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserv
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         final res = getResponsiveValues(context);
@@ -378,7 +378,7 @@ class _ToggleSettingState extends State<ToggleSetting> with WidgetsBindingObserv
             }
           },
         );
-      }
+      },
     );
   }
 }
@@ -425,7 +425,7 @@ class _ColorPickerSettingState extends State<ColorPickerSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         final res = getResponsiveValues(context);
@@ -463,7 +463,7 @@ class _NumberInputSettingState extends State<NumberInputSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         final res = getResponsiveValues(context);
@@ -499,7 +499,7 @@ class TextStyleSetting extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final res = getResponsiveValues(context);
-    return Consumer<TextStyleNotifier>(
+    return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         // Use settingFontSize for the widget title.
@@ -526,4 +526,75 @@ class TextStyleSetting extends StatelessWidget {
       },
     );
   }
-} 
+}
+
+/// New widget that lets the user pick a background color
+/// Once selected, it updates the lightgreen and darkgreen variables in app_themes.dart.
+class BackgroundColorToggle extends StatefulWidget {
+  const BackgroundColorToggle({super.key});
+
+  @override
+  _BackgroundColorToggleState createState() => _BackgroundColorToggleState();
+}
+
+class _BackgroundColorToggleState extends State<BackgroundColorToggle> {
+  // Initialize the selected color with the current lightgreen color from AppThemes.
+  Color _selectedColor = AppThemes.lightcolor;
+
+  void _pickColor() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Pick a background color'),
+          content: SingleChildScrollView(
+            child: ColorPicker(
+              pickerColor: _selectedColor,
+              onColorChanged: (Color color) {
+                setState(() {
+                  _selectedColor = color;
+                });
+              },
+            ),
+          ),
+          actions: <Widget>[
+            ElevatedButton(
+              child: const Text('Done'),
+              onPressed: () {
+                // Instead of only updating AppThemes, notify ThemeNotifier.
+                Provider.of<ThemeStyleNotifier>(context, listen: false)
+                    .updateThemeColor(_selectedColor);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<ThemeStyleNotifier>(
+      builder: (context, textStyleNotifier, child) {
+        double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+        final res = getResponsiveValues(context);
+        return ListTile(
+          title: Text(
+            'Background Color',
+            style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
+          ),
+          trailing: Container(
+            width: 24,
+            height: 24,
+            decoration: BoxDecoration(
+              color: _selectedColor,
+              shape: BoxShape.circle,
+            ),
+          ),
+          onTap: _pickColor,
+        );
+      },
+    );
+  }
+}
