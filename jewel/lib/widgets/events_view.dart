@@ -193,7 +193,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                               ),
                             ),
                             if (isValidDay && events != null)
-                              ...buildEventTexts(events),
+                              ...buildEventTexts(events, isObfuscationEnabled)
                           ],
                         ),
                       ),
@@ -216,7 +216,8 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   }
 
   // Helper function to build event texts
-  List<Widget> buildEventTexts(List<gcal.Event> events) {
+  List<Widget> buildEventTexts(
+      List<gcal.Event> events, bool isObfuscationEnabled) {
     if (events.isEmpty) return [];
 
     return [
@@ -268,7 +269,9 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                             BorderRadius.circular(4), // Smaller border radius
                       ),
                       child: Text(
-                        event.summary ?? 'No Title',
+                        isObfuscationEnabled
+                            ? 'Obfuscated'
+                            : (event.summary ?? 'No Title'),
                         style: TextStyle(
                             fontSize: 10,
                             color: Colors.white,
