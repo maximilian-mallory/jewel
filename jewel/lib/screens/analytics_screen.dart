@@ -80,6 +80,24 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final averageDuration =
         goals.values.fold<int>(0, (sum, goal) => sum + goal.duration) / goals.length;
 
+    final totalDurationByCategory = goals.values.fold<Map<String, int>>({}, (map, goal) {
+      map[goal.category] = (map[goal.category] ?? 0) + goal.duration;
+      return map;
+    });
+
+    final totalDurationData = totalDurationByCategory.entries
+        .map((entry) => DurationData(entry.key, entry.value.toDouble()))
+        .toList();
+
+    final Map<String, Color> categoryColors = { 
+      "Health": Colors.red, 
+      "Work": Colors.blue, 
+      "Personal Growth": Colors.green, 
+      "Finance": Colors.orange, 
+      "Education": Colors.indigo, 
+      "Hobby": Colors.teal,
+      "Other": Colors.purple,};
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Goal Analytics'),
@@ -152,6 +170,28 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     yValueMapper: (DurationData data, _) => data.duration,
                     name: 'Duration',
                     color: Colors.blue,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+              // New Chart for Total Goal Duration by Category
+              const Text(
+                'Total Goal Duration',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 10),
+              SfCartesianChart(
+                primaryXAxis: CategoryAxis(),
+                title: ChartTitle(text: 'Total Duration of Goals (Minutes) by Category'),
+                legend: Legend(isVisible: false),
+                tooltipBehavior: TooltipBehavior(enable: true),
+                series: <CartesianSeries>[
+                  ColumnSeries<DurationData, String>(
+                    dataSource: totalDurationData,
+                    xValueMapper: (DurationData data, _) => data.label,
+                    yValueMapper: (DurationData data, _) => data.duration,
+                    name: 'Total Duration',
+                    pointColorMapper: (DurationData data, _) => categoryColors[data.label] ?? Colors.blueGrey,
                   ),
                 ],
               ),
