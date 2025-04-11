@@ -68,6 +68,26 @@ class _GoalScreenState extends State<GoalScreen> {
     });
   }
 
+  Future<void> toggleGoalCompletion(String docId, PersonalGoals goal) async {
+    try {
+      // Toggle the completed status
+      goal.completed = !goal.completed;
+
+      // Update the goal in Firebase
+      await goal.updateGoal(docId);
+
+      // Refresh the UI
+      setState(() {
+        fetchGoals();
+      });
+
+      print(
+          'Goal "${goal.title}" marked as ${goal.completed ? "complete" : "incomplete"}.');
+    } catch (e) {
+      print('Error updating goal: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,48 +134,169 @@ class _GoalScreenState extends State<GoalScreen> {
               },
               tooltip: 'Create Goal',
               mini: true,
-              child: Icon(Icons.add),
+              child: const Icon(Icons.add),
             ),
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
               padding: const EdgeInsets.all(10),
-              child: Center(
-                child: ListView.builder(
-                  itemCount: goals.length,
-                  itemBuilder: (context, index) {
-                    String docId = goals.keys.elementAt(index);
-                    PersonalGoals goal = goals[docId]!;
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Current Goals Section
+                  const Text(
+                    'Current Goals',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  goals.values.any((goal) => !goal.completed)
+                      ? ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: goals.length,
+                          itemBuilder: (context, index) {
+                            String docId = goals.keys.elementAt(index);
+                            PersonalGoals goal = goals[docId]!;
 
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                EditPersonalGoal(docId: docId, goal: goal),
-                          ),
-                        ).then(
-                            (_) => fetchGoals()); // Refresh goals after editing
-                      },
-                      child: Card(
-                        child: Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(20),
-                          color: Color.fromARGB(255, 57, 145, 102),
-                          child: Center(
-                            child: Text(
-                              goal.title,
+                            if (goal.completed) return const SizedBox.shrink();
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditPersonalGoal(
+                                        docId: docId, goal: goal),
+                                  ),
+                                ).then((_) => fetchGoals());
+                              },
+                              child: Card(
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(20),
+                                  color:
+                                      const Color.fromARGB(255, 57, 145, 102),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      // Centered Goal Title
+                                      Expanded(
+                                        child: Center(
+                                          child: Text(
+                                            goal.title,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // "Mark as Complete" Button
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          toggleGoalCompletion(docId, goal);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+                                        ),
+                                        child: const Text(
+                                          'Mark as Complete',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : const Center(
+                          child: Text(
+                            'All goals completed. Nice Job!',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                  const SizedBox(height: 20),
+                  // Completed Goals Section
+                  const Text(
+                    'Completed Goals',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  goals.values.any((goal) => goal.completed)
+                      ? ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: goals.length,
+                          itemBuilder: (context, index) {
+                            String docId = goals.keys.elementAt(index);
+                            PersonalGoals goal = goals[docId]!;
+
+                            if (!goal.completed) return const SizedBox.shrink();
+
+                            return Card(
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(20),
+                                color: const Color.fromARGB(255, 100, 100, 100),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // Centered Goal Title
+                                    Expanded(
+                                      child: Center(
+                                        child: Text(
+                                          goal.title,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    // "Mark as Incomplete" Button
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        toggleGoalCompletion(docId, goal);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                      child: const Text(
+                                        'Mark as Incomplete',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : const Center(
+                          child: Text(
+                            'No completed goals.',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                ],
               ),
             ),
     );
