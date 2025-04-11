@@ -1,12 +1,13 @@
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:googleapis/serviceusage/v1.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:provider/provider.dart';
 import 'package:jewel/utils/text_style_notifier.dart';
-import 'package:jewel/utils/app_themes.dart'; 
-
+import 'package:jewel/widgets/settings_provider.dart';
+import 'package:jewel/utils/location.dart';
+import 'package:jewel/utils/app_themes.dart'; // New import for updating theme colors
 
 /// Returns responsive values based on the current screen width.
 /// These breakpoints match those used in add_calendar_form.dart.
@@ -64,70 +65,104 @@ double getTextStyleMultiplier(String textStyle) {
 }
 
 class SettingsScreen extends StatelessWidget {
-   final JewelUser? jewelUser;
-   const SettingsScreen({super.key, required this.jewelUser});
- 
-   @override
-   Widget build(BuildContext context) {
-     final res = getResponsiveValues(context);
-     return Scaffold(
-       body: Center(
-         child: ListView(
-           padding: EdgeInsets.symmetric(
-             horizontal: res['horizontalPadding']!,
-             vertical: res['verticalPadding']!,
-           ),
-           children: [
-             SettingsCategory(
-               title: 'Calendar',
-               settings: [
-                 ColorPickerSetting(title: 'Event Color'),
-               ],
-             ),
-             SettingsCategory(
-               title: 'Notifications',
-               settings: [
-                 NumberInputSetting(title: 'Set Snooze Timer'),
-                 ToggleSetting(title: 'Do Not Disturb'),
-               ],
-             ),
-             SettingsCategory(
-               title: 'Privacy',
-               settings: [
-                 ToggleSetting(title: 'Obfuscate Data'),
-                 ToggleSetting(title: 'Show Only Shared Events'),
-               ],
-             ),
-             SettingsCategory(
-               title: 'Permissions',
-               settings: [
-                 ToggleSetting(title: 'Notification Permission'),
-                 ToggleSetting(title: 'Location Permission'),
-               ],
-             ),
-             SettingsCategory(
-               title: 'Text Style',
-               settings: [
-                 TextStyleSetting(),
-             SettingsCategory(
-               title: 'Appearance',
-               settings: [
-                 BackgroundColorToggle(),
-               ],
-             ),
-             SizedBox(height: res['verticalPadding']),
-             ElevatedButton(
-               onPressed: () {
-                 saveUserToFirestore(jewelUser!);
-               },
-               child: const Text('Save Settings'),
-             ),
-           ],
-         ),
-       ]),
-     ));
-   }
- }
+  final JewelUser? jewelUser;
+  const SettingsScreen({
+    super.key,
+    required this.jewelUser,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final res = getResponsiveValues(context);
+    final settingsProvider = Provider.of<SettingsProvider>(
+        context); // Access the SettingsProvider without listening to changes
+    return Scaffold(
+        body: Center(
+      child: ListView(
+          padding: EdgeInsets.symmetric(
+            horizontal: res['horizontalPadding']!,
+            vertical: res['verticalPadding']!,
+          ),
+          children: [
+            SettingsCategory(
+              title: 'Calendar',
+              settings: [
+                ColorPickerSetting(title: 'Event Color'),
+              ],
+            ),
+            SettingsCategory(
+              title: 'Notifications',
+              settings: [
+                NumberInputSetting(title: 'Set Snooze Timer'),
+                ToggleSetting(
+                  title: 'Do Not Disturb',
+                  initialValue: false, // Default value for the toggle
+                  onChanged: (value) {
+                    // Implement functionality for Do Not Disturb toggle change
+                  },
+                ),
+              ],
+            ),
+            SettingsCategory(
+              title: 'Privacy',
+              settings: [
+                ToggleSetting(
+                  title: 'Obfuscate Event Info',
+                  initialValue: settingsProvider.isObfuscationEnabled,
+                  onChanged: (value) {
+                    settingsProvider.toggleObfuscation(value);
+                  },
+                ),
+                ToggleSetting(
+                    title: 'Show Only Shared Events',
+                    initialValue: false,
+                    onChanged: (value) {
+                      // Implement changed functionality
+                    }),
+              ],
+            ),
+            SettingsCategory(
+              title: 'Permissions',
+              settings: [
+                ToggleSetting(
+                  title: 'Notification Permission',
+                  initialValue: false,
+                  onChanged: (value) {
+                    // Implement functionality for notification permission change
+                  },
+                ),
+                ToggleSetting(
+                  title: 'Location Permission',
+                  initialValue: false,
+                  onChanged: (value) {
+                    // Implement functionality for location permission change
+                  },
+                ),
+              ],
+            ),
+            SettingsCategory(
+              title: 'Text Style',
+              settings: [
+                TextStyleSetting(),
+                SettingsCategory(
+                  title: 'Appearance',
+                  settings: [
+                    BackgroundColorToggle(),
+                  ],
+                ),
+                SizedBox(height: res['verticalPadding']),
+                ElevatedButton(
+                  onPressed: () {
+                    saveUserToFirestore(jewelUser!);
+                  },
+                  child: const Text('Save Settings'),
+                ),
+              ],
+            ),
+          ]),
+    ));
+  }
+}
 
 Future<void> saveUserToFirestore(JewelUser user) async {
   final docId = user.email; // Use email as document ID
@@ -141,7 +176,8 @@ class SettingsCategory extends StatelessWidget {
   final String title;
   final List<Widget> settings;
 
-  const SettingsCategory({super.key, required this.title, required this.settings});
+  const SettingsCategory(
+      {super.key, required this.title, required this.settings});
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +188,8 @@ class SettingsCategory extends StatelessWidget {
         // This is the category header; it uses titleFontSize.
         Consumer<ThemeStyleNotifier>(
           builder: (context, textStyleNotifier, child) {
-            double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
+            double multiplier =
+                getTextStyleMultiplier(textStyleNotifier.textStyle);
             return Padding(
               padding: const EdgeInsets.symmetric(vertical: 8.0),
               child: Text(
@@ -175,7 +212,13 @@ class SettingsCategory extends StatelessWidget {
 
 class ToggleSetting extends StatefulWidget {
   final String title;
-  const ToggleSetting({super.key, required this.title});
+  final bool initialValue;
+  final Function(bool)? onChanged;
+  const ToggleSetting(
+      {super.key,
+      required this.title,
+      this.initialValue = false,
+      required this.onChanged});
 
   @override
   _ToggleSettingState createState() => _ToggleSettingState();
@@ -186,21 +229,21 @@ class _ToggleSettingState extends State<ToggleSetting> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<ThemeStyleNotifier>(
-      builder: (context, textStyleNotifier, child) {
+    return Consumer2<ThemeStyleNotifier, SettingsProvider>(
+      builder: (context, textStyleNotifier, settingsProvider, child) {
         double multiplier = getTextStyleMultiplier(textStyleNotifier.textStyle);
         final res = getResponsiveValues(context);
+        final bool currentValue =
+            settingsProvider.getSetting(widget.title) ?? widget.initialValue;
         // Use settingFontSize for individual setting widget titles.
         return SwitchListTile(
           title: Text(
-            widget.title, 
+            widget.title,
             style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
           ),
-          value: _value,
-           onChanged: (bool newValue) {
-            setState(() {
-              _value = newValue;
-            });
+          value: currentValue,
+          onChanged: (bool newValue) {
+            settingsProvider.setSetting(widget.title, newValue);
           },
         );
       },
@@ -335,7 +378,8 @@ class TextStyleSetting extends StatelessWidget {
           ),
           trailing: DropdownButton<String>(
             value: textStyleNotifier.textStyle,
-            items: ['default', 'extra Large', 'large', 'small'].map((String style) {
+            items: ['default', 'extra Large', 'large', 'small']
+                .map((String style) {
               return DropdownMenuItem<String>(
                 value: style,
                 child: Text(style[0].toUpperCase() + style.substring(1)),

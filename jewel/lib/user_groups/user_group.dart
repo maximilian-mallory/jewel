@@ -53,6 +53,14 @@ class UserGroup {
     }
   }
 
+  void removeMember(String member) {
+    if (_members.contains(member)) {
+      _members.remove(member);
+    } else {
+      print("Member does not exist");
+    }
+  }
+
   set setMembers(List<String> value) {
     if (value.isNotEmpty) {
       _members = value;
@@ -61,11 +69,14 @@ class UserGroup {
 
   factory UserGroup.fromJson(Map<String, dynamic> json) {
     return UserGroup(
-      name: json['name'],
-      description: json['description'],
-      private: json['private'],
-      password: json['password'],
-      members: List<String>.from(json['members']),
+      name: json['name'] as String? ?? 'Unknown Group',
+      description: json['description'] as String? ?? 'No Description',
+      private: json['private'] as bool? ?? false,
+      password: json['password'] as String? ?? '',
+      members: (json['members'] as List<dynamic>?)
+              ?.map((member) => member as String)
+              .toList() ??
+          [],
     );
   }
 
