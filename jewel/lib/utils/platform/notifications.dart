@@ -233,11 +233,6 @@ Future<void> checkUpcomingEvents() async {
           return;
         }
         
-        await sendBasicNotification(
-          "Events Found",
-          "Found ${calendarLogic.events.length} events for today"
-        );
-        
         // Process each event directly instead of using arrival times
         for (final event in calendarLogic.events) {
           // Skip events without start times

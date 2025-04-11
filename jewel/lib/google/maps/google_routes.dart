@@ -171,7 +171,7 @@ Future<List<Map<String, dynamic>>> checkUserHasEnoughTime(
 
       if (eventDurationsWithNames.isEmpty) {
         print(
-            "DEBUG: No route data available for events ${currentEventIndex} and ${currentEventIndex+1}");
+            "DEBUG: No route data available for events ${currentEventIndex} and ${currentEventIndex + 1}");
         eventStatus.add({
           "eventIndex": currentEventIndex,
           "status": false,
@@ -181,15 +181,15 @@ Future<List<Map<String, dynamic>>> checkUserHasEnoughTime(
       }
 
       print(
-          "DEBUG: Event traffic durations for events ${currentEventIndex} and ${currentEventIndex+1}: $eventDurationsWithNames['duration'] seconds");
+          "DEBUG: Event traffic durations for events ${currentEventIndex} and ${currentEventIndex + 1}: $eventDurationsWithNames['duration'] seconds");
 
       DateTime? departureTime = allEvents[currentEventIndex].end?.dateTime;
-      
+
       DateTime? arrivalTime = allEvents[nextEventIndex].start?.dateTime;
 
       if (departureTime == null || arrivalTime == null) {
         print(
-            "DEBUG: Missing departure or arrival time for events ${currentEventIndex} and ${currentEventIndex+1}");
+            "DEBUG: Missing departure or arrival time for events ${currentEventIndex} and ${currentEventIndex + 1}");
         eventStatus.add({
           "eventIndex": currentEventIndex,
           "status": false,
@@ -203,9 +203,11 @@ Future<List<Map<String, dynamic>>> checkUserHasEnoughTime(
       int duration = eventDurationsWithNames[0]['duration'] ?? 0;
 
       if (eventDifference < duration + 300) {
-        String currentName = eventDurationsWithNames[0]['name'] ?? "Unknown Event";
+        String currentName =
+            eventDurationsWithNames[0]['name'] ?? "Unknown Event";
 
-        String nextName = eventDurationsWithNames[0]['nextName'] ?? "Unknown Event";
+        String nextName =
+            eventDurationsWithNames[0]['nextName'] ?? "Unknown Event";
         print(
             "DEBUG: Not enough time between events ${eventDurationsWithNames[0]['name']} and ${eventDurationsWithNames[0]['name']}");
         eventStatus.add({
@@ -216,11 +218,13 @@ Future<List<Map<String, dynamic>>> checkUserHasEnoughTime(
           "nextEventName": nextName,
         });
       } else {
-        String currentName = eventDurationsWithNames[0]['name'] ?? "Unknown Event";
+        String currentName =
+            eventDurationsWithNames[0]['name'] ?? "Unknown Event";
 
-        String nextName = eventDurationsWithNames[0]['nextName'] ?? "Unknown Event";
+        String nextName =
+            eventDurationsWithNames[0]['nextName'] ?? "Unknown Event";
         print(
-            "DEBUG: Enough time between events ${eventDurationsWithNames[0]['name']} and ${eventDurationsWithNames[0]['name']}");
+            "DEBUG: Enough time between events $currentName and $nextName");
         eventStatus.add({
           "eventIndex": currentEventIndex,
           "status": true,
@@ -291,7 +295,7 @@ Future<List<dynamic>> getRouteData(LatLng start, LatLng end,
     // Make the API call
     http.Response response = await http.get(Uri.parse(url));
     Map<String, dynamic> data = json.decode(response.body);
-    print("Response: ${data.toString()}");
+    //print("DEBUG: Response: ${data.toString()}");
     if (data['status'] != 'OK') {
       print(
           "Error: ${data['status']} - ${data['error_message'] ?? 'No error details'}");
@@ -305,7 +309,7 @@ Future<List<dynamic>> getRouteData(LatLng start, LatLng end,
       return getRouteCoordinates(data);
     }
     if (command == "getTrafficDurationOfEvents") {
-      return getTrafficDurationOfEvents(data, calendarLogic.events);
+      return getTrafficDurationOfEvents(data, calendarLogic.events, i);
     } else {
       return [data];
     }
@@ -337,12 +341,12 @@ List<LatLng> getRouteCoordinates(data) {
 }
 
 List<Map<String, dynamic>> getTrafficDurationOfEvents(
-    data, List<gcal.Event> events) {
+    data, List<gcal.Event> events, int currentEventIndex) {
   List<Map<String, dynamic>> eventDurationsWithNames = [];
   if (data['routes'] != null && data['routes'].isNotEmpty) {
     final legs = data['routes'][0]['legs'];
     for (int i = 0; i < legs.length; i++) {
-      final leg = legs[i];
+      final leg = legs[0];
       final durationData = leg['duration_in_traffic'];
       int duration = 0;
 
@@ -353,18 +357,22 @@ List<Map<String, dynamic>> getTrafficDurationOfEvents(
         duration = leg['duration']['value'];
       }
 
-      // Get the event name if it exists
-      String eventName = "Unknown Event";
-      String nextEventName = "Unknown Event";
-      if (i < events.length && events[i].summary != null) {
-        eventName = events[i].summary!;
-        nextEventName = events[i + 1].summary ?? "Unknown Event";
+      String currentName = "Unknown Event";
+      String nextName = "Unknown Event";
+
+      if (currentEventIndex >= 0 && currentEventIndex < events.length) {
+        currentName = events[currentEventIndex].summary ?? "Unknown Event";
+
+        int nextEventIndex = currentEventIndex + 1;
+        if (nextEventIndex < events.length) {
+          nextName = events[nextEventIndex].summary ?? "Unknown Event";
+        }
       }
 
       // Add the event name and duration to the list
       eventDurationsWithNames.add({
-        "name": eventName,
-        "nextName": nextEventName,
+        "name": currentName,
+        "nextName": nextName,
         "duration": duration,
       });
     }
@@ -373,7 +381,7 @@ List<Map<String, dynamic>> getTrafficDurationOfEvents(
   if (eventDurationsWithNames.isEmpty) {
     print("ERROR: No event durations found in the response data.");
   } else {
-    print("Event durations with names: $eventDurationsWithNames");
+    print("DEBUG: Event durations with names: $eventDurationsWithNames");
   }
 
   return eventDurationsWithNames;

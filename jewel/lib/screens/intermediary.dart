@@ -68,8 +68,10 @@ bool isLoading = true; // To show loading indicator
             'id': marker.markerId.value,
             'lat': marker.position.latitude,
             'lng': marker.position.longitude,
+
           })
           .toList();
+      print("Initial Marker List: $markerList being sent to background task");
       await prefs.setString('marker_list', jsonEncode(markerList));
        print("Markers saved to SharedPreferences: $markerList");
     }

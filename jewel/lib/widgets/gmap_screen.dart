@@ -82,7 +82,7 @@ class MapSampleState extends State<MapSample> {
       final now = DateTime.now();
       print("DEBUG MARKERS IDS: ${calendarLogic.markers.map((id)=> id.markerId.value).toList()}");
       List<LatLng> markerCoordinates = getCoordFromMarker(calendarLogic.markers.toList());
-      //print("DEBUG: Marker Coordinates: $markerCoordinates\n");
+      print("DEBUG: Marker Coordinates: $markerCoordinates\n");
       /*
        * Event Processing
        */

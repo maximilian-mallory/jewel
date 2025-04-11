@@ -70,10 +70,10 @@ void callbackDispatcher() {
                   "No events to check or no results returned");
             } else {
               for (int i = 0; i < eventStatus.length; i++) {
-                if (eventStatus[i].values.contains(false)) {
+                if (eventStatus[i]["status"]==false) {
                   //print("BACKGROUND TASK: Not enough time between events ${i + 1} and ${i + 2}");
                   await sendBasicNotification("Time Warning",
-                      "Not enough time between events: ${eventStatus[i]['name']} and ${eventStatus[i]['nextName']}");
+                      "Not enough time between events: ${eventStatus[i]['eventName']} and ${eventStatus[i]['nextEventName']}");
                 } else {
                   //print("BACKGROUND TASK: Enough time between events ${i + 1} and ${i + 2}");
                   // do nothing
@@ -177,6 +177,9 @@ Future<void> registerBackgroundTasks() async {
         requiresDeviceIdle: false,
         requiresStorageNotLow: false,
       ),
+      inputData: {
+        'apiKey': apiKey,
+      }
     );
     //print("Registered periodic background task for checking times between events");
 
@@ -225,7 +228,7 @@ Future<List<Marker>> _decodeData () async  {
       ))
       .toList();
      markerCoordinates = markerData;
-     //print("Debug: Marker coordinates loaded: $markerCoordinates");
+     print("Debug: Marker coordinates loaded: $markerCoordinates");
   } 
   else {
       print("No markers found in SharedPreferences");
