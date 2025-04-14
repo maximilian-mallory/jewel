@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:jewel/user_groups/user_group_provider.dart';
 import 'package:jewel/user_groups/user_group.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:googleapis/calendar/v3.dart' as gcal;
+import 'package:googleapis_auth/auth_io.dart';
 
 class YourGroups extends StatelessWidget {
   const YourGroups({super.key});
@@ -74,6 +76,8 @@ class YourGroups extends StatelessWidget {
   }
 
   void _showGroupMembersDialog(BuildContext context, UserGroup group) {
+    DateTime selectedDate = DateTime.now();
+    final Map<DateTime, List<String>> groupEvents = _getGroupEvents(group);
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -81,16 +85,31 @@ class YourGroups extends StatelessWidget {
           title: Text('Members of ${group.getName}'),
           content: SizedBox(
             width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: group.getMembers.length,
-              itemBuilder: (context, index) {
-                final member = group.getMembers[index];
-                return ListTile(
-                  leading: const Icon(Icons.person),
-                  title: Text(member),
-                );
-              },
+            child: Column(
+              children: [
+                // List of group members
+                Expanded(
+                  flex: 1,
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: group.getMembers.length,
+                    itemBuilder: (context, index) {
+                      final member = group.getMembers[index];
+                      return ListTile(
+                        leading: const Icon(Icons.person),
+                        title: Text(member),
+                      );
+                    },
+                  ),
+                ),
+                const Divider(), // Divider between members and calendar
+                // Group calendar
+                Expanded(
+                  flex: 2,
+                  child: _buildCustomGroupCalendar(
+                      context, groupEvents, selectedDate, group.getMembers),
+                ),
+              ],
             ),
           ),
           actions: [
@@ -149,5 +168,90 @@ class YourGroups extends StatelessWidget {
     }
 
     return events;
+  }
+
+  Widget _buildCustomGroupCalendar(
+      BuildContext context,
+      Map<DateTime, List<String>> groupEvents,
+      DateTime selectedDate,
+      List<String> members) {
+    final Map<String, Map<int, List<String>>> memberHourlyEvents = {};
+    for (final member in members) {
+      memberHourlyEvents[member] = {};
+      final eventsForSelectedDate = groupEvents[selectedDate] ?? [];
+      for (final event in eventsForSelectedDate) {
+        // Mock logic: Assign events to random hours (replace with actual logic)
+        final randomHour =
+            DateTime.now().hour; // Replace with actual event start hour
+        memberHourlyEvents[member]![randomHour] =
+            (memberHourlyEvents[member]![randomHour] ?? [])
+              ..add('$member\'s Event');
+      }
+    }
+
+    return ListView.builder(
+      itemCount: 24, // 24 hours in a day
+      itemBuilder: (context, hour) {
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Time column
+            Container(
+              width: 60,
+              padding: const EdgeInsets.all(8.0),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey),
+                color: Colors.grey[200],
+              ),
+              child: Text(
+                '${hour.toString().padLeft(2, '0')}:00',
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            // Event columns for each member
+            ...members.map((member) {
+              final events = memberHourlyEvents[member]![hour] ?? [];
+              return Expanded(
+                child: Container(
+                  height: 60.0,
+                  margin: const EdgeInsets.symmetric(horizontal: 2.0),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.grey),
+                    color:
+                        events.isNotEmpty ? Colors.blue[50] : Colors.grey[100],
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(4.0),
+                    child: events.isNotEmpty
+                        ? Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: events.map((event) {
+                              return Text(
+                                event,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Colors.black87,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              );
+                            }).toList(),
+                          )
+                        : const Center(
+                            child: Text(
+                              'No events',
+                              style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.black54,
+                              ),
+                            ),
+                          ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ],
+        );
+      },
+    );
   }
 }
