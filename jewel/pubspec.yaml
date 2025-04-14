@@ -65,6 +65,7 @@ dependencies:
   uni_links: ^0.5.1
   crypto: ^3.0.6
   flutter_secure_storage: ^9.2.4
+  flutter_appauth: ^9.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

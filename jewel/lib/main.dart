@@ -9,6 +9,7 @@ import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/screens/firebase_login_screen.dart';
 import 'package:jewel/screens/graph_login.dart';
 import 'package:jewel/screens/intermediary.dart';
+import 'package:jewel/screens/mslogin.dart';
 import 'package:jewel/screens/oauth_redirect_screen.dart';
 import 'package:jewel/screens/test_screen1.dart';
 import 'package:jewel/widgets/home_screen.dart';
@@ -102,10 +103,7 @@ class MyApp extends StatelessWidget {
           theme: MyAppThemes.lightThemeWithTextStyle(textStyleNotifier.textStyle),
           darkTheme: MyAppThemes.darkThemeWithTextStyle(textStyleNotifier.textStyle),
           themeMode: ThemeMode.system,
-          routes: {
-            '/': (context) => MicrosoftLoginScreen(),
-            '/oauth_redirect': (context) => OAuthRedirectScreen(),
-          },
+          home: MsLoginScreen(),
         );
       },
     );
