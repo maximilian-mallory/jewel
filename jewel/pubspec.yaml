@@ -30,7 +30,11 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-
+  workmanager:
+    git:
+      url: https://github.com/fluttercommunity/flutter_workmanager.git
+      path: workmanager
+      ref: main
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
@@ -66,7 +70,6 @@ dependencies:
   permission_handler: ^11.4.0
   shared_preferences: ^2.2.2
   syncfusion_flutter_charts: ^29.1.35
-  workmanager: ^0.5.2
 dev_dependencies:
   flutter_test:
     sdk: flutter
