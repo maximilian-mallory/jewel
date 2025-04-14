@@ -43,6 +43,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
         '[Events View] Jewel user matched to calendar tools: ${jewelUser?.calendarLogicList?[0].selectedCalendar}');
     print(
         '[Events View] Init State events: ${jewelUser?.calendarLogicList?[0].events.toString()}');
+        getGoogleEventsData(calendarLogic, context);
   }
 
   @override
