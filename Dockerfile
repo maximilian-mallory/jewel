@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/*
 
 # Install Flutter
-RUN wget -qO- https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.24.3-stable.tar.xz | tar -xJ -C /opt
+RUN wget -qO- https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/flutter_linux_3.29.0-stable.tar.xz | tar -xJ -C /opt
 
 # Set up environment variables
 ENV FLUTTER_HOME=/opt/flutter
@@ -37,7 +37,6 @@ RUN git config --global --add safe.directory /opt/flutter
 RUN chmod +x ./jewelbuild.sh && ./jewelbuild.sh web
 
 RUN flutter doctor
-RUN flutter build web
 
 # Set up Nginx to serve the Flutter web app
 RUN rm /etc/nginx/sites-enabled/default
