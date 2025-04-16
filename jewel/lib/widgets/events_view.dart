@@ -718,13 +718,15 @@ class _CalendarEventsView extends State<CalendarEventsView> {
   // Define variables to track user selections
   int selectedMinutes = 15; // Default: 15 minutes before
   int notificationCount = 1; // Default: 1 notification
-  
+  TextEditingController customReminder = TextEditingController(); // Placeholder for custom reminder text
   // Check if event already has reminder settings
   if (event.extendedProperties?.private != null) {
     selectedMinutes = int.tryParse(
         event.extendedProperties!.private!['reminderMinutes'] ?? '15') ?? 15;
     notificationCount = int.tryParse(
         event.extendedProperties!.private!['reminderCount'] ?? '1') ?? 1;
+    customReminder = TextEditingController(
+        text: event.extendedProperties!.private!['customReminder'] ?? "");
   }
   
   // Show reminder settings dialog
@@ -739,6 +741,19 @@ class _CalendarEventsView extends State<CalendarEventsView> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                Text("Set a custom event reminder:"),
+                SizedBox(height: 10),
+
+                TextFormField(
+                  decoration: InputDecoration(labelText: "Custom Reminder"),
+                  controller: customReminder,
+                  onChanged: (value) {
+                    setState(() {
+                      customReminder.text = value;
+                    });
+                  },
+                ),
+                SizedBox(height: 10),
                 Text("Notify me before the event:"),
                 SizedBox(height: 10),
                 
@@ -815,6 +830,8 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                       selectedMinutes.toString();
                   event.extendedProperties!.private!['reminderCount'] = 
                       notificationCount.toString();
+                  event.extendedProperties!.private!['customReminder'] =
+                      customReminder.text;
                   
                   // Calculate notification times based on user preferences
                   List<int> notificationMinutes = [];

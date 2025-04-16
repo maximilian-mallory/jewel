@@ -253,6 +253,7 @@ Future<void> checkUpcomingEvents() async {
                 .sort(); // Sort ascending (smaller times are closer to event)
             print("DEBUG: Reminder times for event: $reminderMinutes");
           }
+
           // Calculate difference from now
           final diff = eventStartTime.difference(now);
 
@@ -264,21 +265,32 @@ Future<void> checkUpcomingEvents() async {
           }
 
           for (final reminderTime in reminderMinutes) {
+            String message;
             // Needs a 15 minute buffer because the background deployer triggers every 15 minutes or so
             // up to 5 minutes after the event starts and 10 minutes before the event starts
             if (minutesToEvent >= reminderTime - 5 &&
                 minutesToEvent <= reminderTime + 10) {
-              String eventName = event.summary ?? "Untitled event";
-              final hour = eventStartTime.hour.toString().padLeft(2, '0');
-              final minute = eventStartTime.minute.toString().padLeft(2, '0');
-
-              String message =
-                  "$eventName starts in about $minutesToEvent minutes at $hour:$minute";
-              String notificationId =
-                  "upcoming-${reminderTime}min-${eventStartTime.millisecondsSinceEpoch}";
-              print("DEBUG: Sending notification: $message");
-              await sendNotification(notificationId, "Upcoming Event", message);
-              break; // Only send one notification at a time
+              if (event.extendedProperties?.private?['customReminder'] != null && event.extendedProperties!.private!['customReminder']!.isNotEmpty) {
+                message = event.extendedProperties!.private!['customReminder']!;
+                String notificationId =
+                    "upcoming-${reminderTime}min-${eventStartTime.millisecondsSinceEpoch}";
+                print("DEBUG: Sending notification: $message");
+                await sendNotification(
+                    notificationId, "Upcoming Event", message);
+                break; // Only send one notification at a time
+              } else {
+                String eventName = event.summary ?? "Untitled event";
+                final hour = eventStartTime.hour.toString().padLeft(2, '0');
+                final minute = eventStartTime.minute.toString().padLeft(2, '0');
+                message =
+                    "$eventName starts in about $minutesToEvent minutes at $hour:$minute";
+                String notificationId =
+                    "upcoming-${reminderTime}min-${eventStartTime.millisecondsSinceEpoch}";
+                print("DEBUG: Sending notification: $message");
+                await sendNotification(
+                    notificationId, "Upcoming Event", message);
+                break; // Only send one notification at a time
+              }
             }
           }
         }
