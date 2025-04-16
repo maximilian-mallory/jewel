@@ -103,7 +103,7 @@ class MyApp extends StatelessWidget {
           theme: MyAppThemes.lightThemeWithTextStyle(textStyleNotifier.textStyle),
           darkTheme: MyAppThemes.darkThemeWithTextStyle(textStyleNotifier.textStyle),
           themeMode: ThemeMode.system,
-          home: MsLoginScreen(),
+          home: AuthGate(),
         );
       },
     );
