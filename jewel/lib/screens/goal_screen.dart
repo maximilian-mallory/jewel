@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jewel/personal_goals/personal_goals_form.dart';
+import 'package:jewel/personal_goals/edit_personal_goals_form.dart';
 import 'package:jewel/firebase_ops/goals.dart';
 import 'package:jewel/personal_goals/personal_goals.dart';
 
@@ -12,7 +13,6 @@ class GoalScreen extends StatefulWidget {
 }
 
 class _GoalScreenState extends State<GoalScreen> {
-  //Goals from personal_goals_form.dart with the added "All" for when they want to display all goals again
   final List<String> goalCategories = [
     "Health",
     "Work",
@@ -23,8 +23,8 @@ class _GoalScreenState extends State<GoalScreen> {
     "Other",
     "All"
   ];
-  String? currentValue; //starts off as null but can be used to filter -> changes with drop down selection
-  List<PersonalGoals> goals = [];
+  String? currentValue;
+  Map<String, PersonalGoals> goals = {};
   bool isLoading = true;
 
   @override
@@ -33,49 +33,66 @@ class _GoalScreenState extends State<GoalScreen> {
     fetchGoals();
   }
 
-Future<void> fetchGoals() async {
-  setState(() {
-    isLoading = true;
-  });
+  Future<void> fetchGoals() async {
+    setState(() {
+      isLoading = true;
+    });
 
-  goals = []; // Clear the goals list before fetching
+    goals.clear();
 
-  // Get the current user's email
-  final String? userEmail = FirebaseAuth.instance.currentUser?.email;
+    final String? userEmail = FirebaseAuth.instance.currentUser?.email;
 
-  if (userEmail == null) {
-    // Handle the case where the user is not logged in
+    if (userEmail == null) {
+      setState(() {
+        isLoading = false;
+      });
+      return;
+    }
+
+    if (currentValue == null || currentValue == "All") {
+      for (String category in goalCategories) {
+        if (category != "All") {
+          Map<String, PersonalGoals> categoryGoalsMap =
+              await getGoalsFromFireBase(category, userEmail);
+          goals.addAll(categoryGoalsMap);
+        }
+      }
+    } else {
+      Map<String, PersonalGoals> categoryGoalsMap =
+          await getGoalsFromFireBase(currentValue!, userEmail);
+      goals = categoryGoalsMap;
+    }
+
     setState(() {
       isLoading = false;
     });
-    return;
   }
 
-  if (currentValue == null || currentValue == "All") {
-    for (String category in goalCategories) {
-      if (category != "All") { // Skip the "All" category as it's not a real category
-        List<PersonalGoals> categoryGoals = await getGoalsFromFireBase(category, userEmail);
-        
-        // Sort categoryGoals alphabetically by title
-        categoryGoals.sort((a, b) => a.title.compareTo(b.title));
-        
-        goals.addAll(categoryGoals); // Append the sorted goals from each category
-      }
+  Future<void> toggleGoalCompletion(String docId, PersonalGoals goal) async {
+    try {
+      // Toggle the completed status
+      goal.completed = !goal.completed;
+
+      // Update the goal in Firebase
+      await goal.updateGoal(docId);
+
+      // Refresh the UI
+      setState(() {
+        fetchGoals();
+      });
+
+      print(
+          'Goal "${goal.title}" marked as ${goal.completed ? "complete" : "incomplete"}.');
+    } catch (e) {
+      print('Error updating goal: $e');
     }
-  } else {
-    goals = await getGoalsFromFireBase(currentValue!, userEmail); // Fetch goals for the specified category
   }
-
-  setState(() {
-    isLoading = false;
-  });
-}
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentValue == null ? 'Goals' : '$currentValue Goals'), //if currentValue is null, display 'Goals' else, displays the category
+        title: Text(currentValue == null ? 'Goals' : '$currentValue Goals'),
         actions: <Widget>[
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 10),
@@ -83,7 +100,7 @@ Future<void> fetchGoals() async {
               message: "Select a category to filter goals",
               child: DropdownButton(
                 value: currentValue,
-                hint: const Text("Choose Category"), // Displays when value is null
+                hint: const Text("Choose Category"),
                 icon: const Icon(Icons.keyboard_arrow_down),
                 items: goalCategories.map((String items) {
                   return DropdownMenuItem(
@@ -94,7 +111,7 @@ Future<void> fetchGoals() async {
                 onChanged: (String? newValue) {
                   if (newValue != null) {
                     setState(() {
-                      currentValue = newValue; // Updates and rebuilds the widget
+                      currentValue = newValue;
                     });
                     fetchGoals();
                   }
@@ -110,39 +127,176 @@ Future<void> fetchGoals() async {
               onPressed: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const AddPersonalGoal()), //navigates the user to the personal goals form
-                );
+                  MaterialPageRoute(
+                      builder: (context) => const AddPersonalGoal()),
+                ).then((_) =>
+                    fetchGoals()); // Refresh goals after adding a new goal
               },
               tooltip: 'Create Goal',
               mini: true,
-              child: Icon(Icons.add),
+              child: const Icon(Icons.add),
             ),
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
               padding: const EdgeInsets.all(10),
-              child: Center(
-                child: ListView.builder(
-                  itemCount: goals.length,
-                  itemBuilder: (context, index) {
-                    return Card(
-                      child: Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(20),
-                        color: Color.fromARGB(255, 57, 145, 102),
-                        child: Center(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Current Goals Section
+                  const Text(
+                    'Current Goals',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  goals.values.any((goal) => !goal.completed)
+                      ? ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: goals.length,
+                          itemBuilder: (context, index) {
+                            String docId = goals.keys.elementAt(index);
+                            PersonalGoals goal = goals[docId]!;
+
+                            if (goal.completed) return const SizedBox.shrink();
+
+                            return GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => EditPersonalGoal(
+                                        docId: docId, goal: goal),
+                                  ),
+                                ).then((_) => fetchGoals());
+                              },
+                              child: Card(
+                                child: Container(
+                                  width: double.infinity,
+                                  padding: const EdgeInsets.all(20),
+                                  color:
+                                      const Color.fromARGB(255, 57, 145, 102),
+                                  child: Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      // Centered Goal Title
+                                      Expanded(
+                                        child: Center(
+                                          child: Text(
+                                            goal.title,
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      // "Mark as Complete" Button
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          toggleGoalCompletion(docId, goal);
+                                        },
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.blue,
+                                        ),
+                                        child: const Text(
+                                          'Mark as Complete',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : const Center(
                           child: Text(
-                            goals[index].title,
-                            style: TextStyle(fontSize: 18),
+                            'All goals completed. Nice Job!',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
-                      ),
-                    );
-                  },
-                ),
+                  const SizedBox(height: 20),
+                  // Completed Goals Section
+                  const Text(
+                    'Completed Goals',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  goals.values.any((goal) => goal.completed)
+                      ? ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: goals.length,
+                          itemBuilder: (context, index) {
+                            String docId = goals.keys.elementAt(index);
+                            PersonalGoals goal = goals[docId]!;
+
+                            if (!goal.completed) return const SizedBox.shrink();
+
+                            return Card(
+                              child: Container(
+                                width: double.infinity,
+                                padding: const EdgeInsets.all(20),
+                                color: const Color.fromARGB(255, 100, 100, 100),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    // Centered Goal Title
+                                    Expanded(
+                                      child: Center(
+                                        child: Text(
+                                          goal.title,
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    // "Mark as Incomplete" Button
+                                    ElevatedButton(
+                                      onPressed: () {
+                                        toggleGoalCompletion(docId, goal);
+                                      },
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.orange,
+                                      ),
+                                      child: const Text(
+                                        'Mark as Incomplete',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                        )
+                      : const Center(
+                          child: Text(
+                            'No completed goals.',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                ],
               ),
             ),
     );

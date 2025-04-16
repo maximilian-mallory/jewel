@@ -24,7 +24,7 @@ void main() {
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(create: (_) => TextStyleNotifier()),
+          ChangeNotifierProvider(create: (_) => ThemeStyleNotifier()),
           // Add other required providers here
           ChangeNotifierProvider(create: (_) => SelectedIndexNotifier(1)),
           ChangeNotifierProvider(create: (_) => ModeToggle()),

@@ -9,7 +9,7 @@ import 'package:jewel/screens/goal_screen.dart';
 import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/user_groups/user_group.dart';
 //import 'package:jewel/google/maps/map_screen.dart';
-import 'package:jewel/utils/location.dart';
+import 'package:jewel/utils/platform/location.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/widgets/events_view.dart';
 import 'package:jewel/widgets/gmap_screen.dart';
@@ -18,19 +18,12 @@ import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:provider/provider.dart';
 import 'package:jewel/screens/test_screen1.dart';
 import 'package:jewel/screens/user_group_screen.dart';
-
+import 'package:jewel/screens/analytics_screen.dart';
 import 'package:jewel/screens/test_screen2.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/google_sign_in.dart';
+import 'package:jewel/utils/text_style_notifier.dart';
 
-/// Returns a map of responsive values based on screen width.
-/// Breakpoints:
-///  - >= 1440px: Extra Large Computer Screen
-///  - >= 1024px: Large Computer Screen
-///  - >= 768px: Tablet
-///  - >= 425px: Large Smartphone
-///  - >= 375px: Medium Smartphone
-///  - < 375px: Small Smartphone
 Map<String, double> getResponsiveValues(BuildContext context) {
   final double screenWidth = MediaQuery.of(context).size.width;
   double horizontalPadding,
@@ -132,7 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    getLocationData();
+    getLocationData(context);
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     jewelUser = Provider.of<JewelUser>(context, listen:false);
     int selectedCalendarIndex = jewelUser.calendarLogicList!.length -1;
@@ -157,6 +150,7 @@ class _HomeScreenState extends State<HomeScreen> {
       GoalScreen(),
       Screen2(),
       UserGroupScreen(),
+      AnalyticsScreen(),
     ];
   }
 
@@ -289,14 +283,13 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
   PopupMenuButton<int> accountList() {
     JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
     return PopupMenuButton<int>(
       icon: FaIcon(
         FontAwesomeIcons.google,
         size: 28,
-        color: Colors.green,
+        color: brightenColor(Theme.of(context).primaryColor),
       ),
       itemBuilder: (context) {
         List<PopupMenuEntry<int>> menuItems = [];

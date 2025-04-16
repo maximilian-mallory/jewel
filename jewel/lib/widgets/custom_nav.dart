@@ -55,7 +55,7 @@ class CustomNavBar extends StatelessWidget {
             _buildNavItem(context, Icons.checklist_sharp, 'Goals', 3, sizes),
             _buildNavItem(context, Icons.warning, 'TestEvent', 4, sizes),
             _buildNavItem(context, Icons.man_2_rounded, 'Groups', 5, sizes),
-            
+            _buildNavItem(context, Icons.insert_chart_outlined_sharp, 'Analytics', 6, sizes),
           ],
         ),
       ),
@@ -72,14 +72,14 @@ class CustomNavBar extends StatelessWidget {
           Icon(
             icon,
             size: sizes['iconSize'],
-            color: isSelected ? Colors.green : Colors.grey,
+            color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
           ),
           const SizedBox(height: 4),  // add a little spacing between icon and text
           Text(
             label,
             style: TextStyle(
               fontSize: sizes['fontSize'],
-              color: isSelected ? Colors.green : Colors.grey,
+              color: isSelected ? Theme.of(context).primaryColor : Colors.grey,
             ),
           ),
         ],
