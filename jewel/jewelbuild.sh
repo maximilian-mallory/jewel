@@ -21,10 +21,6 @@ else
   echo "File '$LOCK_FILE' does not exist."
 fi
 
-# Change directory to 'jewel'
-cd ./jewel
-echo "Changed directory to 'jewel'."
-
 # Run 'flutter clean'
 echo "Running 'flutter clean'..."
 flutter clean

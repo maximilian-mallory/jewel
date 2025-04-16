@@ -67,6 +67,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     // Processed data for charts
     final completedGoals = goals.values.where((goal) => goal.completed).length;
     final pendingGoals = goals.length - completedGoals;
+    final incompleteGoals =
+        goals.values.where((goal) => !goal.completed).toList();
 
     final categoryData = goals.values
         .fold<Map<String, int>>({}, (map, goal) {
@@ -77,10 +79,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         .map((entry) => CategoryData(entry.key, entry.value))
         .toList();
 
-    final averageDuration =
-        goals.values.fold<int>(0, (sum, goal) => sum + goal.duration) / goals.length;
+    final averageDuration = incompleteGoals.isNotEmpty
+        ? incompleteGoals.fold<int>(0, (sum, goal) => sum + goal.duration) /
+            incompleteGoals.length
+        : 0;
 
-    final totalDurationByCategory = goals.values.fold<Map<String, int>>({}, (map, goal) {
+    final totalDurationByCategory =
+        incompleteGoals.fold<Map<String, int>>({}, (map, goal) {
       map[goal.category] = (map[goal.category] ?? 0) + goal.duration;
       return map;
     });
@@ -89,14 +94,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         .map((entry) => DurationData(entry.key, entry.value.toDouble()))
         .toList();
 
-    final Map<String, Color> categoryColors = { 
-      "Health": Colors.red, 
-      "Work": Colors.blue, 
-      "Personal Growth": Colors.green, 
-      "Finance": Colors.orange, 
-      "Education": Colors.indigo, 
+    final Map<String, Color> categoryColors = {
+      "Health": Colors.red,
+      "Work": Colors.blue,
+      "Personal Growth": Colors.green,
+      "Finance": Colors.orange,
+      "Education": Colors.indigo,
       "Hobby": Colors.teal,
-      "Other": Colors.purple,};
+      "Other": Colors.purple,
+    };
 
     return Scaffold(
       appBar: AppBar(
@@ -164,7 +170,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 series: <CartesianSeries>[
                   ColumnSeries<DurationData, String>(
                     dataSource: [
-                      DurationData('Average Duration', averageDuration),
+                      DurationData('Average Duration', averageDuration.toDouble()),
                     ],
                     xValueMapper: (DurationData data, _) => data.label,
                     yValueMapper: (DurationData data, _) => data.duration,
@@ -182,7 +188,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               const SizedBox(height: 10),
               SfCartesianChart(
                 primaryXAxis: CategoryAxis(),
-                title: ChartTitle(text: 'Total Duration of Goals (Minutes) by Category'),
+                title: ChartTitle(
+                    text: 'Total Duration of Goals (Minutes) by Category'),
                 legend: Legend(isVisible: false),
                 tooltipBehavior: TooltipBehavior(enable: true),
                 series: <CartesianSeries>[
@@ -191,7 +198,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     xValueMapper: (DurationData data, _) => data.label,
                     yValueMapper: (DurationData data, _) => data.duration,
                     name: 'Total Duration',
-                    pointColorMapper: (DurationData data, _) => categoryColors[data.label] ?? Colors.blueGrey,
+                    pointColorMapper: (DurationData data, _) =>
+                        categoryColors[data.label] ?? Colors.blueGrey,
                   ),
                 ],
               ),
