@@ -14,6 +14,7 @@ import 'package:jewel/models/event_group.dart';
 import 'package:jewel/event_history/event_history.dart';
 import 'package:jewel/firebase_ops/event_history_ops.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
+import 'package:jewel/google_events/events_form.dart';
 
 /*
   This widget class builds a Calendar widget
@@ -43,23 +44,56 @@ class _CalendarEventsView extends State<CalendarEventsView> {
         '[Events View] Jewel user matched to calendar tools: ${jewelUser?.calendarLogicList?[0].selectedCalendar}');
     print(
         '[Events View] Init State events: ${jewelUser?.calendarLogicList?[0].events.toString()}');
-        getGoogleEventsData(calendarLogic, context);
+    getGoogleEventsData(calendarLogic, context);
   }
 
   @override
   Widget build(BuildContext context) {
     final isMonthlyViewPrivate = context.watch<ModeToggle>().isMonthlyView;
-    return Consumer<JewelUser>(builder: (context, jewelUser, child) {
-      return Column(
-        children: [
-          Expanded(
-            child: isMonthlyViewPrivate
-                ? buildMonthlyView(context)
-                : buildDailyView(context),
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Events'),
+        actions: <Widget>[
+          Padding(
+            padding: const EdgeInsets.only(left: 10, right: 10),
+            child: FloatingActionButton(
+              elevation: 5.0,
+              backgroundColor: Colors.green,
+              onPressed: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        AddEvent(calendarApi: calendarLogic.calendarApi),
+                  ),
+                );
+
+                if (result == true) {
+                  setState(() {
+                    getGoogleEventsData(calendarLogic, context);
+                  });
+                }
+              },
+              tooltip: 'Add Event',
+              mini: true,
+              child: const Icon(Icons.add),
+            ),
           ),
         ],
-      );
-    });
+      ),
+      body: Consumer<JewelUser>(builder: (context, jewelUser, child) {
+        return Column(
+          children: [
+            Expanded(
+              child: isMonthlyViewPrivate
+                  ? buildMonthlyView(context)
+                  : buildDailyView(context),
+            ),
+          ],
+        );
+      }),
+    );
   }
 
   // Builds the daily view
