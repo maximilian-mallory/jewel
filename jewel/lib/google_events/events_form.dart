@@ -4,7 +4,7 @@ import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 
 // AddEvent class to create a new event in Google Calendar
-class AddEvent extends StatefulWidget{
+class AddEvent extends StatefulWidget {
   // calendarApi instance to interact with Google Calendar API
   final gcal.CalendarApi calendarApi;
   const AddEvent({super.key, required this.calendarApi});
@@ -83,20 +83,31 @@ class _AddEvent extends State<AddEvent> {
       print("End Time: ${_dateFormat.format(endDate!)}");
       print("=========================\n");
 
-      // Call function to insert event into Google Calendar
-      await insertGoogleEvent(
-        calendarApi: widget.calendarApi,
-        eventName: eventName,
-        eventLocation: eventLocation,
-        eventDescription: eventDescription,
-        startDate: startDate!,
-        endDate: endDate!,
-      );
+      try {
+        // Insert Event
+        await insertGoogleEvent(
+          calendarApi: widget.calendarApi,
+          eventName: eventName,
+          eventLocation: eventLocation,
+          eventDescription: eventDescription,
+          startDate: startDate!,
+          endDate: endDate!,
+        );
 
-      // Show confirmation message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Event "$eventName" Created! Check Google Calendar.')),
-      );
+        Navigator.pop(context, true); // Notify to update page
+
+        // Show confirmation message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content:
+                  Text('Event "$eventName" Created! Check Google Calendar.')),
+        );
+      } catch (e) {
+        print('Error adding event: $e');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to add event: $e')),
+        );
+      }
 
       // Reset form fields
       _formKey.currentState!.reset();
@@ -133,7 +144,8 @@ class _AddEvent extends State<AddEvent> {
               TextFormField(
                 controller: _eventNameController,
                 decoration: const InputDecoration(labelText: "Event Name"),
-                validator: (value) => value!.isEmpty ? 'Enter event name' : null,
+                validator: (value) =>
+                    value!.isEmpty ? 'Enter event name' : null,
               ),
               TextFormField(
                 controller: _eventLocationController,
