@@ -22,17 +22,6 @@ ENV PATH="$PATH:$FLUTTER_HOME/bin"
 # Check Flutter installation and version
 RUN flutter --version
 
-# # Install Android SDK tools
-# RUN mkdir -p /opt/android-sdk && \
-#     cd /opt/android-sdk && \
-#     wget https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip && \
-#     unzip sdk-tools-linux-4333796.zip && \
-#     rm sdk-tools-linux-4333796.zip
-
-# # Accept licenses and install SDK components
-# RUN yes | /opt/android-sdk/tools/bin/sdkmanager --licenses && \
-#     /opt/android-sdk/tools/bin/sdkmanager "build-tools;29.0.2" "platform-tools" "platforms;android-29"
-
 # Set the working directory
 WORKDIR /jewel
 # Copy the app directory into the container
@@ -45,7 +34,8 @@ COPY ./certs/private.key /etc/ssl/private/private.key
 
 RUN git config --global --add safe.directory /opt/flutter
 # Run Flutter commands
-RUN flutter pub get
+RUN chmod +x ./jewelbuild.sh && ./jewelbuild.sh web
+
 RUN flutter doctor
 RUN flutter build web
 
