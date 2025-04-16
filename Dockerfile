@@ -19,6 +19,8 @@ RUN wget -qO- https://storage.googleapis.com/flutter_infra_release/releases/stab
 ENV FLUTTER_HOME=/opt/flutter
 ENV PATH="$PATH:$FLUTTER_HOME/bin"
 
+RUN git config --global --add safe.directory /opt/flutter
+
 # Check Flutter installation and version
 RUN flutter --version
 
@@ -31,8 +33,6 @@ COPY ./jewel /jewel
 COPY ./certs/certificate.crt /etc/ssl/certs/certificate.crt
 COPY ./certs/private.key /etc/ssl/private/private.key
 
-
-RUN git config --global --add safe.directory /opt/flutter
 # Run Flutter commands
 RUN chmod +x ./jewelbuild.sh && ./jewelbuild.sh web
 
