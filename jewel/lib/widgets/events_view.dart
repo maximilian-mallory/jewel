@@ -45,7 +45,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
         '[Events View] Jewel user matched to calendar tools: ${jewelUser?.calendarLogicList?[0].selectedCalendar}');
     print(
         '[Events View] Init State events: ${jewelUser?.calendarLogicList?[0].events.toString()}');
-        getGoogleEventsData(calendarLogic, context);
+    getGoogleEventsData(calendarLogic, context);
   }
 
   @override
@@ -397,7 +397,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                               style: const TextStyle(color: Colors.white70),
                             ),
                             onTap: () {
-                              if (isObfuscationEnabled) {
+                              if (!isObfuscationEnabled) {
                                 _editEvent(context, event);
                               } else {
                                 print("Event details are obfuscated.");
@@ -733,27 +733,30 @@ class _CalendarEventsView extends State<CalendarEventsView> {
     return groups.values.toList();
   }
 
-  Future<void> _showReminderDialog(BuildContext context, gcal.Event event) async {
-  // Define variables to track user selections
-  int selectedMinutes = 15; // Default: 15 minutes before
-  int notificationCount = 1; // Default: 1 notification
-  TextEditingController customReminder = TextEditingController(); // Placeholder for custom reminder text
-  // Check if event already has reminder settings
-  if (event.extendedProperties?.private != null) {
-    selectedMinutes = int.tryParse(
-        event.extendedProperties!.private!['reminderMinutes'] ?? '15') ?? 15;
-    notificationCount = int.tryParse(
-        event.extendedProperties!.private!['reminderCount'] ?? '1') ?? 1;
-    customReminder = TextEditingController(
-        text: event.extendedProperties!.private!['customReminder'] ?? "");
-  }
-  
-  // Show reminder settings dialog
-  await showDialog(
-    context: context,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) {
+  Future<void> _showReminderDialog(
+      BuildContext context, gcal.Event event) async {
+    // Define variables to track user selections
+    int selectedMinutes = 15; // Default: 15 minutes before
+    int notificationCount = 1; // Default: 1 notification
+    TextEditingController customReminder =
+        TextEditingController(); // Placeholder for custom reminder text
+    // Check if event already has reminder settings
+    if (event.extendedProperties?.private != null) {
+      selectedMinutes = int.tryParse(
+              event.extendedProperties!.private!['reminderMinutes'] ?? '15') ??
+          15;
+      notificationCount = int.tryParse(
+              event.extendedProperties!.private!['reminderCount'] ?? '1') ??
+          1;
+      customReminder = TextEditingController(
+          text: event.extendedProperties!.private!['customReminder'] ?? "");
+    }
+
+    // Show reminder settings dialog
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
             title: Text("Set Reminder"),
             content: Column(
@@ -775,17 +778,21 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                 SizedBox(height: 10),
                 Text("Notify me before the event:"),
                 SizedBox(height: 10),
-                
+
                 // Time before event selector
                 DropdownButton<int>(
                   isExpanded: true,
                   value: selectedMinutes,
                   items: [
                     DropdownMenuItem(value: 5, child: Text("5 minutes before")),
-                    DropdownMenuItem(value: 10, child: Text("10 minutes before")),
-                    DropdownMenuItem(value: 15, child: Text("15 minutes before")),
-                    DropdownMenuItem(value: 30, child: Text("30 minutes before")),
-                    DropdownMenuItem(value: 45, child: Text("45 minutes before")),
+                    DropdownMenuItem(
+                        value: 10, child: Text("10 minutes before")),
+                    DropdownMenuItem(
+                        value: 15, child: Text("15 minutes before")),
+                    DropdownMenuItem(
+                        value: 30, child: Text("30 minutes before")),
+                    DropdownMenuItem(
+                        value: 45, child: Text("45 minutes before")),
                     DropdownMenuItem(value: 60, child: Text("1 hour before")),
                     DropdownMenuItem(value: 120, child: Text("2 hours before")),
                     DropdownMenuItem(value: 1440, child: Text("1 day before")),
@@ -796,12 +803,12 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                     });
                   },
                 ),
-                
+
                 SizedBox(height: 20),
-                
+
                 Text("Number of reminders:"),
                 SizedBox(height: 10),
-                
+
                 // Number of notifications selector
                 DropdownButton<int>(
                   isExpanded: true,
@@ -809,7 +816,8 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                   items: [1, 2, 3].map((count) {
                     return DropdownMenuItem(
                       value: count,
-                      child: Text("$count ${count == 1 ? 'reminder' : 'reminders'}"),
+                      child: Text(
+                          "$count ${count == 1 ? 'reminder' : 'reminders'}"),
                     );
                   }).toList(),
                   onChanged: (value) {
@@ -818,14 +826,16 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                     });
                   },
                 ),
-                
-                if (notificationCount == 2 ) ...[
+
+                if (notificationCount == 2) ...[
                   SizedBox(height: 10),
-                  Text("Reminders will be sent at: $selectedMinutes and ${(selectedMinutes / 2).toInt()} minutes prior to the event"), 
+                  Text(
+                      "Reminders will be sent at: $selectedMinutes and ${(selectedMinutes / 2).toInt()} minutes prior to the event"),
                 ],
-                if (notificationCount == 3 ) ...[
+                if (notificationCount == 3) ...[
                   SizedBox(height: 10),
-                  Text("Reminders will be sent at: $selectedMinutes, ${(selectedMinutes / 2).toInt()}, and ${(selectedMinutes / 4).toInt()} minutes prior to the event"), 
+                  Text(
+                      "Reminders will be sent at: $selectedMinutes, ${(selectedMinutes / 2).toInt()}, and ${(selectedMinutes / 4).toInt()} minutes prior to the event"),
                 ],
               ],
             ),
@@ -843,57 +853,64 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                   if (event.extendedProperties!.private == null) {
                     event.extendedProperties!.private = {};
                   }
-                  
+
                   // Save notification settings to the event
-                  event.extendedProperties!.private!['reminderMinutes'] = 
+                  event.extendedProperties!.private!['reminderMinutes'] =
                       selectedMinutes.toString();
-                  event.extendedProperties!.private!['reminderCount'] = 
+                  event.extendedProperties!.private!['reminderCount'] =
                       notificationCount.toString();
                   event.extendedProperties!.private!['customReminder'] =
                       customReminder.text;
-                  
+
                   // Calculate notification times based on user preferences
                   List<int> notificationMinutes = [];
                   if (notificationCount == 1) {
                     notificationMinutes = [selectedMinutes];
                   } else if (notificationCount == 2) {
-                    notificationMinutes = [selectedMinutes, selectedMinutes * 2];
+                    notificationMinutes = [
+                      selectedMinutes,
+                      selectedMinutes * 2
+                    ];
                   } else if (notificationCount == 3) {
                     notificationMinutes = [
-                      selectedMinutes, 
-                      (selectedMinutes / 2).toInt(), 
+                      selectedMinutes,
+                      (selectedMinutes / 2).toInt(),
                       (selectedMinutes / 4).toInt()
                     ];
                   }
-                  
+
                   // Store the calculated minutes as a comma-separated string
-                  event.extendedProperties!.private!['notificationTimes'] = 
+                  event.extendedProperties!.private!['notificationTimes'] =
                       notificationMinutes.join(',');
 
                   final updatedEvent = gcal.Event();
-                  updatedEvent.extendedProperties = gcal.EventExtendedProperties();
-                  updatedEvent.extendedProperties!.private = 
-                      Map<String, String>.from(event.extendedProperties!.private!);
-                 try {
+                  updatedEvent.extendedProperties =
+                      gcal.EventExtendedProperties();
+                  updatedEvent.extendedProperties!.private =
+                      Map<String, String>.from(
+                          event.extendedProperties!.private!);
+                  try {
                     // Update the event on Google Calendar
                     final calendarLogic = jewelUser!.calendarLogicList![0];
                     await calendarLogic.calendarApi.events.patch(
                       updatedEvent,
-                      'primary',  // Or use the specific calendar ID
+                      'primary', // Or use the specific calendar ID
                       event.id!,
                     );
-                    
+
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(
-                        'Reminder set: ${notificationCount} ${notificationCount == 1 ? "notification" : "notifications"}'
-                      )),
+                      SnackBar(
+                          content: Text(
+                              'Reminder set: ${notificationCount} ${notificationCount == 1 ? "notification" : "notifications"}')),
                     );
-                    
+
                     Navigator.pop(context);
                   } catch (e) {
                     print("Error updating event reminders: $e");
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("Failed to save reminder settings: ${e.toString()}")),
+                      SnackBar(
+                          content: Text(
+                              "Failed to save reminder settings: ${e.toString()}")),
                     );
                   }
                 },
@@ -901,11 +918,10 @@ class _CalendarEventsView extends State<CalendarEventsView> {
               ),
             ],
           );
-        }
-      );
-    },
-  );
-}
+        });
+      },
+    );
+  }
 // @override
 //   void didChangeDependencies() {
 //     super.didChangeDependencies();
