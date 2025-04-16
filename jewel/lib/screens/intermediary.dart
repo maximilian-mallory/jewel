@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide EmailAuthProvider;
 import 'package:flutter/material.dart';
@@ -8,8 +10,10 @@ import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/external_user.dart';
 import 'package:jewel/models/internal_user.dart';
 import 'package:jewel/models/jewel_user.dart';
+import 'package:jewel/utils/platform/background_deployer.dart';
 import 'package:jewel/widgets/home_screen.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:woosmap_flutter/woosmap_flutter.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/google_sign_in.dart';
@@ -46,6 +50,32 @@ bool isLoading = true; // To show loading indicator
     CalendarLogic calendarLogic = CalendarLogic();
     calendarLogic.currentUser = await handleSignIn(jewelUser); // googleapi.dart
     calendarLogic.calendarApi = await createCalendarApiInstance(calendarLogic); // create api instance associated with the account
+
+    if (calendarLogic.currentUser != null) {
+    final auth = await calendarLogic.currentUser!.authentication;
+    final accessToken = auth.accessToken;
+    if (accessToken != null) {
+      final prefs = SharedPreferencesAsync();
+      await prefs.setString('calendar_access_token', accessToken);
+      print("Access token saved for background tasks: ${accessToken.substring(0, 10)}...");
+
+      if(calendarLogic.events.isEmpty){
+      print("DEBUG: No events found. Fetching events...");
+      calendarLogic.events = await getGoogleEventsData(calendarLogic, context);
+     }
+      //print("DEBUG: calendarLogic.markers before saving: ${calendarLogic.markers}");
+      final markerList = calendarLogic.markers.toList().map((marker) => {
+            'id': marker.markerId.value,
+            'lat': marker.position.latitude,
+            'lng': marker.position.longitude,
+
+          })
+          .toList();
+      print("Initial Marker List: $markerList being sent to background task");
+      await prefs.setString('marker_list', jsonEncode(markerList));
+       print("Markers saved to SharedPreferences: $markerList");
+    }
+  }
 
     jewelUser.addCalendarLogic(calendarLogic);
     jewelUser.updateUserGroups(await getUsersGroups(jewelUser.email!));
@@ -115,6 +145,11 @@ bool isLoading = true; // To show loading indicator
   }
 
   Future<bool> searchForUser() async{
+
+  void drawRouteOnMap() {
+    // TODO: Implement the logic to draw a route on the map
+    print("Drawing route on the map...");
+  }
     final user =FirebaseAuth.instance.currentUser;
     final databaseSearch = FirebaseFirestore.instance;
     final externalRef = databaseSearch.collection("people");

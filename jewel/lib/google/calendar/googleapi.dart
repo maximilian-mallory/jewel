@@ -41,7 +41,7 @@ Future<gcal.CalendarApi> createCalendarApiInstance(
           accessToken,
           DateTime.now()
               .toUtc()
-              .add(const Duration(hours: 1))), // One hour session
+              .add(const Duration(hours: 24))), // One day session
       null,
       scopes,
     ),
@@ -98,11 +98,18 @@ Future<List<gcal.Event>> getGoogleEventsData(
         {
           JewelEvent.fromGoogleEvent(event).store();
         }*/
-        Marker? marker = await makeMarker(event, calendarLogic, context);
+        /*final sortedEvents = [event]
+          ..sort((a, b) => a.start!.dateTime!.compareTo(b.start!.dateTime!));
+          print("Sorted event being added to marker: ${sortedEvents[i].start!.dateTime}");*/
+       
+      }
+    }
+    appointments.sort((a, b) => a.start!.dateTime!.compareTo(b.start!.dateTime!));
+    for(var appointment in appointments){
+      Marker? marker = await makeMarker(appointment, calendarLogic, context);
         if (marker != null) {
           calendarLogic.markers.add(marker);
         }
-      }
     }
   }
   print('[GET EVENTS] Appointments: ${appointments.toString()}');
@@ -148,12 +155,20 @@ Future<List<gcal.Event>> getGoogleEventsForMonth(
       if (eventStart.isAfter(startOfMonthUtc) &&
           eventStart.isBefore(endOfMonthUtc)) {
         appointments.add(event);
-        Marker? marker = await makeMarker(event, calendarLogic, context);
+
+        
+
+        
+      }
+    }
+    appointments.sort((a, b) => a.start!.dateTime!.compareTo(b.start!.dateTime!));
+    for(var appointment in appointments){
+      Marker? marker = await makeMarker(appointment, calendarLogic, context);
         if (marker != null) {
           calendarLogic.markers.add(marker);
         }
-      }
     }
+    
   }
 
   return appointments; // Return all events for the month

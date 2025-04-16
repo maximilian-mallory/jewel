@@ -9,7 +9,7 @@ import 'package:jewel/screens/goal_screen.dart';
 import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/user_groups/user_group.dart';
 //import 'package:jewel/google/maps/map_screen.dart';
-import 'package:jewel/utils/location.dart';
+import 'package:jewel/utils/platform/location.dart';
 import 'package:jewel/widgets/custom_nav.dart';
 import 'package:jewel/widgets/events_view.dart';
 import 'package:jewel/widgets/gmap_screen.dart';
@@ -132,7 +132,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    getLocationData();
+    getLocationData(context);
     final notifier = Provider.of<SelectedIndexNotifier>(context, listen: false);
     jewelUser = Provider.of<JewelUser>(context, listen: false);
     int selectedCalendarIndex = jewelUser.calendarLogicList!.length - 1;

@@ -14,6 +14,7 @@ List<GoogleSignIn> googleSignInList = [];
 GoogleSignIn createGoogleSignInInstance() {
     return GoogleSignIn(
       scopes: scopes,
+      forceCodeForRefreshToken: true,
       clientId: kIsWeb
           ? "954035696925-p4j9gbmpjknoc04qjd701r2h5ah190ug.apps.googleusercontent.com"
           : null,
@@ -23,8 +24,7 @@ GoogleSignIn createGoogleSignInInstance() {
 // Function to handle signing in
 Future<GoogleSignInAccount?> handleSignIn(JewelUser jewelUser) async {
   print("[GOOGLE SIGN-IN] Handling Sign-In...");
-  
-  // print(jewelUser.toJson());
+ 
   try {
     bool? hasExistingAccounts = jewelUser.calendarLogicList?.isNotEmpty;
     if (hasExistingAccounts != null) {
@@ -34,16 +34,45 @@ Future<GoogleSignInAccount?> handleSignIn(JewelUser jewelUser) async {
         if (existingUser != null) {
           print('[Google Sign-In] Existing user detected: ${existingUser.email}');
           googleSignInList.add(createGoogleSignInInstance());
-          return await googleSignInList[1].signIn(); // Prompts new login without logging out the first user
+          
+          // Sign in first
+          GoogleSignInAccount? account = await googleSignInList[1].signIn();
+          
+          // Then explicitly request all required scopes to force consent dialog
+          if (account != null) {
+            bool granted = await googleSignInList[1].requestScopes(scopes);
+            
+            print("[GOOGLE SIGN-IN] Scopes granted: $granted");
+            return granted ? account : null;
+          }
+          return account;
         } else {
           print("[GOOGLE SIGN-IN] No Existing Session on second run...");
-          return await googleSignInList[0].signIn(); // No existing session, proceed with normal sign-in
+          GoogleSignInAccount? account = await googleSignInList[0].signIn();
+          
+          // Request scopes explicitly
+          if (account != null) {
+            bool granted = await googleSignInList[0].requestScopes(scopes);
+            
+            print("[GOOGLE SIGN-IN] Scopes granted: $granted");
+            return granted ? account : null;
+          }
+          return account;
         }
       });
     } else {
       print("[GOOGLE SIGN-IN] No Existing Session on first run...");
       googleSignInList.add(createGoogleSignInInstance());
-      return await googleSignInList[0].signIn();
+      GoogleSignInAccount? account = await googleSignInList[0].signIn();
+      
+      // Request scopes explicitly
+      if (account != null) {
+        bool granted = await googleSignInList[0].requestScopes(scopes);
+        
+        print("[GOOGLE SIGN-IN] Scopes granted: $granted");
+        return granted ? account : null;
+      }
+      return account;
     }
   } catch (error) {
     print('Sign-In failed: $error');
