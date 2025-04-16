@@ -65,10 +65,17 @@ class _AddEvent extends State<AddEvent> {
     if (_formKey.currentState!.validate()) {
       if (startDate == null || endDate == null) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please select start and end times')),
+          const SnackBar(content: Text('Please select start and end times.')),
         );
         return;
       }
+
+      if (endDate!.isBefore(startDate!)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('End time must be after start time.')),
+      );
+      return;
+    }
 
       String eventName = _eventNameController.text;
       String eventLocation = _eventLocationController.text;
