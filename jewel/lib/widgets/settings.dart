@@ -306,7 +306,10 @@ class _ToggleSettingState extends State<ToggleSetting>
             widget.title,
             style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
           ),
-          value: currentValue,
+          value: (widget.title == 'Location Permission' ||
+                  widget.title == 'Notification Permission')
+              ? _value
+              : currentValue,
           onChanged: (bool newValue) async {
             if (widget.title == 'Location Permission') {
               // Don't change the toggle state yet - only after confirming permission change
