@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:jewel/google/auth/auth_gate.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
@@ -119,6 +120,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    _checkAndLogout();
     return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         return MaterialApp(
@@ -134,3 +136,15 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+Future<void> _checkAndLogout() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      await FirebaseAuth.instance.signOut();  // Log out if signed in
+      // Optionally, clear secure storage if needed
+      final storage = FlutterSecureStorage();
+      await storage.deleteAll();
+      // Navigate to login screen if needed
+      // This can be done in a different place depending on your flow
+    }
+  }
