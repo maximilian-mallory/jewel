@@ -64,7 +64,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
             padding: const EdgeInsets.only(left: 10, right: 10),
             child: FloatingActionButton(
               elevation: 5.0,
-              backgroundColor: Colors.green,
+              backgroundColor: Theme.of(context).primaryColor,
               onPressed: () async {
                 final result = await Navigator.push(
                   context,

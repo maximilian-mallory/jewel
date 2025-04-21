@@ -123,7 +123,7 @@ class _GoalScreenState extends State<GoalScreen> {
             padding: const EdgeInsets.only(left: 10, right: 10),
             child: FloatingActionButton(
               elevation: 5.0,
-              backgroundColor: Colors.green,
+              backgroundColor: Theme.of(context).primaryColor,
               onPressed: () {
                 Navigator.push(
                   context,
