@@ -1,7 +1,9 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:jewel/google/auth/auth_gate.dart';
 import 'package:jewel/google/calendar/add_calendar_form.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/jewel_user.dart';
@@ -290,49 +292,69 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   PopupMenuButton<int> accountList() {
-    JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
-    return PopupMenuButton<int>(
-      icon: FaIcon(
-        FontAwesomeIcons.google,
-        size: 28,
-        color: brightenColor(Theme.of(context).primaryColor),
-      ),
-      itemBuilder: (context) {
-        List<PopupMenuEntry<int>> menuItems = [];
-        if (jewelUser.calendarLogicList != null) {
-          int i = 0;
-          for (var calendarLogic in jewelUser.calendarLogicList!) {
-            menuItems.add(
-              PopupMenuItem<int>(
-                  value: 0,
-                  child: Text(calendarLogic.currentUser!.email),
-                  onTap: () {
-                    //jewelUser.updateSelectedCalendarIndex(i);
-                  }),
-            );
-            i++;
-          }
+  JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
+  return PopupMenuButton<int>(
+    icon: FaIcon(
+      FontAwesomeIcons.google,
+      size: 28,
+      color: brightenColor(Theme.of(context).primaryColor),
+    ),
+    onSelected: (int value) async {
+      // Handle selection here instead of individual onTap
+      if (value == 1) {
+        // Add Account
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => Intermediary()),
+        );
+      } else if (value == 2) {
+        // Sign Out
+        FirebaseAuth.instance.signOut();
+        if (jewelUser.calendarLogicList != null && 
+              jewelUser.calendarLogicList!.isNotEmpty) {
+              await googleSignInList[0].signOut();
+              
+              // Optional: remove the signed out account from the list
+              jewelUser.calendarLogicList = [];
+              jewelUser.updateFrom(jewelUser);
+              }
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (context) => AuthGate()),
+        );
+      } else if (value >= 100) {
+        // Account selection (using offset of 100 to distinguish from actions)
+        // jewelUser.updateSelectedCalendarIndex(value - 100);
+      }
+    },
+    itemBuilder: (context) {
+      List<PopupMenuEntry<int>> menuItems = [];
+      if (jewelUser.calendarLogicList != null) {
+        int i = 0;
+        for (var calendarLogic in jewelUser.calendarLogicList!) {
+          menuItems.add(
+            PopupMenuItem<int>(
+              value: 100 + i, // Use 100+ to differentiate from action items
+              child: Text(calendarLogic.currentUser!.email),
+            ),
+          );
+          i++;
         }
-        menuItems.add(
-          PopupMenuItem<int>(
-              value: 1,
-              child: Text('Add Account'),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(builder: (context) => Intermediary()),
-                );
-              }),
-        );
-        menuItems.add(
-          const PopupMenuItem<int>(
-            value: 2,
-            child: Text('Sign Out'),
-          ),
-        );
-        return menuItems;
-      },
-    );
-  }
+      }
+      menuItems.add(
+        const PopupMenuItem<int>(
+          value: 1,
+          child: Text('Add Account'),
+        ),
+      );
+      menuItems.add(
+        const PopupMenuItem<int>(
+          value: 2,
+          child: Text('Sign Out'),
+        ),
+      );
+      return menuItems;
+    },
+  );
+}
 
   Widget calTools() {
     return Container(
