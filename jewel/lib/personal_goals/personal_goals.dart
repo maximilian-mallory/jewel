@@ -48,4 +48,34 @@ class PersonalGoals{
         .doc(docId)
         .update(toJson());
   }
+
+  // Add points for completing goal
+  Future<void> addPoints() async {
+    ownerEmail = FirebaseAuth.instance.currentUser?.email;
+    if (ownerEmail == null) {
+      throw Exception("User is not logged in.");
+    }
+
+    await FirebaseFirestore.instance
+      .collection('goals_data')
+      .doc(ownerEmail!)
+      .update({
+        'points': FieldValue.increment(10), // Increment points by 10
+      });
+  }
+
+  // Subtract points for marking goal as incomplete
+  Future<void> subtractPoints() async {
+    ownerEmail = FirebaseAuth.instance.currentUser?.email;
+    if (ownerEmail == null) {
+      throw Exception("User is not logged in.");
+    }
+
+    await FirebaseFirestore.instance
+      .collection('goals_data')
+      .doc(ownerEmail!)
+      .update({
+        'points': FieldValue.increment(-10),
+      });
+  }
 }

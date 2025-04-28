@@ -76,6 +76,13 @@ class _GoalScreenState extends State<GoalScreen> {
       // Update the goal in Firebase
       await goal.updateGoal(docId);
 
+      // Add or subtract points based on completion status
+      if (goal.completed) {
+        await goal.addPoints();
+      } else {
+        await goal.subtractPoints();
+      }
+
       // Refresh the UI
       setState(() {
         fetchGoals();

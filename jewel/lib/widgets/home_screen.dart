@@ -22,6 +22,7 @@ import 'package:jewel/screens/analytics_screen.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/google_sign_in.dart';
 import 'package:jewel/utils/text_style_notifier.dart';
+import 'package:jewel/screens/leaderboard_screen.dart';
 
 Map<String, double> getResponsiveValues(BuildContext context) {
   final double screenWidth = MediaQuery.of(context).size.width;
@@ -157,6 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
       GoalScreen(),
       UserGroupScreen(),
       AnalyticsScreen(),
+      LeaderboardScreen(),
     ];
   }
 
