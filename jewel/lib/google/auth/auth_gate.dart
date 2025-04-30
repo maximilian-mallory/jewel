@@ -23,10 +23,7 @@ class AuthGate extends StatelessWidget {
           return SignInScreen(
             providers: [
               EmailAuthProvider(),
-              GoogleProvider(
-                clientId:
-                    '954035696925-p4j9gbmpjknoc04qjd701r2h5ah190ug.apps.googleusercontent.com',
-              ),
+              GoogleProvider(clientId: "954035696925-p4j9gbmpjknoc04qjd701r2h5ah190ug.apps.googleusercontent.com"),
             ],
             headerBuilder: (context, constraints, shrinkOffset) => Padding(
               padding: const EdgeInsets.all(20),
@@ -70,9 +67,12 @@ class AuthGate extends StatelessWidget {
           );
         }
 
-        final User firebaseUser = FirebaseAuth.instance.currentUser!;
-        final jewelUser = Provider.of<JewelUser>(context, listen: false);
-        jewelUser.updateFrom(JewelUser.fromFirebaseUser(firebaseUser));
+        User? firebaseUser = FirebaseAuth.instance.currentUser;
+         JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
+         jewelUser.updateFrom(
+           JewelUser.fromFirebaseUser(
+             firebaseUser!,
+           ));
 
         final uidOrEmail = firebaseUser.email ?? firebaseUser.uid;
         return FutureBuilder<Color?>(
