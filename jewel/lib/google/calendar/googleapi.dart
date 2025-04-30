@@ -185,8 +185,7 @@ Future<void> insertGoogleEvent({
 }) async {
   try {
     if (startDate.isAfter(endDate) || startDate.isAtSameMomentAs(endDate)) {
-      print("Error: Start time must be before end time.");
-      return;
+      throw("Start time must be before end time.");
     }
     // Create a new event
     var event = gcal.Event()

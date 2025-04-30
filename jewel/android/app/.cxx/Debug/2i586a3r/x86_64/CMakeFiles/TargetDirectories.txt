@@ -1,0 +1,2 @@
+C:/GitHub/Project-Emerald/jewel/android/app/.cxx/Debug/2i586a3r/x86_64/CMakeFiles/edit_cache.dir
+C:/GitHub/Project-Emerald/jewel/android/app/.cxx/Debug/2i586a3r/x86_64/CMakeFiles/rebuild_cache.dir

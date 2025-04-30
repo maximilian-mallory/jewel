@@ -4,6 +4,7 @@ import 'package:jewel/personal_goals/personal_goals_form.dart';
 import 'package:jewel/personal_goals/edit_personal_goals_form.dart';
 import 'package:jewel/firebase_ops/goals.dart';
 import 'package:jewel/personal_goals/personal_goals.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class GoalScreen extends StatefulWidget {
   const GoalScreen({super.key});
@@ -63,20 +64,59 @@ class _GoalScreenState extends State<GoalScreen> {
       goals = categoryGoalsMap;
     }
 
+    await deleteExpiredCompletedGoals();
+
     setState(() {
       isLoading = false;
     });
   }
 
+  Future<void> deleteExpiredCompletedGoals() async {
+    final now = DateTime.now();
+    final String? userEmail = FirebaseAuth.instance.currentUser?.email;
+    if (userEmail == null) return;
+
+    List<String> docsToDelete = [];
+    for (final entry in goals.entries) {
+      final goal = entry.value;
+      if (goal.completed && goal.completedAt != null) {
+        final completedTime = goal.completedAt!;
+        if (now.difference(completedTime).inHours >= 24) {
+          docsToDelete.add(entry.key);
+          // Delete from Firestore
+          await FirebaseFirestore.instance
+              .collection('goals')
+              .doc(goal.category)
+              .collection(userEmail)
+              .doc(entry.key)
+              .delete();
+        }
+      }
+    }
+
+    // Remove from local map
+    for (final docId in docsToDelete) {
+      goals.remove(docId);
+    }
+  }
+
   Future<void> toggleGoalCompletion(String docId, PersonalGoals goal) async {
     try {
-      // Toggle the completed status
-      goal.completed = !goal.completed;
+      final wasComplete = goal.completed;
+      if (!wasComplete) {
+        // Marking as complete – set completedAt
+        goal.completed = true;
+        goal.completedAt = DateTime.now();
+      } else {
+        // Marking as incomplete – clear completedAt
+        goal.completed = false;
+        goal.completedAt = null;
+      }
 
       // Update the goal in Firebase
       await goal.updateGoal(docId);
 
-      // Refresh the UI
+      // Refresh the UI (fetchGoals includes expired-goal deletion)
       setState(() {
         fetchGoals();
       });
@@ -123,7 +163,7 @@ class _GoalScreenState extends State<GoalScreen> {
             padding: const EdgeInsets.only(left: 10, right: 10),
             child: FloatingActionButton(
               elevation: 5.0,
-              backgroundColor: Colors.green,
+              backgroundColor: Theme.of(context).primaryColor,
               onPressed: () {
                 Navigator.push(
                   context,

@@ -9,7 +9,6 @@ import 'package:provider/provider.dart';
 import 'package:jewel/utils/text_style_notifier.dart';
 import 'package:jewel/utils/platform/location.dart';
 import 'package:permission_handler/permission_handler.dart' as handler;
-import 'package:jewel/utils/app_themes.dart';
 
 import 'package:jewel/widgets/settings_provider.dart';
 import 'package:jewel/utils/app_themes.dart'; // New import for updating theme colors
@@ -306,7 +305,10 @@ class _ToggleSettingState extends State<ToggleSetting>
             widget.title,
             style: TextStyle(fontSize: res['settingFontSize']! * multiplier),
           ),
-          value: currentValue,
+          value: (widget.title == 'Location Permission' ||
+                  widget.title == 'Notification Permission')
+              ? _value
+              : currentValue,
           onChanged: (bool newValue) async {
             if (widget.title == 'Location Permission') {
               // Don't change the toggle state yet - only after confirming permission change
@@ -425,12 +427,13 @@ class _ToggleSettingState extends State<ToggleSetting>
                   }
                 }
               }
+            } else {
+              // For non-location toggles, update immediately
+              setState(() {
+                _value = newValue;
+              });
+              settingsProvider.setSetting(widget.title, newValue);
             }
-            setState(() {
-              _value = newValue; // Update the local state
-            });
-            settingsProvider.setSetting(
-                widget.title, newValue); // Update the provider
           },
         );
       },
