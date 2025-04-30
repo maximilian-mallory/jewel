@@ -10,7 +10,8 @@ import 'package:jewel/utils/text_style_notifier.dart';
 import 'package:jewel/utils/platform/location.dart';
 import 'package:permission_handler/permission_handler.dart' as handler;
 import 'package:jewel/utils/app_themes.dart';
-
+import 'package:jewel/firebase_ops/user_specific.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:jewel/widgets/settings_provider.dart';
 import 'package:jewel/utils/app_themes.dart'; // New import for updating theme colors
 
@@ -621,7 +622,8 @@ class _BackgroundColorToggleState extends State<BackgroundColorToggle> {
             ElevatedButton(
               child: const Text('Done'),
               onPressed: () {
-                // Instead of only updating AppThemes, notify ThemeNotifier.
+                final uid = FirebaseAuth.instance.currentUser!.email!;
+                UserSettingsService().saveThemeColor(uid, _selectedColor);
                 Provider.of<ThemeStyleNotifier>(context, listen: false)
                     .updateThemeColor(_selectedColor);
                 Navigator.of(context).pop();
