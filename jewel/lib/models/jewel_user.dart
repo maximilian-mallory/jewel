@@ -15,6 +15,7 @@ class JewelUser extends ChangeNotifier{
   List<CalendarLogic>? calendarLogicList;
   List<PersonalGoals>? personalGoalsList;
   List<UserGroup>? userGroupList;
+  int? themeColor;
 
 
   JewelUser({
@@ -24,11 +25,12 @@ class JewelUser extends ChangeNotifier{
     this.displayName,
     this.photoUrl,
     this.calendarLogicList,
-    this.userGroupList
+    this.userGroupList,
+    this.themeColor,
   });
 
   // Factory constructor to create JewelUser from Firebase User
-  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList, List<PersonalGoals>? personalGoalsList, List<UserGroup>? userGroupList}) {
+  factory JewelUser.fromFirebaseUser(User user, {String? role, String? bio, List<CalendarLogic>? calendarLogicList, List<PersonalGoals>? personalGoalsList, List<UserGroup>? userGroupList, int? themeColor}) {
     return JewelUser(
       uid: user.uid,
       email: user.email!,
@@ -36,7 +38,8 @@ class JewelUser extends ChangeNotifier{
       photoUrl: user.photoURL,
       calendarLogicList: calendarLogicList,
       personalGoalsList: personalGoalsList,
-      userGroupList: userGroupList
+      userGroupList: userGroupList,
+      themeColor: themeColor,
     );
   }
 
@@ -69,6 +72,10 @@ class JewelUser extends ChangeNotifier{
     if (other.userGroupList != null) {
       userGroupList = other.userGroupList;
     }
+
+    if (other.themeColor != null) {
+      themeColor = other.themeColor;
+    }
     // Notify listeners about the changes
     notifyListeners();
   }
@@ -99,7 +106,8 @@ class JewelUser extends ChangeNotifier{
       'email': email,
       'displayName': displayName,
       'photoUrl': photoUrl,
-      'calendarLogic': jsonEncode(calendarLogicList)
+      'calendarLogic': jsonEncode(calendarLogicList),
+      if (themeColor != null) 'themeColor': themeColor,
     };
   }
 
