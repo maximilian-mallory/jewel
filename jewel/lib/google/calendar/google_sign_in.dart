@@ -24,60 +24,49 @@ GoogleSignIn createGoogleSignInInstance() {
 // Function to handle signing in
 Future<GoogleSignInAccount?> handleSignIn(JewelUser jewelUser) async {
   print("[GOOGLE SIGN-IN] Handling Sign-In...");
- 
+  
   try {
-    bool? hasExistingAccounts = jewelUser.calendarLogicList?.isNotEmpty;
-    if (hasExistingAccounts != null) {
-      // Force a new login session by signing in a different user
-      return await googleSignInList[0].signInSilently(suppressErrors: true).then((existingUser) async {
-        print("[GOOGLE SIGN-IN] Trying to add second account...");
-        if (existingUser != null) {
-          print('[Google Sign-In] Existing user detected: ${existingUser.email}');
-          googleSignInList.add(createGoogleSignInInstance());
-          
-          // Sign in first
-          GoogleSignInAccount? account = await googleSignInList[1].signIn();
-          
-          // Then explicitly request all required scopes to force consent dialog
-          if (account != null) {
-            bool granted = await googleSignInList[1].requestScopes(scopes);
-            
-            print("[GOOGLE SIGN-IN] Scopes granted: $granted");
-            return granted ? account : null;
-          }
-          return account;
-        } else {
-          print("[GOOGLE SIGN-IN] No Existing Session on second run...");
-          GoogleSignInAccount? account = await googleSignInList[0].signIn();
-          
-          // Request scopes explicitly
-          if (account != null) {
-            bool granted = await googleSignInList[0].requestScopes(scopes);
-            
-            print("[GOOGLE SIGN-IN] Scopes granted: $granted");
-            return granted ? account : null;
-          }
-          return account;
-        }
-      });
+    GoogleSignIn googleSignIn;
+    bool hasExistingAccounts = jewelUser.calendarLogicList?.isNotEmpty ?? false;
+    
+    if (hasExistingAccounts) {
+      print("[GOOGLE SIGN-IN] User has existing accounts");
+      // Create a new instance for additional accounts
+      googleSignIn = createGoogleSignInInstance();
+      googleSignInList.add(googleSignIn);
     } else {
-      print("[GOOGLE SIGN-IN] No Existing Session on first run...");
-      googleSignInList.add(createGoogleSignInInstance());
-      GoogleSignInAccount? account = await googleSignInList[0].signIn();
+      print("[GOOGLE SIGN-IN] First time sign-in");
+      googleSignIn = createGoogleSignInInstance();
+      googleSignInList.add(googleSignIn);
+    }
+    
+    // First, try to sign in - this handles the authentication
+    final GoogleSignInAccount? account = await googleSignIn.signIn();
+    
+    if (account != null) {
+      print("[GOOGLE SIGN-IN] Successfully signed in: ${account.email}");
       
-      // Request scopes explicitly
-      if (account != null) {
-        bool granted = await googleSignInList[0].requestScopes(scopes);
-        
-        print("[GOOGLE SIGN-IN] Scopes granted: $granted");
-        return granted ? account : null;
+      // After authentication succeeds, explicitly request scopes
+      // This helps with web specifically to ensure the consent dialog appears
+      bool granted = await googleSignIn.requestScopes(scopes);
+      
+      if (granted) {
+        print("[GOOGLE SIGN-IN] All scopes granted");
+        return account;
+      } else {
+        print("[GOOGLE SIGN-IN] Required scopes were denied");
+        // Optional: Sign out if scopes weren't granted to prevent incomplete access
+        await googleSignIn.signOut();
+        return null;
       }
-      return account;
+    } else {
+      print("[GOOGLE SIGN-IN] Sign-in cancelled by user");
+      return null;
     }
   } catch (error) {
     print('Sign-In failed: $error');
+    return null;
   }
-  return null;
 }
 // Clear current user and set unauthorized state
 // Future<void> handleSignOut() async {
