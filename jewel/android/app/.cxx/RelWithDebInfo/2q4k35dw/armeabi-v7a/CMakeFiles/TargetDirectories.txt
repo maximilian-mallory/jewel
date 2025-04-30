@@ -1,0 +1,2 @@
+C:/repos/Project-Emerald/jewel/android/app/.cxx/RelWithDebInfo/2q4k35dw/armeabi-v7a/CMakeFiles/edit_cache.dir
+C:/repos/Project-Emerald/jewel/android/app/.cxx/RelWithDebInfo/2q4k35dw/armeabi-v7a/CMakeFiles/rebuild_cache.dir
