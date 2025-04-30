@@ -11,11 +11,6 @@ import 'package:jewel/utils/text_style_notifier.dart';
 import 'package:jewel/firebase_ops/user_specific.dart';
 import 'package:provider/provider.dart';
 
-/// First screen shown by the app – handles authentication.
-///
-/// After a successful login it *immediately* fetches the saved `themeColor`
-/// from Firestore and injects it into `ThemeStyleNotifier` so the whole UI
-/// rebuilds with the correct colour before the user sees the main screen.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -24,7 +19,6 @@ class AuthGate extends StatelessWidget {
     return StreamBuilder<User?>(
       stream: FirebaseAuth.instance.authStateChanges(),
       builder: (context, snapshot) {
-        // ------------------ NOT signed in -----------------------------------
         if (!snapshot.hasData) {
           return SignInScreen(
             providers: [
@@ -76,13 +70,10 @@ class AuthGate extends StatelessWidget {
           );
         }
 
-        // ------------------ Signed in ---------------------------------------
         final User firebaseUser = FirebaseAuth.instance.currentUser!;
-        // Update global JewelUser provider
         final jewelUser = Provider.of<JewelUser>(context, listen: false);
         jewelUser.updateFrom(JewelUser.fromFirebaseUser(firebaseUser));
 
-        // Fetch theme colour, then push to notifier, then enter the app.
         final uidOrEmail = firebaseUser.email ?? firebaseUser.uid;
         return FutureBuilder<Color?>(
           future: UserSettingsService().loadThemeColor(uidOrEmail),
@@ -94,7 +85,6 @@ class AuthGate extends StatelessWidget {
 
             final color = snap.data;
             if (color != null) {
-              // Do *one* post-frame update to the notifier
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 Provider.of<ThemeStyleNotifier>(context, listen: false)
                     .updateThemeColor(color);
