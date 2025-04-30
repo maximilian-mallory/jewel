@@ -15,3 +15,16 @@ Future<Map<String, PersonalGoals>> getGoalsFromFireBase(String category, String 
   );
   return categoryGoals;
 }
+
+// Function to get points for all accounts
+Future<Map<String, int>> getAllPoints() async {
+  Map<String, int> points = {};
+  await FirebaseFirestore.instance.collection('goals_data').get().then(
+    (goalsDataSnapshot) {
+      for (var docSnapshot in goalsDataSnapshot.docs) {
+        points[docSnapshot.id] = docSnapshot.data()['points'] ?? 0;
+      }
+    }
+  );
+  return points;
+}
