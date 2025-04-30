@@ -6,6 +6,8 @@ import 'package:jewel/user_groups/user_group.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
 import 'package:googleapis_auth/auth_io.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:jewel/user_groups/user_group_calendar.dart';
 
 class YourGroups extends StatelessWidget {
   const YourGroups({super.key});
@@ -75,9 +77,25 @@ class YourGroups extends StatelessWidget {
     );
   }
 
-  void _showGroupMembersDialog(BuildContext context, UserGroup group) {
-    DateTime selectedDate = DateTime.now();
-    final Map<DateTime, List<String>> groupEvents = _getGroupEvents(group);
+  void _showGroupMembersDialog(BuildContext context, UserGroup group) async {
+    final firestore = FirebaseFirestore.instance;
+
+    // Check if the group calendar exists
+    final groupDoc = firestore.collection('group_calendar').doc(group.getName);
+    final calendarSnapshot = await groupDoc.get();
+
+    if (!calendarSnapshot.exists) {
+      // Create a new calendar for the group
+      await groupDoc.set({
+        'groupName': group.getName,
+        'createdAt': FieldValue.serverTimestamp(),
+        'members': group.getMembers,
+      });
+
+      print('New calendar created for group: ${group.getName}');
+    } else {
+      print('Calendar already exists for group: ${group.getName}');
+    }
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -106,8 +124,7 @@ class YourGroups extends StatelessWidget {
                 // Group calendar
                 Expanded(
                   flex: 2,
-                  child: _buildCustomGroupCalendar(
-                      context, groupEvents, selectedDate, group.getMembers),
+                  child: UserGroupCalendar(userGroup: group),
                 ),
               ],
             ),
@@ -166,7 +183,6 @@ class YourGroups extends StatelessWidget {
           (events[today.add(const Duration(days: 1))] ?? [])
             ..add('$member\'s Event 2');
     }
-
     return events;
   }
 
