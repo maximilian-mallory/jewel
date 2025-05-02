@@ -126,18 +126,22 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                   color: const Color.fromARGB(193, 182, 211, 173),
                   child: Column(
                     children: List.generate(24, (index) {
-                      String timeLabel = '${index.toString().padLeft(2, '0')}:00';
+                      String timeLabel = (index <= 12) 
+                        ? '${index.toString()}:00am'
+                        : '${(index%12).toString()}:00pm';
+                      if (index == 0){
+                        timeLabel = '12:00am';
+                      }
                       return Container(
+                        height: 100.0,
                         width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 41.25),
-                        decoration: const BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(color: Color.fromARGB(255, 122, 110, 110), width: 0.5),
-                          ),
+                        padding: const EdgeInsets.symmetric(vertical: 41.5),
+                        decoration: BoxDecoration(
+                          border: Border(bottom: BorderSide(color: const Color.fromARGB(255, 122, 110, 110))),
                         ),
                         child: Text(
                           timeLabel,
-                          style: const TextStyle(fontSize: 12, color: Colors.black54),
+                          style: const TextStyle(fontSize: 12, color: Color.fromARGB(255, 0, 0, 0)),
                           textAlign: TextAlign.center,
                         ),
                       );
