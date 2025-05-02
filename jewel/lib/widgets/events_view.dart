@@ -123,17 +123,21 @@ class _CalendarEventsView extends State<CalendarEventsView> {
               children: [
                 Container(
                   width: 50,
-                  color: Colors.grey[200],
+                  color: const Color.fromARGB(193, 182, 211, 173),
                   child: Column(
                     children: List.generate(24, (index) {
-                      String timeLabel =
-                          '${index.toString().padLeft(2, '0')}:00';
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 41.5),
+                      String timeLabel = '${index.toString().padLeft(2, '0')}:00';
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 41.25),
+                        decoration: const BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(color: Color.fromARGB(255, 122, 110, 110), width: 0.5),
+                          ),
+                        ),
                         child: Text(
                           timeLabel,
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.black54),
+                          style: const TextStyle(fontSize: 12, color: Colors.black54),
                           textAlign: TextAlign.center,
                         ),
                       );
@@ -356,7 +360,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
         return Container(
           height: 100.0,
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+            border: Border(bottom: BorderSide(color: const Color.fromARGB(255, 122, 110, 110))),
           ),
           child: Stack(
             children: events.where((event) {
@@ -428,7 +432,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                               '${start != null ? DateFormat('hh:mm a').format(start) : 'No Time'} - '
                               '${end != null ? DateFormat('hh:mm a').format(end) : 'No Time'}'
                               '${groupTitle != null ? '\n$groupTitle' : ''}',
-                              style: const TextStyle(color: Colors.white70),
+                              style: const TextStyle(color: Color.fromARGB(179, 170, 157, 157)),
                             ),
                             onTap: () {
                               if (!isObfuscationEnabled) {
