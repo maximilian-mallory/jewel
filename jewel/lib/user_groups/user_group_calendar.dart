@@ -53,10 +53,15 @@ class _UserGroupCalendarState extends State<UserGroupCalendar> {
 
   @override
   Widget build(BuildContext context) {
+    // Get the current theme
+    final theme = Theme.of(context);
+    final isDarkMode = theme.brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: false, // Removes the default back button
         title: Text('${widget.userGroup.getName} Calendar'),
+        backgroundColor: theme.primaryColor, // Use the theme's primary color
         actions: [
           IconButton(
             icon: const Icon(Icons.calendar_today),
@@ -92,11 +97,17 @@ class _UserGroupCalendarState extends State<UserGroupCalendar> {
               margin: const EdgeInsets.all(
                   16.0), // Add some margin around the calendar
               decoration: BoxDecoration(
-                color: Colors.grey[100], // Background color for the calendar
+                color: isDarkMode
+                    ? Colors.grey[900] // Dark mode background
+                    : Colors.grey[100], // Light mode background
                 borderRadius:
                     BorderRadius.circular(10), // Round off all corners
                 border: Border.all(
-                    color: Colors.grey[400]!, width: 0.5), // Add a border
+                  color: isDarkMode
+                      ? Colors.grey[700]! // Dark mode border
+                      : Colors.grey[400]!, // Light mode border
+                  width: 0.5,
+                ),
               ),
               child: ClipRRect(
                 borderRadius:
@@ -111,10 +122,17 @@ class _UserGroupCalendarState extends State<UserGroupCalendar> {
                           width: 60,
                           height: 60,
                           alignment: Alignment.center,
-                          color: Colors.grey[200],
+                          color: isDarkMode
+                              ? Colors.grey[800] // Dark mode background
+                              : Colors.grey[200], // Light mode background
                           child: Text(
                             '${hour.toString().padLeft(2, '0')}:00',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              color: isDarkMode
+                                  ? Colors.white // Dark mode text color
+                                  : Colors.black, // Light mode text color
+                            ),
                           ),
                         ),
                         // Event columns for each member
@@ -125,9 +143,11 @@ class _UserGroupCalendarState extends State<UserGroupCalendar> {
                             child: Container(
                               height: 60,
                               color: events.isNotEmpty
-                                  ? memberColor?.withOpacity(0.5) ??
-                                      Colors.grey[300]
-                                  : Colors.grey[100],
+                                  ? memberColor?.withOpacity(0.4)
+                                  : (isDarkMode
+                                      ? Colors.grey[850] // Dark mode background
+                                      : Colors
+                                          .grey[100]), // Light mode background
                               child: Padding(
                                 padding: const EdgeInsets.all(4.0),
                                 child: Column(
@@ -135,7 +155,10 @@ class _UserGroupCalendarState extends State<UserGroupCalendar> {
                                   children: events.map((event) {
                                     return Text(
                                       event['title'],
-                                      style: const TextStyle(fontSize: 10),
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: memberColor, // Use member color
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                     );
                                   }).toList(),
