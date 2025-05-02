@@ -5,9 +5,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 
 class UserGroupCalendar extends StatefulWidget {
   final UserGroup userGroup;
+  final memberColors;
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  UserGroupCalendar({Key? key, required this.userGroup}) : super(key: key);
+  UserGroupCalendar(
+      {Key? key, required this.userGroup, required this.memberColors})
+      : super(key: key);
 
   @override
   _UserGroupCalendarState createState() => _UserGroupCalendarState();
@@ -15,6 +18,7 @@ class UserGroupCalendar extends StatefulWidget {
 
 class _UserGroupCalendarState extends State<UserGroupCalendar> {
   DateTime selectedDate = DateTime.now();
+  Map<String, Color> memberColors = {};
 
   /// Retrieve all events for all members in the group
   Future<Map<String, Map<int, List<Map<String, dynamic>>>>>
@@ -84,57 +88,67 @@ class _UserGroupCalendarState extends State<UserGroupCalendar> {
                 child: Text('No events found for the selected day.'));
           } else {
             final hourlyGroupEvents = snapshot.data!;
-            return ListView.builder(
-              itemCount: 24, // 24 hours in a day
-              itemBuilder: (context, hour) {
-                return Row(
-                  children: [
-                    // Hour label
-                    Container(
-                      width: 60,
-                      height: 60,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        border: Border.all(color: Colors.grey),
-                        color: Colors.grey[200],
-                      ),
-                      child: Text(
-                        '${hour.toString().padLeft(2, '0')}:00',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    // Event columns for each member
-                    ...widget.userGroup.getMembers.map((member) {
-                      final events = hourlyGroupEvents[member]?[hour] ?? [];
-                      return Expanded(
-                        child: Container(
+            return Container(
+              margin: const EdgeInsets.all(
+                  16.0), // Add some margin around the calendar
+              decoration: BoxDecoration(
+                color: Colors.grey[100], // Background color for the calendar
+                borderRadius:
+                    BorderRadius.circular(10), // Round off all corners
+                border: Border.all(
+                    color: Colors.grey[400]!, width: 0.5), // Add a border
+              ),
+              child: ClipRRect(
+                borderRadius:
+                    BorderRadius.circular(10), // Ensure corners are clipped
+                child: ListView.builder(
+                  itemCount: 24, // 24 hours in a day
+                  itemBuilder: (context, hour) {
+                    return Row(
+                      children: [
+                        // Hour label
+                        Container(
+                          width: 60,
                           height: 60,
-                          margin: const EdgeInsets.symmetric(horizontal: 2.0),
-                          decoration: BoxDecoration(
-                            border: Border.all(color: Colors.grey),
-                            color: events.isNotEmpty
-                                ? Colors.blue[50]
-                                : Colors.grey[100],
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(4.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: events.map((event) {
-                                return Text(
-                                  event['title'],
-                                  style: const TextStyle(fontSize: 10),
-                                  overflow: TextOverflow.ellipsis,
-                                );
-                              }).toList(),
-                            ),
+                          alignment: Alignment.center,
+                          color: Colors.grey[200],
+                          child: Text(
+                            '${hour.toString().padLeft(2, '0')}:00',
+                            style: const TextStyle(fontWeight: FontWeight.bold),
                           ),
                         ),
-                      );
-                    }).toList(),
-                  ],
-                );
-              },
+                        // Event columns for each member
+                        ...widget.userGroup.getMembers.map((member) {
+                          final events = hourlyGroupEvents[member]?[hour] ?? [];
+                          final memberColor = widget.memberColors[member];
+                          return Expanded(
+                            child: Container(
+                              height: 60,
+                              color: events.isNotEmpty
+                                  ? memberColor?.withOpacity(0.5) ??
+                                      Colors.grey[300]
+                                  : Colors.grey[100],
+                              child: Padding(
+                                padding: const EdgeInsets.all(4.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: events.map((event) {
+                                    return Text(
+                                      event['title'],
+                                      style: const TextStyle(fontSize: 10),
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                            ),
+                          );
+                        }).toList(),
+                      ],
+                    );
+                  },
+                ),
+              ),
             );
           }
         },
