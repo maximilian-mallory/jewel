@@ -6,7 +6,9 @@ import 'package:jewel/google/calendar/googleapi.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:jewel/screens/intermediary.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
-import 'package:jewel/screens/mslogin.dart';// Import the Microsoft auth service
+import 'package:jewel/screens/mslogin.dart';
+import 'package:jewel/utils/text_style_notifier.dart';
+import 'package:jewel/firebase_ops/user_specific.dart';
 import 'package:provider/provider.dart';
 
 // USED FOR FIRST AUTH
@@ -90,9 +92,29 @@ class AuthGate extends StatelessWidget {
             firebaseUser!,
           )
         );
+
+        final uidOrEmail = firebaseUser.email ?? firebaseUser.uid;
+        return FutureBuilder<Color?>(
+          future: UserSettingsService().loadThemeColor(uidOrEmail),
+          builder: (context, snap) {
+            if (snap.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                  body: Center(child: CircularProgressIndicator()));
+            }
+
+            final color = snap.data;
+            if (color != null) {
+              // Do *one* post-frame update to the notifier
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                Provider.of<ThemeStyleNotifier>(context, listen: false)
+                    .updateThemeColor(color);
+              });
+              jewelUser.themeColor = color.value; // keep model in sync
+            }
        
         return Intermediary();
       },
     );
+  });
   }
 }

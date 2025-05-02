@@ -123,17 +123,25 @@ class _CalendarEventsView extends State<CalendarEventsView> {
               children: [
                 Container(
                   width: 50,
-                  color: Colors.grey[200],
+                  color: Theme.of(context).primaryColor,//const Color.fromARGB(193, 182, 211, 173),
                   child: Column(
                     children: List.generate(24, (index) {
-                      String timeLabel =
-                          '${index.toString().padLeft(2, '0')}:00';
-                      return Padding(
+                      String timeLabel = (index <= 12) 
+                        ? '${index.toString()}:00am'
+                        : '${(index%12).toString()}:00pm';
+                      if (index == 0){
+                        timeLabel = '12:00am';
+                      }
+                      return Container(
+                        height: 100.0,
+                        width: double.infinity,
                         padding: const EdgeInsets.symmetric(vertical: 41.5),
+                        decoration: BoxDecoration(
+                          border: Border(bottom: BorderSide(color: const Color.fromARGB(255, 122, 110, 110))),
+                        ),
                         child: Text(
                           timeLabel,
-                          style: const TextStyle(
-                              fontSize: 12, color: Colors.black54),
+                          style: const TextStyle(fontSize: 12, color: Color.fromARGB(255, 0, 0, 0)),
                           textAlign: TextAlign.center,
                         ),
                       );
@@ -356,7 +364,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
         return Container(
           height: 100.0,
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+            border: Border(bottom: BorderSide(color: const Color.fromARGB(255, 122, 110, 110))),
           ),
           child: Stack(
             children: events.where((event) {
@@ -428,7 +436,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                               '${start != null ? DateFormat('hh:mm a').format(start) : 'No Time'} - '
                               '${end != null ? DateFormat('hh:mm a').format(end) : 'No Time'}'
                               '${groupTitle != null ? '\n$groupTitle' : ''}',
-                              style: const TextStyle(color: Colors.white70),
+                              style: const TextStyle(color: Color.fromARGB(179, 170, 157, 157)),
                             ),
                             onTap: () {
                               if (!isObfuscationEnabled) {
