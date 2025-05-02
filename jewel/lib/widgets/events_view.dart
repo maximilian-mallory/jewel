@@ -123,7 +123,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
               children: [
                 Container(
                   width: 50,
-                  color: const Color.fromARGB(193, 182, 211, 173),
+                  color: Theme.of(context).primaryColor,//const Color.fromARGB(193, 182, 211, 173),
                   child: Column(
                     children: List.generate(24, (index) {
                       String timeLabel = (index <= 12) 
