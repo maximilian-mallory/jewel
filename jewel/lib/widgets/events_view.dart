@@ -155,7 +155,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
               // All-day events banner
               Container(
                 width: double.infinity,
-                color: Colors.grey[200],
+                color: Theme.of(context).primaryColor,
                 padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -181,14 +181,15 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                 children: [
                   Container(
                     width: 50,
-                    color: Colors.grey[200],
+                    color: Theme.of(context).primaryColor,
                     child: Column(
                       children: List.generate(24, (index) {
-                        // Use the time format from the other version (with AM/PM)
                         String timeLabel = (index <= 12) 
-                          ? '${index == 0 ? '12' : index.toString()}:00am'
-                          : '${(index%12 == 0 ? '12' : index%12).toString()}:00pm';
-                        
+                          ? '${index.toString()}:00am'
+                          : '${(index%12).toString()}:00pm';
+                        if(index == 0) {
+                          timeLabel = '12:00am';
+                        }
                         return Container(
                           height: 100.0,
                           width: double.infinity,
@@ -198,7 +199,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                           ),
                           child: Text(
                             timeLabel,
-                            style: const TextStyle(fontSize: 12, color: Colors.black54),
+                            style: const TextStyle(fontSize: 12, color: Color.fromARGB(255, 0, 0, 0)),
                             textAlign: TextAlign.center,
                           ),
                         );
@@ -206,7 +207,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                     ),
                   ),
                   // Calendar Events column
-                  Expanded(child: buildEventsList(events, isObfuscationEnabled)),
+                  Expanded(child: buildEventsList(events!, isObfuscationEnabled)),
                 ],
               ),
             ],
