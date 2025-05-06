@@ -195,18 +195,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   /// Builds the top header section with responsive design.
-  Widget buildHeader(BuildContext context) {
+Widget buildHeader(BuildContext context) {
     final res = getResponsiveValues(context);
     final screenWidth = MediaQuery.of(context).size.width;
     // Define smartphone threshold as width <= 426px.
     final bool isSmartphone = screenWidth <= 426;
     final double headerHeight = getHeaderHeight(context);
+    
+    // Use kIsWeb consistently rather than isWeb for platform detection
+    final bool isWebPlatform = kIsWeb;
 
     return Container(
-      height: headerHeight,
+      // Increase height slightly on Android to accommodate calTools in the header
+      height: isWebPlatform ? headerHeight : headerHeight * 1.2,
       width: double.infinity,
       padding: EdgeInsets.all(
-          isWeb ? res['horizontalPadding']! : res['horizontalPadding']! * 90.8),
+          isWebPlatform ? res['horizontalPadding']! : res['horizontalPadding']! * 0.8),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
         boxShadow: [
@@ -218,63 +222,193 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Improved spacing
+        crossAxisAlignment: CrossAxisAlignment.center, // Ensure vertical centering
         children: [
-          accountList(),
+          // Force a larger tap target for the account menu on Android
+          Container(
+            height: isWebPlatform ? 40 : 48,
+            width: isWebPlatform ? 40 : 48,
+            alignment: Alignment.center,
+            child: accountList(),
+          ),
           SizedBox(
-              width: isWeb
+              width: isWebPlatform
                   ? res['horizontalPadding']! * 0.3
                   : res['horizontalPadding']! * 0.2),
-          // calTools container width adjusts based on responsive value
-          isWeb
-              ? Flexible(child: calTools())
-              : Flexible(
-                  child: SizedBox(width: res['horizontalPadding']! * 10)),
+          
+          // Place calTools in header for both web and Android
+          Expanded(
+            child: Container(
+              alignment: Alignment.center,
+              height: double.infinity,
+              child: calTools(),
+            ),
+          ),
+          
           const SizedBox(width: 10),
-          // Conditionally display Jewel logo only if not a smartphone.
-          if (!isSmartphone)
-            Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
-                    blurRadius: 5,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  'assets/images/jewel205.png',
-                  height:
-                      isWeb ? res['iconSize']! * 1.5 : res['iconSize']! * 0.8,
-                  width:
-                      isWeb ? res['iconSize']! * 1.5 : res['iconSize']! * 0.8,
+          
+          // Display Jewel logo for all platforms
+          Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 5,
+                  offset: const Offset(0, 2),
                 ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12),
+              child: Image.asset(
+                'assets/images/jewel205.png',
+                height: isWebPlatform ? res['iconSize']! * 1.5 : res['iconSize']! * 1.5,
+                width: isWebPlatform ? res['iconSize']! * 1.5 : res['iconSize']! * 1.5,
+                // Ensure the image loads by adding error handling
+                errorBuilder: (context, error, stackTrace) {
+                  print("Error loading logo: $error");
+                  return Container(
+                    height: isWebPlatform ? res['iconSize']! * 1.5 : res['iconSize']! * 1.2,
+                    width: isWebPlatform ? res['iconSize']! * 1.5 : res['iconSize']! * 1.2,
+                    color: Colors.grey.shade300,
+                    child: Icon(Icons.image_not_supported),
+                  );
+                },
               ),
             ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget accountList() {
+    JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
+    final bool isWebPlatform = kIsWeb;
+    
+    return PopupMenuButton<int>(
+      icon: FaIcon(
+        FontAwesomeIcons.google,
+        size: isWebPlatform ? 28 : 32, // Larger icon for Android
+        color: brightenColor(Theme.of(context).primaryColor),
+      ),
+      // Center the icon vertically
+      padding: EdgeInsets.zero,
+      onSelected: (int value) async {
+        // Handle selection here instead of individual onTap
+        if (value == 1) {
+          // Add Account
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => Intermediary()),
+          );
+        } else if (value == 2) {
+          // Sign Out
+          FirebaseAuth.instance.signOut();
+          if (jewelUser.calendarLogicList != null && 
+                jewelUser.calendarLogicList!.isNotEmpty) {
+                await googleSignInList[0].signOut();
+                
+                // Optional: remove the signed out account from the list
+                jewelUser.calendarLogicList = [];
+                jewelUser.updateFrom(jewelUser);
+                }
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => AuthGate()),
+          );
+        } else if (value >= 100) {
+          // Account selection (using offset of 100 to distinguish from actions)
+          // jewelUser.updateSelectedCalendarIndex(value - 100);
+        }
+      },
+      itemBuilder: (context) {
+        List<PopupMenuEntry<int>> menuItems = [];
+        if (jewelUser.calendarLogicList != null) {
+          int i = 0;
+          for (var calendarLogic in jewelUser.calendarLogicList!) {
+            menuItems.add(
+              PopupMenuItem<int>(
+                value: 100 + i, // Use 100+ to differentiate from action items
+                child: Text(calendarLogic.currentUser!.email),
+              ),
+            );
+            i++;
+          }
+        }
+        menuItems.add(
+          const PopupMenuItem<int>(
+            value: 1,
+            child: Text('Add Account'),
+          ),
+        );
+        menuItems.add(
+          const PopupMenuItem<int>(
+            value: 2,
+            child: Text('Sign Out'),
+          ),
+        );
+        return menuItems;
+      },
+    );
+  }
+
+  Widget calTools() {
+    // Use kIsWeb consistently rather than isWeb
+    final bool isWebPlatform = kIsWeb;
+    final res = getResponsiveValues(context);
+    
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: Theme.of(context).cardColor, // Add background color for better visibility
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 5,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: SizedBox(
+          // Adjust size for Android to fit nicely in header
+          height: isWebPlatform ? 75 : 50,
+          // Constrain width on mobile to fit in header
+          width: isWebPlatform ? double.infinity : MediaQuery.of(context).size.width * 0.75,
+          child: Align(
+            alignment: Alignment.center,
+            child: AuthenticatedCalendar(),
+          ),
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final res = getResponsiveValues(context);
     return Scaffold(
       body: Column(
         children: [
-          if (!kIsWeb) SizedBox(height: 24),
+          // Add status bar padding only on mobile
+          if (!kIsWeb) SizedBox(height: MediaQuery.of(context).padding.top),
+          
+          // Use buildHeader which now handles both header and calTools
           buildHeader(context),
-          if (!kIsWeb) Flexible(child: calTools()),
+          
+          // Main content area
           Consumer<SelectedIndexNotifier>(
             builder: (context, selectedIndexNotifier, _) {
+              // Calculate remaining screen space for main content
+              // No need to account for separate calTools height anymore since it's in the header
+              double mainContentHeight = MediaQuery.of(context).size.height - 
+                  (kIsWeb ? getHeaderHeight(context) : getHeaderHeight(context) * 1.2) - 
+                  (kIsWeb ? 0 : MediaQuery.of(context).padding.top) - // Use system status bar height
+                  (MediaQuery.of(context).size.height * 0.1325); // Bottom nav height
+                  
               return SizedBox(
-                height: MediaQuery.of(context).size.height -
-                    getHeaderHeight(context) -
-                    (kIsWeb ? 0 : 24) -
-                    (MediaQuery.of(context).size.height * 0.1325),
+                height: mainContentHeight,
                 child: _screens[selectedIndexNotifier.selectedIndex],
               );
             },
@@ -288,96 +422,6 @@ class _HomeScreenState extends State<HomeScreen> {
           onTap: (index) {
             context.read<SelectedIndexNotifier>().selectedIndex = index;
           },
-        ),
-      ),
-    );
-  }
-
-  PopupMenuButton<int> accountList() {
-  JewelUser jewelUser = Provider.of<JewelUser>(context, listen: false);
-  return PopupMenuButton<int>(
-    icon: FaIcon(
-      FontAwesomeIcons.google,
-      size: 28,
-      color: brightenColor(Theme.of(context).primaryColor),
-    ),
-    onSelected: (int value) async {
-      // Handle selection here instead of individual onTap
-      if (value == 1) {
-        // Add Account
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => Intermediary()),
-        );
-      } else if (value == 2) {
-        // Sign Out
-        FirebaseAuth.instance.signOut();
-        if (jewelUser.calendarLogicList != null && 
-              jewelUser.calendarLogicList!.isNotEmpty) {
-              await googleSignInList[0].signOut();
-              
-              // Optional: remove the signed out account from the list
-              jewelUser.calendarLogicList = [];
-              jewelUser.updateFrom(jewelUser);
-              }
-        Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => AuthGate()),
-        );
-      } else if (value >= 100) {
-        // Account selection (using offset of 100 to distinguish from actions)
-        // jewelUser.updateSelectedCalendarIndex(value - 100);
-      }
-    },
-    itemBuilder: (context) {
-      List<PopupMenuEntry<int>> menuItems = [];
-      if (jewelUser.calendarLogicList != null) {
-        int i = 0;
-        for (var calendarLogic in jewelUser.calendarLogicList!) {
-          menuItems.add(
-            PopupMenuItem<int>(
-              value: 100 + i, // Use 100+ to differentiate from action items
-              child: Text(calendarLogic.currentUser!.email),
-            ),
-          );
-          i++;
-        }
-      }
-      menuItems.add(
-        const PopupMenuItem<int>(
-          value: 1,
-          child: Text('Add Account'),
-        ),
-      );
-      menuItems.add(
-        const PopupMenuItem<int>(
-          value: 2,
-          child: Text('Sign Out'),
-        ),
-      );
-      return menuItems;
-    },
-  );
-}
-
-  Widget calTools() {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 5,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
-        child: SizedBox(
-          height: isWeb ? 75 : 55,
-          child: Align(
-            alignment: Alignment.center,
-            child: AuthenticatedCalendar(),
-          ),
         ),
       ),
     );
