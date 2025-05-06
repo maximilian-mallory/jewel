@@ -3,6 +3,11 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+/*
+Personal Goals Class:
+-Creates the information needed for the personal goals
+-Stores data in FireBase bassed off the current user
+*/
 part 'personal_goals.g.dart';
 
 @JsonSerializable()
@@ -67,7 +72,7 @@ class PersonalGoals {
         .set(toJson());
   }
 
-  /// Updates an existing goal in Firestore with current data
+  // Updates an existing goal in Firestore with current data
   Future<void> updateGoal(String docId) async {
     ownerEmail = FirebaseAuth.instance.currentUser?.email;
     if (ownerEmail == null) {
@@ -80,5 +85,51 @@ class PersonalGoals {
         .collection(ownerEmail!)
         .doc(docId)
         .update(toJson());
+  }
+
+  // Add points for completing goal
+  Future<void> addPoints() async {
+    ownerEmail = FirebaseAuth.instance.currentUser?.email;
+    if (ownerEmail == null) {
+      throw Exception("User is not logged in.");
+    }
+
+    final docRef =
+        FirebaseFirestore.instance.collection('goals_data').doc(ownerEmail!);
+
+    // Check if the document exists
+    final docSnapshot = await docRef.get();
+    if (!docSnapshot.exists) {
+      // Create the document if it doesn't exist
+      await docRef.set({'points': 0});
+    }
+
+    // Increment points by 10
+    await docRef.update({
+      'points': FieldValue.increment(10),
+    });
+  }
+
+  // Subtract points for marking goal as incomplete
+  Future<void> subtractPoints() async {
+    ownerEmail = FirebaseAuth.instance.currentUser?.email;
+    if (ownerEmail == null) {
+      throw Exception("User is not logged in.");
+    }
+
+    final docRef =
+        FirebaseFirestore.instance.collection('goals_data').doc(ownerEmail!);
+
+    // Check if the document exists
+    final docSnapshot = await docRef.get();
+    if (!docSnapshot.exists) {
+      // Create the document if it doesn't exist
+      await docRef.set({'points': 0});
+    }
+
+    // Decrement points by 10
+    await docRef.update({
+      'points': FieldValue.increment(-10),
+    });
   }
 }

@@ -134,81 +134,86 @@ class _CalendarEventsView extends State<CalendarEventsView> {
     );
   }
 
-  // Builds the daily view
   Widget buildDailyView(BuildContext context, bool isObfuscationEnabled) {
-    return FutureBuilder<List<gcal.Event>>(
-        future: getGoogleEventsData(calendarLogic,
-            context), // Create a method that returns your Future<List<Event>>
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(
-                child: Text('Error loading events: ${snapshot.error}'));
-          }
-          final events = snapshot.data;
+  return FutureBuilder<List<gcal.Event>>(
+      future: getGoogleEventsData(calendarLogic, context),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          return Center(
+              child: Text('Error loading events: ${snapshot.error}'));
+        }
+        final events = snapshot.data;
 
-          return SingleChildScrollView(
-            controller: _scrollController,
-            scrollDirection: Axis.vertical,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // All-day events banner
-                Container(
-                  width: double.infinity,
-                  color: Colors.grey[200],
-                  padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 50, bottom: 4),
-                        child: Text(
-                          "All-day Events",
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 14,
-                            color: Colors.black54,
-                          ),
-                        ),
-                      ),
-                      _buildAllDayEvents(events!, isObfuscationEnabled),
-                    ],
-                  ),
-                ),
-                // Regular time-based events
-                Row(
+        return SingleChildScrollView(
+          controller: _scrollController,
+          scrollDirection: Axis.vertical,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // All-day events banner
+              Container(
+                width: double.infinity,
+                color: Colors.grey[200],
+                padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+                child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 50,
-                      color: Colors.grey[200],
-                      child: Column(
-                        children: List.generate(24, (index) {
-                          String timeLabel =
-                              '${index.toString().padLeft(2, '0')}:00';
-                          return Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 41.5),
-                            child: Text(
-                              timeLabel,
-                              style: const TextStyle(
-                                  fontSize: 12, color: Colors.black54),
-                              textAlign: TextAlign.center,
-                            ),
-                          );
-                        }),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 50, bottom: 4),
+                      child: Text(
+                        "All-day Events",
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                          color: Colors.black54,
+                        ),
                       ),
                     ),
-                    // Calendar Events column
-                    Expanded(child: buildEventsList(events!, isObfuscationEnabled)),
+                    _buildAllDayEvents(events!, isObfuscationEnabled),
                   ],
                 ),
-              ],
-            ),
-          );
-        });
-  }
+              ),
+              // Regular time-based events
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 50,
+                    color: Colors.grey[200],
+                    child: Column(
+                      children: List.generate(24, (index) {
+                        // Use the time format from the other version (with AM/PM)
+                        String timeLabel = (index <= 12) 
+                          ? '${index == 0 ? '12' : index.toString()}:00am'
+                          : '${(index%12 == 0 ? '12' : index%12).toString()}:00pm';
+                        
+                        return Container(
+                          height: 100.0,
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 41.5),
+                          decoration: BoxDecoration(
+                            border: Border(bottom: BorderSide(color: const Color.fromARGB(255, 122, 110, 110))),
+                          ),
+                          child: Text(
+                            timeLabel,
+                            style: const TextStyle(fontSize: 12, color: Colors.black54),
+                            textAlign: TextAlign.center,
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                  // Calendar Events column
+                  Expanded(child: buildEventsList(events, isObfuscationEnabled)),
+                ],
+              ),
+            ],
+          ),
+        );
+      });
+}
 
 // Builds the monthly view
   Widget buildMonthlyView(BuildContext context, bool isObfuscationEnabled) {
@@ -438,7 +443,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
         return Container(
           height: 100.0,
           decoration: BoxDecoration(
-            border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
+            border: Border(bottom: BorderSide(color: const Color.fromARGB(255, 122, 110, 110))),
           ),
           child: Stack(
             children: hourEvents.map((event) {
@@ -503,7 +508,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                               '${start != null ? DateFormat('hh:mm a').format(start) : 'No Time'} - '
                               '${end != null ? DateFormat('hh:mm a').format(end) : 'No Time'}'
                               '${groupTitle != null ? '\n$groupTitle' : ''}',
-                              style: const TextStyle(color: Colors.white70),
+                              style: const TextStyle(color: Color.fromARGB(179, 170, 157, 157)),
                             ),
                             onTap: () {
                               if (!isObfuscationEnabled) {

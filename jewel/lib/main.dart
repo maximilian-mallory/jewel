@@ -120,7 +120,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _checkAndLogout();
+    // _checkAndLogout();
     return Consumer<ThemeStyleNotifier>(
       builder: (context, textStyleNotifier, child) {
         return MaterialApp(

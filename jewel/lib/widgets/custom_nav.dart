@@ -55,6 +55,7 @@ class CustomNavBar extends StatelessWidget {
             _buildNavItem(context, Icons.checklist_sharp, 'Goals', 3, sizes),
             _buildNavItem(context, Icons.man_2_rounded, 'Groups', 4, sizes),
             _buildNavItem(context, Icons.insert_chart_outlined_sharp, 'Analytics', 5, sizes),
+            _buildNavItem(context, Icons.videogame_asset, 'Leaderboard', 6, sizes)
           ],
         ),
       ),

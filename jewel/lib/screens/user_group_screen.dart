@@ -39,7 +39,7 @@ class _UserGroupScreenState extends State<UserGroupScreen>
       ),
       body: TabBarView(
         controller: _tabController,
-        children: const [
+        children: [
           YourGroups(), // Your Groups tab
           JoinGroups(), // Join Groups tab
         ],

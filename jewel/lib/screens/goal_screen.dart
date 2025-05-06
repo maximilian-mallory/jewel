@@ -81,7 +81,7 @@ class _GoalScreenState extends State<GoalScreen> {
       final goal = entry.value;
       if (goal.completed && goal.completedAt != null) {
         final completedTime = goal.completedAt!;
-        if (now.difference(completedTime).inHours >= 24) {
+        if (now.difference(completedTime).inMinutes >= 1) {
           docsToDelete.add(entry.key);
           // Delete from Firestore
           await FirebaseFirestore.instance
@@ -115,6 +115,13 @@ class _GoalScreenState extends State<GoalScreen> {
 
       // Update the goal in Firebase
       await goal.updateGoal(docId);
+
+      // Add or subtract points based on completion status
+      if (goal.completed) {
+        await goal.addPoints();
+      } else {
+        await goal.subtractPoints();
+      }
 
       // Refresh the UI (fetchGoals includes expired-goal deletion)
       setState(() {
