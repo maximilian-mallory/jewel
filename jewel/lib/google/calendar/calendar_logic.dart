@@ -14,7 +14,7 @@ import 'package:jewel/google/calendar/googleapi.dart';
 // CalendarLogic Class
 class CalendarLogic extends ChangeNotifier {
   Map<String, List<String>> eventHistory = {}; // Stores change history of events
-
+  
   DateTime _selectedDate = DateTime.now();
 
   DateTime get selectedDate => _selectedDate;
@@ -97,6 +97,7 @@ class CalendarLogic extends ChangeNotifier {
   DateTime currentDate = DateTime.now();
   bool isDayMode = true;
   Map<String, dynamic> calendars = {};
+  bool isUsingIcal = false;
 
   // This method returns a Firebase-Stored list of Calendars belonging to a user
   Future<void> getAllCalendars(GoogleSignInAccount? account) async {
