@@ -6,14 +6,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/google/calendar/ical_conversion.dart'; // Added import for iCal conversion
 import 'package:jewel/google/calendar/mode_toggle.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/google_sign_in.dart';
+import 'package:jewel/google/calendar/ical_conversion.dart'; // Add this import
 
 /// Returns a map of responsive values based on screen width.
 /// Breakpoints based on specific device widths:
@@ -134,8 +137,8 @@ class _AddCalendarFormState extends State<AddCalendarForm> {
             TextFormField(
               controller: _timeZoneController,
               decoration: const InputDecoration(labelText: "Time Zone"),
-              validator: (value) =>
-                  value == null || value.isEmpty ? "Please enter a time zone" : null,
+              validator: (value) => 
+              value == null || value.isEmpty ? "Please enter a time zone" : null,
             ),
             SizedBox(height: res['verticalPadding']!),
             ElevatedButton(
@@ -168,7 +171,7 @@ class AuthenticatedCalendar extends StatefulWidget {
 class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   String? selectedCalendar;
   late gcal.CalendarApi calendarApi;
-  late JewelUser jewelUser; 
+  late JewelUser jewelUser;
   late CalendarLogic calendarLogic;
   late int selectedCalendarIndex;
 
@@ -215,36 +218,36 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
     final res = getResponsiveValues(context);
     return Consumer<JewelUser>(
       builder: (context, jewelUser, child) {
-        return Scaffold(
-          appBar: AppBar(
-            title: LayoutBuilder(
-              builder: (context, constraints) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    daymonthBackButton(res),
-                    loadCalendarMenu(res),
-                    Column(
-                      children: [
-                            Text(
-                              DateFormat('MM/dd/yyyy')
-                                  .format(calendarLogic.selectedDate),
-                              style: TextStyle(
-                                fontSize: res['titleFontSize'],
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                      ],
-                    ),
-                    dateToggle(res),
-                    modeToggleButton(res),
-                    daymonthForwardButton(res),
-                  ],
-                );
-              },
-            ),
+      return Scaffold(
+        appBar: AppBar(
+          title: LayoutBuilder(
+            builder: (context, constraints) {
+              return Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  daymonthBackButton(res),
+                  loadCalendarMenu(res),
+                  Column(
+                    children: [
+                      Text(
+                        DateFormat('MM/dd/yyyy')
+                            .format(calendarLogic.selectedDate),
+                        style: TextStyle(
+                          fontSize: res['titleFontSize'],
+                          fontWeight: FontWeight.bold,
+                        ),
+                      )
+                    ],
+                  ),
+                  dateToggle(res),
+                  modeToggleButton(res),
+                  daymonthForwardButton(res),
+                ],
+              );
+            },
           ),
-        );
+        ),
+      );
       }
     );
   }
@@ -323,38 +326,38 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
 
   /// Date picker toggle.
   Widget dateToggle(Map<String, double> res) {
-  return Consumer<JewelUser>(
-    builder: (context, user, child) {
-      return Padding(
-        padding: EdgeInsets.all(res['buttonPadding']! * 1.5),
-        child: GestureDetector(
-          onTap: () async {
-            DateTime? selectedDate = await showDatePicker(
-              context: context,
-              initialDate: calendarLogic.selectedDate,
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-            );
-            if (selectedDate != null) {
-              calendarLogic.selectedDate = selectedDate;
+    return Consumer<JewelUser>(
+      builder: (context, user, child) {
+        return Padding(
+          padding: EdgeInsets.all(res['buttonPadding']! * 1.5),
+          child: GestureDetector(
+            onTap: () async {
+              DateTime? selectedDate = await showDatePicker(
+                context: context,
+                initialDate: calendarLogic.selectedDate,
+                firstDate: DateTime(2000),
+                lastDate: DateTime(2100),
+              );
+              if (selectedDate != null) {
+                calendarLogic.selectedDate = selectedDate;
               calendarLogic.events = await getGoogleEventsData(calendarLogic, context);
-              
-              // Update the provider
-              user.updateCalendarLogic(calendarLogic, selectedCalendarIndex);
-              
+
+                // Update the provider
+                user.updateCalendarLogic(calendarLogic, selectedCalendarIndex);
+
               print('[DATE PICKER] SelectedDate: ${calendarLogic.selectedDate} should match JewelUser SelectedDate: ${user.calendarLogicList![0].selectedDate}');
-            }
-          },
-          child: Icon(
-            Icons.calendar_today,
-            size: res['iconSize'],
-            color: Theme.of(context).primaryColor,
+              }
+            },
+            child: Icon(
+              Icons.calendar_today,
+              size: res['iconSize'],
+              color: Theme.of(context).primaryColor,
+            ),
           ),
-        ),
-      );
-    },
-  );
-}
+        );
+      },
+    );
+  }
 
   /// Loads calendar menu with responsive design.
   Widget loadCalendarMenu(Map<String, double> res) {
@@ -391,7 +394,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
           return Text('CalendarSelect Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
           List<String> userCalendars = snapshot.data ?? [];
-          return Container(
+                    return Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12.0),
               color: Theme.of(context).scaffoldBackgroundColor,
@@ -508,14 +511,91 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
                         },
                       );
                     } else if (newValue != null) {
+                      List<String> icalFeeds = await _getIcalFeeds();
+                      bool isIcalFeed = icalFeeds.contains(newValue);
+
+                      // Store old calendar value to check if it actually changed
+                      String oldCalendar = calendarLogic.selectedCalendar;
+
                       setState(() {
                         calendarLogic.selectedCalendar = newValue;
                       });
-                      final newEvents =
-                          await getGoogleEventsData(calendarLogic, context);
-                      setState(() {
-                        calendarLogic.events = newEvents;
-                      });
+
+                      if (isIcalFeed) {
+                        try {
+                          QuerySnapshot querySnapshot = await FirebaseFirestore
+                              .instance
+                              .collection('ical_feeds')
+                              .where('owner',
+                                  isEqualTo: calendarLogic.currentUser?.email)
+                              .where('name', isEqualTo: newValue)
+                              .get();
+
+                          if (querySnapshot.docs.isEmpty) {
+                            print('iCal feed not found: $newValue');
+                            return;
+                          }
+
+                          final feedData = querySnapshot.docs[0].data()
+                              as Map<String, dynamic>;
+                          final feedUrl = feedData['url'] as String;
+
+                          print(
+                              "DEBUG: iCal feed found: ${querySnapshot.docs[0].data()}");
+                          final icalEvents = await loadIcalFeedEvents(
+                              feedUrl, calendarLogic, context);
+
+                          setState(() {
+                            calendarLogic.events = icalEvents;
+                            calendarLogic.isUsingIcal = true; // Set flag
+
+                            // Notify listeners that calendar data has changed
+                            calendarLogic.notifyListeners();
+
+                            // Update the JewelUser provider to notify event view
+                            jewelUser.updateCalendarLogic(
+                                calendarLogic, selectedCalendarIndex);
+                          });
+
+                          print(
+                              "DEBUG: Calendar changed from $oldCalendar to $newValue with ${icalEvents.length} events");
+                        } catch (e) {
+                          print('Error loading iCal feed: $e');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text('Error loading iCal feed: $e')),
+                          );
+                        }
+                      } else {
+                        setState(() {
+                          calendarLogic.isUsingIcal = false; // Reset flag
+                        });
+
+                        try {
+                          final newEvents =
+                              await getGoogleEventsData(calendarLogic, context);
+                          setState(() {
+                            calendarLogic.events = newEvents;
+
+                            // Notify listeners that calendar data has changed
+                            calendarLogic.notifyListeners();
+
+                            // Update the JewelUser provider to notify event view
+                            jewelUser.updateCalendarLogic(
+                                calendarLogic, selectedCalendarIndex);
+                          });
+
+                          print(
+                              "DEBUG: Calendar changed from $oldCalendar to $newValue with ${newEvents.length} events");
+                        } catch (e) {
+                          print('Error loading Google Calendar events: $e');
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    'Error loading Google Calendar events: $e')),
+                          );
+                        }
+                      }
                     }
                   },
                 ),
