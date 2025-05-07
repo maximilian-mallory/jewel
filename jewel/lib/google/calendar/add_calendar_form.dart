@@ -407,147 +407,150 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
         } else if (snapshot.hasData) {
           List<String> userCalendars = snapshot.data ?? [];
                     return Container(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(8.0), // Slightly smaller corners
-              color: Theme.of(context).scaffoldBackgroundColor,
+  decoration: BoxDecoration(
+    borderRadius: BorderRadius.circular(8.0), // Rounded corners
+    border: Border.all(
+      color: Theme.of(context).primaryColor, // Border color
+      width: 2, // Border width
+    ),
+  ),
+  clipBehavior: Clip.hardEdge, // Ensures the inner content respects rounded corners
+  child: ClipRRect(
+    borderRadius: BorderRadius.circular(8.0), // Clip the dropdown content as well
+    child: SizedBox(
+      width: res['iconSize']! * 6, // Make it wider
+      child: DropdownButton<String>(
+        value: selectedCalendar,
+        hint: Center(
+          child: Text(
+            calendarLogic.selectedCalendar,
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
             ),
-            child: SizedBox(
-              width: res['iconSize']! * 3.8, // Reduced width from 5.5 to 3.8
-              child: DropdownButton<String>(
-                value: selectedCalendar,
-                hint: Center(
+          ),
+        ),
+        dropdownColor: Colors.white,
+        iconEnabledColor: Theme.of(context).primaryColor,
+        iconSize: iconSize * 0.8, // Slightly smaller dropdown icon
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+        isExpanded: true, // Allow text to use full width
+        isDense: true, // Compact dropdown
+        items: [
+          ...calendarLogic.calendars.entries.map((entry) {
+            return DropdownMenuItem<String>(
+              value: entry.key,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                    vertical: 8.0, horizontal: 12.0), // Reduced padding
+                child: Text(
+                  entry.value.toString(),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: const TextStyle(fontSize: 16),
+                ),
+              ),
+            );
+          }),
+          if (userCalendars.isNotEmpty)
+            ...userCalendars.map((calendarName) {
+              return DropdownMenuItem<String>(
+                value: calendarName,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 8.0, horizontal: 12.0), // Reduced padding
                   child: Text(
-                    calendarLogic.selectedCalendar,
+                    calendarName,
                     overflow: TextOverflow.ellipsis,
                     maxLines: 1,
                     style: const TextStyle(
-                      color: Colors.black,
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      color: Colors.black,
                     ),
                   ),
                 ),
-                dropdownColor: Colors.white,
-                iconEnabledColor: Theme.of(context).primaryColor,
-                iconSize: iconSize * 0.8, // Slightly smaller dropdown icon
-                style: const TextStyle(
-                  color: Colors.black,
+              );
+            }),
+          DropdownMenuItem<String>(
+            value: "add_calendar",
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  vertical: 8.0, horizontal: 12.0), // Reduced padding
+              child: const Text(
+                "Add New Calendar",
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                style: TextStyle(
+                  color: Colors.blue,
                   fontSize: 16,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w600,
                 ),
-                underline: Container(
-                  height: 2,
-                  color: Theme.of(context).primaryColor,
-                ),
-                isExpanded: true, // Allow text to use full width
-                isDense: true, // Compact dropdown
-                items: [
-                  ...calendarLogic.calendars.entries.map((entry) {
-                    return DropdownMenuItem<String>(
-                      value: entry.key,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 8.0, horizontal: 12.0), // Reduced padding
-                        child: Text(
-                          entry.value.toString(),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    );
-                  }),
-                  if (userCalendars.isNotEmpty)
-                    ...userCalendars.map((calendarName) {
-                      return DropdownMenuItem<String>(
-                        value: calendarName,
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              vertical: 8.0, horizontal: 12.0), // Reduced padding
-                          child: Text(
-                            calendarName,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 1,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
-                  DropdownMenuItem<String>(
-                    value: "add_calendar",
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 8.0, horizontal: 12.0), // Reduced padding
-                      child: const Text(
-                        "Add New Calendar",
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-                onChanged: (String? newValue) async {
-                  if (newValue == "add_calendar") {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (BuildContext context) {
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: <Widget>[
-                            ListTile(
-                              title: const Text("Add Google Calendar"),
-                              onTap: () {
-                                Navigator.pop(context);
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  builder: (BuildContext context) {
-                                    return addCalendarForm(calendarLogic);
-                                  },
-                                );
-                              },
-                            ),
-                            ListTile(
-                              title: const Text("Add External Calendar"),
-                              onTap: () {
-                                Navigator.pop(context);
-                                _showFilePicker();
-                              },
-                            ),
-                            ListTile(
-                              title: const Text("Add iCal Feed Link"),
-                              onTap: () {
-                                Navigator.pop(context);
-                                _showIcalFeedLinkForm();
-                              },
-                            ),
-                          ],
-                        );
-                      },
-                    );
-                  } else if (newValue != null) {
-                    setState(() {
-                      calendarLogic.selectedCalendar = newValue;
-                    });
-                    final newEvents =
-                        await getGoogleEventsData(calendarLogic, context);
-                    setState(() {
-                      calendarLogic.events = newEvents;
-                    });
-                  }
-                },
               ),
             ),
-          );
+          ),
+        ],
+        onChanged: (String? newValue) async {
+          if (newValue == "add_calendar") {
+            showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              builder: (BuildContext context) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    ListTile(
+                      title: const Text("Add Google Calendar"),
+                      onTap: () {
+                        Navigator.pop(context);
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (BuildContext context) {
+                            return addCalendarForm(calendarLogic);
+                          },
+                        );
+                      },
+                    ),
+                    ListTile(
+                      title: const Text("Add External Calendar"),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showFilePicker();
+                      },
+                    ),
+                    ListTile(
+                      title: const Text("Add iCal Feed Link"),
+                      onTap: () {
+                        Navigator.pop(context);
+                        _showIcalFeedLinkForm();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
+          } else if (newValue != null) {
+            setState(() {
+              calendarLogic.selectedCalendar = newValue;
+            });
+            final newEvents =
+                await getGoogleEventsData(calendarLogic, context);
+            setState(() {
+              calendarLogic.events = newEvents;
+            });
+          }
+        },
+      ),
+    ),
+  ),
+);
         } else {
           return const Text('No calendars found.');
         }
