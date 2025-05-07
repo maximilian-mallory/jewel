@@ -415,10 +415,17 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
               width: res['iconSize']! * 3.8, // Reduced width from 5.5 to 3.8
               child: DropdownButton<String>(
                 value: selectedCalendar,
-                hint: Text(
-                  calendarLogic.selectedCalendar,
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
+                hint: Center(
+                  child: Text(
+                    calendarLogic.selectedCalendar,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: const TextStyle(
+                      color: Colors.black,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
                 dropdownColor: Colors.white,
                 iconEnabledColor: Theme.of(context).primaryColor,
