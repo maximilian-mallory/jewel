@@ -1,16 +1,18 @@
 import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart'; // Unused
+import 'package:flutter/foundation.dart'; 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
-import 'package:googleapis_auth/auth_io.dart'; // Unused
-import 'package:http/http.dart' as http; // Unused
+import 'package:googleapis_auth/auth_io.dart'; 
+import 'package:http/http.dart' as http;
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:jewel/google/calendar/event_snap.dart'; // Unused
+import 'package:jewel/google/calendar/event_snap.dart'; 
 import 'package:jewel/google/maps/google_maps_calculate_distance.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
+import 'package:jewel/google/calendar/ical_conversion.dart';
+import 'package:icalendar_parser/icalendar_parser.dart';
 
 /* --- Google API Functions --- */
 // Define the scopes for the Google Calendar API
@@ -54,62 +56,120 @@ Future<gcal.CalendarApi> createCalendarApiInstance(
 // Function to get events for the current selected day
 Future<List<gcal.Event>> getGoogleEventsData(
     CalendarLogic calendarLogic, BuildContext context) async {
-  // Get the current date at midnight local time
+  List<gcal.Event> appointments = <gcal.Event>[];
+  calendarLogic.markers.clear();
+
+  if (calendarLogic.isUsingIcal) {
+    try {
+      // Only load the iCal events if they haven't been loaded yet
+      if (calendarLogic.events.isEmpty) {
+        // Get the feed URL from Firestore
+        QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+            .collection('ical_feeds')
+            .where('owner', isEqualTo: calendarLogic.currentUser?.email)
+            .where('name', isEqualTo: calendarLogic.selectedCalendar)
+            .get();
+
+        if (querySnapshot.docs.isNotEmpty) {
+          final feedUrl = (querySnapshot.docs[0].data() as Map<String, dynamic>)['url'] as String;
+          
+          print("DEBUG: Loading iCal feed for first time");
+          // Load all events from iCal feed
+          List<gcal.Event> allEvents = await loadIcalFeedEvents(feedUrl, calendarLogic, context);
+          
+          // Store all events in calendarLogic for future reference
+          calendarLogic.events = allEvents;
+        }
+      }
+      
+      // Filter events for the selected day
+      final now = calendarLogic.selectedDate;
+      appointments = calendarLogic.events.where((event) {
+        final eventDate = event.start?.dateTime?.toLocal();
+        final eventDay = event.start?.date?.toLocal();
+        
+        if (eventDate != null) {
+          // For events with specific times
+          return eventDate.year == now.year && 
+                 eventDate.month == now.month && 
+                 eventDate.day == now.day;
+        } else if (eventDay != null) {
+          // For all-day events
+          return eventDay.year == now.year && 
+                 eventDay.month == now.month && 
+                 eventDay.day == now.day;
+        }
+        return false;
+      }).toList();
+    } catch (e) {
+      print("Error handling iCal events: $e");
+    }
+  } else {
+    // Get the current date at midnight local time
   print(
       "[GET EVENTS DayMode] JewelUser CalendarLogic is: ${calendarLogic.calendarApi}");
-  DateTime now = calendarLogic.selectedDate;
-  DateTime startOfDay = DateTime(now.year, now.month, now.day);
-  // Midnight local time today
+    DateTime now = calendarLogic.selectedDate;
+    DateTime startOfDay = DateTime(now.year, now.month, now.day);
   DateTime endOfDay =
       startOfDay.add(Duration(days: 1)); // Midnight local time tomorrow
 
-  // Convert to UTC for comparison with Google Calendar API times
-  DateTime startOfDayUtc = startOfDay.toUtc();
-  DateTime endOfDayUtc = endOfDay.toUtc();
+    // Convert to UTC for comparison with Google Calendar API times
+    DateTime startOfDayUtc = startOfDay.toUtc();
+    DateTime endOfDayUtc = endOfDay.toUtc();
 
-  // Fetch events from the calendar
-  final gcal.Events calEvents = await calendarLogic.calendarApi.events.list(
-    calendarLogic.selectedCalendar,
-    timeMin: startOfDayUtc, // Filter events starting from midnight today UTC
-    timeMax: endOfDayUtc, // Filter events up to midnight tomorrow UTC
-  );
+    try {
+      // Fetch events from the calendar
+      final gcal.Events calEvents = await calendarLogic.calendarApi.events.list(
+        calendarLogic.selectedCalendar,
+        timeMin: startOfDayUtc, // Filter events starting from midnight today UTC
+        timeMax: endOfDayUtc, // Filter events up to midnight tomorrow UTC
+        singleEvents: true,
+      );
 
-  List<gcal.Event> appointments = <gcal.Event>[];
-  calendarLogic.markers.clear();
-  // If events are available and are within the time range, add them to the list
-  if (calEvents.items != null) {
-    print('[GET EVENTS] calendar events not null!');
-    for (int i = 0; i < calEvents.items!.length; i++) {
-      final gcal.Event event = calEvents.items![i];
-      print(event.toString());
-      if (event.start == null) {
-        continue;
-      }
-      DateTime eventStart = DateTime.parse(event.start!.dateTime.toString());
-      if (eventStart.isAfter(startOfDayUtc) &&
-          eventStart.isBefore(endOfDayUtc)) {
-        appointments.add(event);
-
-        /*if(await checkDocExists('jewelevents', event.id))
-        {
-          print('[FIREBASE PART REFRESH]: ${event.id}');
+      // If events are available and are within the time range, add them to the list
+      if (calEvents.items != null) {
+        print('[GET EVENTS] calendar events not null!');
+        appointments.addAll(calEvents.items!);
+        
+        // Check for converted iCal events in primary calendar if we're not in primary
+        if (calendarLogic.selectedCalendar != "primary") {
+          try {
+            final convertedEvents = await fetchConvertedIcalEvents(
+              calendarLogic, 
+              startOfDayUtc, 
+              endOfDayUtc
+            );
+            
+            if (convertedEvents.isNotEmpty) {
+              print("Found ${convertedEvents.length} converted iCal events in primary calendar");
+              appointments.addAll(convertedEvents);
+            }
+          } catch (e) {
+            print("Error checking primary calendar for converted events: $e");
+          }
         }
-        else
-        {
-          JewelEvent.fromGoogleEvent(event).store();
-        }*/
-        /*final sortedEvents = [event]
-          ..sort((a, b) => a.start!.dateTime!.compareTo(b.start!.dateTime!));
-          print("Sorted event being added to marker: ${sortedEvents[i].start!.dateTime}");*/
-       
       }
+    } catch (e) {
+      print("Error fetching Google events: $e");
     }
-    appointments.sort((a, b) => a.start!.dateTime!.compareTo(b.start!.dateTime!));
-    for(var appointment in appointments){
-      Marker? marker = await makeMarker(appointment, calendarLogic, context);
+  }
+
+  // Sort events by start time
+  if (appointments.isNotEmpty) {
+    appointments = sortEvents(appointments);
+  }
+
+  // Create markers for events with locations
+  for (var event in appointments) {
+    if (event.location != null && event.location!.trim().isNotEmpty) {
+      try {
+        Marker? marker = await makeMarker(event, calendarLogic, context);
         if (marker != null) {
           calendarLogic.markers.add(marker);
         }
+      } catch (e) {
+        print("ERROR creating marker for event ${event.summary}: $e");
+      }
     }
   }
   print('[GET EVENTS] Appointments: ${appointments.toString()}');
@@ -129,46 +189,57 @@ Future<List<gcal.Event>> getGoogleEventsForMonth(
   DateTime startOfMonthUtc = startOfMonth.toUtc();
   DateTime endOfMonthUtc = endOfMonth.toUtc();
 
-  // Fetch events from the calendar
-  final gcal.Events calEvents = await calendarLogic.calendarApi.events.list(
-    calendarLogic.selectedCalendar,
-    timeMin: startOfMonthUtc, // Fetch events from the start of the month
-    timeMax: endOfMonthUtc, // Fetch events until the end of the month
-    singleEvents: true, // Ensures recurring events are expanded
-    orderBy: "startTime", // Orders events by start time
-  );
-
   List<gcal.Event> appointments = <gcal.Event>[];
   calendarLogic.markers.clear();
 
-  // If events exist, add them to the list
-  if (calEvents.items != null) {
-    for (int i = 0; i < calEvents.items!.length; i++) {
-      final gcal.Event event = calEvents.items![i];
-      if (event.start == null) {
-        continue;
-      }
-      // Parse the event start time
-      DateTime eventStart = DateTime.parse(event.start!.dateTime.toString());
+  // Fetch events from the calendar
+  try {
+    final gcal.Events calEvents = await calendarLogic.calendarApi.events.list(
+      calendarLogic.selectedCalendar,
+      timeMin: startOfMonthUtc, // Fetch events from the start of the month
+      timeMax: endOfMonthUtc, // Fetch events until the end of the month
+      singleEvents: true, // Ensures recurring events are expanded
+      orderBy: "startTime", // Orders events by start time
+    );
 
-      // Ensure event is within the selected month
-      if (eventStart.isAfter(startOfMonthUtc) &&
-          eventStart.isBefore(endOfMonthUtc)) {
-        appointments.add(event);
-
-        
-
-        
+    // If events exist, add them to the list
+    if (calEvents.items != null) {
+      appointments.addAll(calEvents.items!);
+      
+      // Check for converted iCal events in primary calendar if we're not in primary
+      if (calendarLogic.selectedCalendar != "primary") {
+        try {
+          final convertedEvents = await fetchConvertedIcalEvents(
+            calendarLogic, 
+            startOfMonthUtc, 
+            endOfMonthUtc
+          );
+          
+          if (convertedEvents.isNotEmpty) {
+            appointments.addAll(convertedEvents);
+          }
+        } catch (e) {
+          print("Error checking primary calendar for converted events: $e");
+        }
       }
     }
-    appointments.sort((a, b) => a.start!.dateTime!.compareTo(b.start!.dateTime!));
-    for(var appointment in appointments){
-      Marker? marker = await makeMarker(appointment, calendarLogic, context);
+    
+    // Sort events
+    if (appointments.isNotEmpty) {
+      appointments = sortEvents(appointments);
+    }
+    
+    // Create markers
+    for (var event in appointments) {
+      if (event.location != null && event.location!.trim().isNotEmpty) {
+        Marker? marker = await makeMarker(event, calendarLogic, context);
         if (marker != null) {
           calendarLogic.markers.add(marker);
         }
+      }
     }
-    
+  } catch (e) {
+    print("Error fetching Google events for month: $e");
   }
 
   return appointments; // Return all events for the month
@@ -227,7 +298,7 @@ Future<bool> checkDocExists(String collectionPath, String? docId) async {
 // Function to change the date
 DateTime changeDateBy(int days, CalendarLogic calendarLogic){
     
-      return calendarLogic.selectedDate.add(Duration(days: days));
+  return calendarLogic.selectedDate.add(Duration(days: days));
       
       // currentDate = DateTime(currentDate.year, currentDate.month + daysOrMonths, 1);
  

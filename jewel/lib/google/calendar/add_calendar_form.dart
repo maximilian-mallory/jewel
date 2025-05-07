@@ -6,14 +6,17 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:googleapis/calendar/v3.dart' as gcal;
+import 'package:http/http.dart' as http;
 import 'package:intl/intl.dart';
 import 'package:jewel/google/calendar/googleapi.dart';
+import 'package:jewel/google/calendar/ical_conversion.dart'; // Added import for iCal conversion
 import 'package:jewel/google/calendar/mode_toggle.dart';
 import 'package:jewel/models/jewel_user.dart';
 import 'package:path/path.dart' as path;
 import 'package:provider/provider.dart';
 import 'package:jewel/google/calendar/calendar_logic.dart';
 import 'package:jewel/google/calendar/google_sign_in.dart';
+import 'package:jewel/google/calendar/ical_conversion.dart'; // Add this import
 
 /// Returns a map of responsive values based on screen width.
 /// Breakpoints based on specific device widths:
@@ -134,8 +137,8 @@ class _AddCalendarFormState extends State<AddCalendarForm> {
             TextFormField(
               controller: _timeZoneController,
               decoration: const InputDecoration(labelText: "Time Zone"),
-              validator: (value) =>
-                  value == null || value.isEmpty ? "Please enter a time zone" : null,
+              validator: (value) => 
+              value == null || value.isEmpty ? "Please enter a time zone" : null,
             ),
             SizedBox(height: res['verticalPadding']!),
             ElevatedButton(
@@ -168,7 +171,7 @@ class AuthenticatedCalendar extends StatefulWidget {
 class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   String? selectedCalendar;
   late gcal.CalendarApi calendarApi;
-  late JewelUser jewelUser; 
+  late JewelUser jewelUser;
   late CalendarLogic calendarLogic;
   late int selectedCalendarIndex;
 
@@ -344,10 +347,10 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
             if (selectedDate != null) {
               calendarLogic.selectedDate = selectedDate;
               calendarLogic.events = await getGoogleEventsData(calendarLogic, context);
-              
-              // Update the provider
-              user.updateCalendarLogic(calendarLogic, selectedCalendarIndex);
-              
+
+                // Update the provider
+                user.updateCalendarLogic(calendarLogic, selectedCalendarIndex);
+
               print('[DATE PICKER] SelectedDate: ${calendarLogic.selectedDate} should match JewelUser SelectedDate: ${user.calendarLogicList![0].selectedDate}');
             }
           },
@@ -403,7 +406,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
           return Text('CalendarSelect Error: ${snapshot.error}');
         } else if (snapshot.hasData) {
           List<String> userCalendars = snapshot.data ?? [];
-          return Container(
+                    return Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(8.0), // Slightly smaller corners
               color: Theme.of(context).scaffoldBackgroundColor,
