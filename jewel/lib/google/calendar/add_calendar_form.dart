@@ -214,46 +214,53 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   }
 
   /// Builds the main scaffold with an adaptive AppBar.
-  Widget buildCalendarUI() {
+ Widget buildCalendarUI() {
     final res = getResponsiveValues(context);
+    // Increase base icon size by 25%
+    final adjustedIconSize = res['iconSize']! * 1.25;
+    
     return Consumer<JewelUser>(
       builder: (context, jewelUser, child) {
-      return Scaffold(
-        appBar: AppBar(
-          title: LayoutBuilder(
-            builder: (context, constraints) {
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  daymonthBackButton(res),
-                  loadCalendarMenu(res),
-                  Column(
-                    children: [
-                      Text(
-                        DateFormat('MM/dd/yyyy')
-                            .format(calendarLogic.selectedDate),
-                        style: TextStyle(
-                          fontSize: res['titleFontSize'],
-                          fontWeight: FontWeight.bold,
-                        ),
-                      )
-                    ],
-                  ),
-                  dateToggle(res),
-                  modeToggleButton(res),
-                  daymonthForwardButton(res),
-                ],
-              );
-            },
+        return Scaffold(
+          appBar: AppBar(
+            toolbarHeight: 100,
+            title: LayoutBuilder(
+              builder: (context, constraints) {
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 1),
+                    daymonthBackButton(res, adjustedIconSize),
+                    loadCalendarMenu(res, adjustedIconSize),
+                    Column(
+                      children: [
+                        Text(
+                          DateFormat('MM/dd/yyyy').format(calendarLogic.selectedDate),
+                          style: TextStyle(
+                            fontSize: res['titleFontSize'],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      ],
+                    ),
+                    dateToggle(res, adjustedIconSize),
+                    modeToggleButton(res, adjustedIconSize),
+                    daymonthForwardButton(res, adjustedIconSize),
+                    SizedBox(width: 1),
+                  ],
+                  
+                );
+              },
+            ),
           ),
-        ),
-      );
+        );
       }
     );
   }
 
   /// Back button with a background that scales with icon size.
-  Widget daymonthBackButton(Map<String, double> res) {
+  Widget daymonthBackButton(Map<String, double> res, double iconSize) {
     return InkWell(
       onTap: () async {
         calendarLogic.selectedDate =
@@ -265,7 +272,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
         });
       },
       child: Container(
-        padding: EdgeInsets.all(res['buttonPadding']!),
+        padding: EdgeInsets.all(res['buttonPadding']! * 0.8), // Reduced padding
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor.withOpacity(0.1),
           shape: BoxShape.circle,
@@ -273,14 +280,14 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
         child: Icon(
           Icons.arrow_back,
           color: Theme.of(context).primaryColor,
-          size: res['iconSize'],
+          size: iconSize,
         ),
       ),
     );
   }
 
   /// Forward button with a background that scales with icon size.
-  Widget daymonthForwardButton(Map<String, double> res) {
+  Widget daymonthForwardButton(Map<String, double> res, double iconSize) {
     return InkWell(
       onTap: () async {
         calendarLogic.selectedDate =
@@ -292,7 +299,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
         });
       },
       child: Container(
-        padding: EdgeInsets.all(res['buttonPadding']!),
+        padding: EdgeInsets.all(res['buttonPadding']! * 0.8), // Reduced padding
         decoration: BoxDecoration(
           color: Theme.of(context).primaryColor.withOpacity(0.1),
           shape: BoxShape.circle,
@@ -300,57 +307,62 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
         child: Icon(
           Icons.arrow_forward,
           color: Theme.of(context).primaryColor,
-          size: res['iconSize'],
+          size: iconSize,
         ),
       ),
     );
   }
 
   /// Button for toggling between monthly and daily view.
-  Widget modeToggleButton(Map<String, double> res) {
+  Widget modeToggleButton(Map<String, double> res, double iconSize) {
     return Consumer<ModeToggle>(
       builder: (context, modeToggle, child) {
         return IconButton(
           icon: Icon(
             modeToggle.isMonthlyView ? Icons.calendar_month : Icons.calendar_view_day,
-            size: res['iconSize'],
+            size: iconSize,
           ),
           tooltip: modeToggle.isMonthlyView
               ? "Switch to Daily View"
               : "Switch to Monthly View",
           onPressed: () => modeToggle.toggleViewMode(),
+          padding: EdgeInsets.all(res['buttonPadding']! * 0.5), // Reduced padding
         );
       },
     );
   }
 
   /// Date picker toggle.
-  Widget dateToggle(Map<String, double> res) {
+  Widget dateToggle(Map<String, double> res, double iconSize) {
     return Consumer<JewelUser>(
       builder: (context, user, child) {
-        return Padding(
-          padding: EdgeInsets.all(res['buttonPadding']! * 1.5),
-          child: GestureDetector(
-            onTap: () async {
-              DateTime? selectedDate = await showDatePicker(
-                context: context,
-                initialDate: calendarLogic.selectedDate,
-                firstDate: DateTime(2000),
-                lastDate: DateTime(2100),
-              );
-              if (selectedDate != null) {
-                calendarLogic.selectedDate = selectedDate;
+        return GestureDetector(
+          onTap: () async {
+            DateTime? selectedDate = await showDatePicker(
+              context: context,
+              initialDate: calendarLogic.selectedDate,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+            );
+            if (selectedDate != null) {
+              calendarLogic.selectedDate = selectedDate;
               calendarLogic.events = await getGoogleEventsData(calendarLogic, context);
 
                 // Update the provider
                 user.updateCalendarLogic(calendarLogic, selectedCalendarIndex);
 
               print('[DATE PICKER] SelectedDate: ${calendarLogic.selectedDate} should match JewelUser SelectedDate: ${user.calendarLogicList![0].selectedDate}');
-              }
-            },
+            }
+          },
+          child: Container(
+            //padding: EdgeInsets.all(res['buttonPadding']! * 0.8), // Reduced padding
+            decoration: BoxDecoration(
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
             child: Icon(
               Icons.calendar_today,
-              size: res['iconSize'],
+              size: iconSize,
               color: Theme.of(context).primaryColor,
             ),
           ),
@@ -360,9 +372,9 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   }
 
   /// Loads calendar menu with responsive design.
-  Widget loadCalendarMenu(Map<String, double> res) {
+  Widget loadCalendarMenu(Map<String, double> res, double iconSize) {
     return Padding(
-      padding: EdgeInsets.all(res['buttonPadding']! * 1.5),
+      padding: EdgeInsets.symmetric(horizontal: res['buttonPadding']!), // Reduced padding
       child: ClipRRect(
         borderRadius: BorderRadius.circular(12.0),
         child: FutureBuilder<void>(
@@ -378,7 +390,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
             } else if (snapshot.hasError) {
               return const Text("Error loading calendars");
             }
-            return calendarSelectMenu(calendarLogic, res);
+            return calendarSelectMenu(calendarLogic, res, iconSize);
           },
         ),
       ),
@@ -386,7 +398,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
   }
 
   /// Dropdown for selecting a calendar from the list.
-  Widget calendarSelectMenu(CalendarLogic calendarLogic, Map<String, double> res) {
+  Widget calendarSelectMenu(CalendarLogic calendarLogic, Map<String, double> res, double iconSize) {
     return FutureBuilder<List<String>>(
       future: _getIcalFeeds(),
       builder: (BuildContext context, AsyncSnapshot<List<String>> snapshot) {
@@ -396,209 +408,136 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
           List<String> userCalendars = snapshot.data ?? [];
                     return Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12.0),
+              borderRadius: BorderRadius.circular(8.0), // Slightly smaller corners
               color: Theme.of(context).scaffoldBackgroundColor,
             ),
             child: SizedBox(
-              width: res['iconSize']! * 5.5, // Adjusted based on responsiveness
-              child: FittedBox(
-                child: DropdownButton<String>(
-                  value: selectedCalendar,
-                  hint: Text(calendarLogic.selectedCalendar),
-                  dropdownColor: Colors.white,
-                  iconEnabledColor: Theme.of(context).primaryColor,
-                  iconSize: res['iconSize']!,
-                  style: const TextStyle(
-                    color: Colors.black,
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                  underline: Container(
-                    height: 2,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  items: [
-                    ...calendarLogic.calendars.entries.map((entry) {
+              width: res['iconSize']! * 3.8, // Reduced width from 5.5 to 3.8
+              child: DropdownButton<String>(
+                value: selectedCalendar,
+                hint: Text(
+                  calendarLogic.selectedCalendar,
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                ),
+                dropdownColor: Colors.white,
+                iconEnabledColor: Theme.of(context).primaryColor,
+                iconSize: iconSize * 0.8, // Slightly smaller dropdown icon
+                style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+                underline: Container(
+                  height: 2,
+                  color: Theme.of(context).primaryColor,
+                ),
+                isExpanded: true, // Allow text to use full width
+                isDense: true, // Compact dropdown
+                items: [
+                  ...calendarLogic.calendars.entries.map((entry) {
+                    return DropdownMenuItem<String>(
+                      value: entry.key,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 12.0), // Reduced padding
+                        child: Text(
+                          entry.value.toString(),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    );
+                  }),
+                  if (userCalendars.isNotEmpty)
+                    ...userCalendars.map((calendarName) {
                       return DropdownMenuItem<String>(
-                        value: entry.key,
+                        value: calendarName,
                         child: Padding(
                           padding: const EdgeInsets.symmetric(
-                              vertical: 12.0, horizontal: 15.0),
+                              vertical: 8.0, horizontal: 12.0), // Reduced padding
                           child: Text(
-                            entry.value.toString(),
+                            calendarName,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
-                            style: const TextStyle(fontSize: 16),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: Colors.black,
+                            ),
                           ),
                         ),
                       );
                     }),
-                    if (userCalendars.isNotEmpty)
-                      ...userCalendars.map((calendarName) {
-                        return DropdownMenuItem<String>(
-                          value: calendarName,
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 12.0, horizontal: 15.0),
-                            child: Text(
-                              calendarName,
-                              overflow: TextOverflow.ellipsis,
-                              maxLines: 1,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    DropdownMenuItem<String>(
-                      value: "add_calendar",
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(
-                            vertical: 12.0, horizontal: 15.0),
-                        child: const Text(
-                          "Add New Calendar",
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                          style: TextStyle(
-                            color: Colors.blue,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                          ),
+                  DropdownMenuItem<String>(
+                    value: "add_calendar",
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 8.0, horizontal: 12.0), // Reduced padding
+                      child: const Text(
+                        "Add New Calendar",
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
+                        style: TextStyle(
+                          color: Colors.blue,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ),
-                  ],
-                  onChanged: (String? newValue) async {
-                    if (newValue == "add_calendar") {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (BuildContext context) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              ListTile(
-                                title: const Text("Add Google Calendar"),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  showModalBottomSheet(
-                                    context: context,
-                                    isScrollControlled: true,
-                                    builder: (BuildContext context) {
-                                      return addCalendarForm(calendarLogic);
-                                    },
-                                  );
-                                },
-                              ),
-                              ListTile(
-                                title: const Text("Add External Calendar"),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  _showFilePicker();
-                                },
-                              ),
-                              ListTile(
-                                title: const Text("Add iCal Feed Link"),
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  _showIcalFeedLinkForm();
-                                },
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    } else if (newValue != null) {
-                      List<String> icalFeeds = await _getIcalFeeds();
-                      bool isIcalFeed = icalFeeds.contains(newValue);
-
-                      // Store old calendar value to check if it actually changed
-                      String oldCalendar = calendarLogic.selectedCalendar;
-
-                      setState(() {
-                        calendarLogic.selectedCalendar = newValue;
-                      });
-
-                      if (isIcalFeed) {
-                        try {
-                          QuerySnapshot querySnapshot = await FirebaseFirestore
-                              .instance
-                              .collection('ical_feeds')
-                              .where('owner',
-                                  isEqualTo: calendarLogic.currentUser?.email)
-                              .where('name', isEqualTo: newValue)
-                              .get();
-
-                          if (querySnapshot.docs.isEmpty) {
-                            print('iCal feed not found: $newValue');
-                            return;
-                          }
-
-                          final feedData = querySnapshot.docs[0].data()
-                              as Map<String, dynamic>;
-                          final feedUrl = feedData['url'] as String;
-
-                          print(
-                              "DEBUG: iCal feed found: ${querySnapshot.docs[0].data()}");
-                          final icalEvents = await loadIcalFeedEvents(
-                              feedUrl, calendarLogic, context);
-
-                          setState(() {
-                            calendarLogic.events = icalEvents;
-                            calendarLogic.isUsingIcal = true; // Set flag
-
-                            // Notify listeners that calendar data has changed
-                            calendarLogic.notifyListeners();
-
-                            // Update the JewelUser provider to notify event view
-                            jewelUser.updateCalendarLogic(
-                                calendarLogic, selectedCalendarIndex);
-                          });
-
-                          print(
-                              "DEBUG: Calendar changed from $oldCalendar to $newValue with ${icalEvents.length} events");
-                        } catch (e) {
-                          print('Error loading iCal feed: $e');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text('Error loading iCal feed: $e')),
-                          );
-                        }
-                      } else {
-                        setState(() {
-                          calendarLogic.isUsingIcal = false; // Reset flag
-                        });
-
-                        try {
-                          final newEvents =
-                              await getGoogleEventsData(calendarLogic, context);
-                          setState(() {
-                            calendarLogic.events = newEvents;
-
-                            // Notify listeners that calendar data has changed
-                            calendarLogic.notifyListeners();
-
-                            // Update the JewelUser provider to notify event view
-                            jewelUser.updateCalendarLogic(
-                                calendarLogic, selectedCalendarIndex);
-                          });
-
-                          print(
-                              "DEBUG: Calendar changed from $oldCalendar to $newValue with ${newEvents.length} events");
-                        } catch (e) {
-                          print('Error loading Google Calendar events: $e');
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                                content: Text(
-                                    'Error loading Google Calendar events: $e')),
-                          );
-                        }
-                      }
-                    }
-                  },
-                ),
+                  ),
+                ],
+                onChanged: (String? newValue) async {
+                  if (newValue == "add_calendar") {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (BuildContext context) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: <Widget>[
+                            ListTile(
+                              title: const Text("Add Google Calendar"),
+                              onTap: () {
+                                Navigator.pop(context);
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  builder: (BuildContext context) {
+                                    return addCalendarForm(calendarLogic);
+                                  },
+                                );
+                              },
+                            ),
+                            ListTile(
+                              title: const Text("Add External Calendar"),
+                              onTap: () {
+                                Navigator.pop(context);
+                                _showFilePicker();
+                              },
+                            ),
+                            ListTile(
+                              title: const Text("Add iCal Feed Link"),
+                              onTap: () {
+                                Navigator.pop(context);
+                                _showIcalFeedLinkForm();
+                              },
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else if (newValue != null) {
+                    setState(() {
+                      calendarLogic.selectedCalendar = newValue;
+                    });
+                    final newEvents =
+                        await getGoogleEventsData(calendarLogic, context);
+                    setState(() {
+                      calendarLogic.events = newEvents;
+                    });
+                  }
+                },
               ),
             ),
           );
@@ -608,7 +547,6 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
       },
     );
   }
-
   void _showIcalFeedLinkForm() {
     final TextEditingController linkController = TextEditingController();
     final TextEditingController nameController = TextEditingController();
