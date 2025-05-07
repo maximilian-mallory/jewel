@@ -11,7 +11,7 @@ if [ -z "$1" ]; then
 fi
 
 VALUE=$1
-LOCK_FILE="./jewel/pubspec.lock"
+LOCK_FILE="./pubspec.lock"
 
 # Delete pubspec.lock if it exists
 if [ -f "$LOCK_FILE" ]; then
