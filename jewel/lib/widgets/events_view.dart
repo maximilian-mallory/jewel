@@ -116,43 +116,74 @@ class _CalendarEventsView extends State<CalendarEventsView> {
           final events = snapshot.data;
 
           return SingleChildScrollView(
-            controller: _scrollController,
-            scrollDirection: Axis.vertical,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Container(
-                  width: 50,
-                  color: Theme.of(context).primaryColor,//const Color.fromARGB(193, 182, 211, 173),
-                  child: Column(
-                    children: List.generate(24, (index) {
-                      String timeLabel = (index <= 12) 
-                        ? '${index.toString()}:00am'
-                        : '${(index%12).toString()}:00pm';
-                      if (index == 0){
-                        timeLabel = '12:00am';
-                      }
-                      return Container(
-                        height: 100.0,
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(vertical: 41.5),
-                        decoration: BoxDecoration(
-                          border: Border(bottom: BorderSide(color: const Color.fromARGB(255, 122, 110, 110))),
-                        ),
-                        child: Text(
-                          timeLabel,
-                          style: const TextStyle(fontSize: 12, color: Color.fromARGB(255, 0, 0, 0)),
-                          textAlign: TextAlign.center,
-                        ),
-                      );
-                    }),
+  controller: _scrollController,
+  scrollDirection: Axis.vertical,
+  child: Row(
+    crossAxisAlignment: CrossAxisAlignment.start,
+    children: [
+      // Time labels column
+      Container(
+        width: 100,
+        color: Colors.transparent, // Keep transparent if only the labels should have color
+        child: Column(
+          children: List.generate(24, (index) {
+            String timeLabel;
+            if (index == 0) {
+              timeLabel = '12:00am';
+            } else if (index <= 12) {
+              timeLabel = '$index:00am';
+            } else {
+              timeLabel = '${index % 12}:00pm';
+            }
+
+            return SizedBox(
+              height: 100.0,
+              width: double.infinity,
+              child: Stack(
+                children: [
+                  // Rounded background
+                  Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Color.fromARGB(135, 163, 222, 163),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                   ),
-                ),
-                // Calendar Events column
-                Expanded(child: buildEventsList(events!, isObfuscationEnabled)),
-              ],
-            ),
-          );
+                  // Straight bottom border
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Container(
+                      height: 1,
+                      color: const Color.fromARGB(255, 122, 110, 110),
+                    ),
+                  ),
+                  // Time label
+                  Center(
+                    // child: Padding(
+                    //   // padding: const EdgeInsets.symmetric(vertical: 41.5),
+                      child: Text(
+                        timeLabel,
+                        style: const TextStyle(
+                          fontSize: 18,
+                          color: Color.fromARGB(255, 0, 0, 0),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  //),
+                ],
+              ),
+            );
+          }),
+        ),
+      ),
+      // Calendar Events column
+      Expanded(
+        child: buildEventsList(events!, isObfuscationEnabled),
+      ),
+    ],
+  ),
+);
         });
   }
 
@@ -378,7 +409,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
               // this takes the determined events and processes the cards, then turns them into a list down at .toList()
               final start = event.start?.dateTime?.toLocal();
               final end = event.end?.dateTime?.toLocal();
-
+              final location = event.location;
               final eventTitle;
               if (isObfuscationEnabled) {
                 eventTitle = "Obfuscated";
@@ -406,8 +437,7 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                     .split(',')
                     .map((e) => int.parse(e.trim()))
                     .toList();
-                eventColor = Color.fromARGB(255, groupColorValues[0],
-                    groupColorValues[1], groupColorValues[2]);
+                eventColor = Theme.of(context).primaryColor;
                 groupTitle = event.extendedProperties!.private!['group'];
               } else {
                 final colorString =
@@ -417,42 +447,84 @@ class _CalendarEventsView extends State<CalendarEventsView> {
                     .split(',')
                     .map((e) => int.parse(e.trim()))
                     .toList();
-                eventColor = Color.fromARGB(
-                    255, colorValues[0], colorValues[1], colorValues[2]);
+                eventColor = Theme.of(context).primaryColor;
               }
 
               return Positioned.fill(
                 // builds the actual card that will be added to the list
                 child: Card(
-                    margin: const EdgeInsets.all(0),
-                    color: eventColor,
-                    child: (hourIndex == start!.hour)
-                        ? ListTile(
-                            title: Text(
-                              eventTitle ?? 'No Title',
-                              style: const TextStyle(color: Colors.white),
+                  margin: const EdgeInsets.only(top: 4, bottom: 4, left: 48, right: 48),
+                  color: eventColor,
+                  child: (hourIndex == start!.hour)
+                      ? InkWell(
+                          onTap: () {
+                            if (!isObfuscationEnabled) {
+                              _editEvent(context, event);
+                            } else {
+                              print("Event details are obfuscated.");
+                            }
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.all(12.0),
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // Main text block (title + inline time/group)
+                                Expanded(
+                                  child: Text.rich(
+                                    TextSpan(
+                                      text: eventTitle ?? 'No Title',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      children: [
+                                        TextSpan(
+                                          text:
+                                              '   •   ${start != null ? DateFormat('hh:mm a').format(start) : 'No Time'} - ${end != null ? DateFormat('hh:mm a').format(end) : 'No Time'}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.normal,
+                                            fontSize: 20,
+                                            color: Colors.white
+                                          ),
+                                        ),
+                                        TextSpan(
+                                          text:
+                                              '   •   ${location}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.normal,
+                                            fontSize: 20,
+                                            color: Colors.white
+                                          ),
+                                        ),
+                                        if (groupTitle != null)
+                                          TextSpan(
+                                            text: '  –  $groupTitle',
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.normal,
+                                              fontSize: 14,
+                                              color: Color.fromARGB(179, 170, 157, 157),
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+
+                                // History icon
+                                IconButton(
+                                  icon: const Icon(Icons.history, color: Colors.white),
+                                  onPressed: () {
+                                    _showHistoryDialog(context, event.id!);
+                                  },
+                                ),
+                              ],
                             ),
-                            subtitle: Text(
-                              '${start != null ? DateFormat('hh:mm a').format(start) : 'No Time'} - '
-                              '${end != null ? DateFormat('hh:mm a').format(end) : 'No Time'}'
-                              '${groupTitle != null ? '\n$groupTitle' : ''}',
-                              style: const TextStyle(color: Color.fromARGB(179, 170, 157, 157)),
-                            ),
-                            onTap: () {
-                              if (!isObfuscationEnabled) {
-                                _editEvent(context, event);
-                              } else {
-                                print("Event details are obfuscated.");
-                              }
-                            },
-                            trailing: IconButton(
-                              icon: Icon(Icons.history),
-                              onPressed: () {
-                                _showHistoryDialog(context, event.id!);
-                              },
-                            ),
-                          )
-                        : null),
+                          ),
+                        )
+                      : null,
+                ),
               );
             }).toList(),
           ),

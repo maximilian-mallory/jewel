@@ -220,32 +220,33 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
       builder: (context, jewelUser, child) {
         return Scaffold(
           appBar: AppBar(
+            toolbarHeight: 100,
             title: LayoutBuilder(
               builder: (context, constraints) {
-                return Transform.translate(
-                  offset: Offset(0, -4), // adjust upward
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      daymonthBackButton(res, adjustedIconSize),
-                      loadCalendarMenu(res, adjustedIconSize),
-                      Column(
-                        children: [
-                          Text(
-                            DateFormat('MM/dd/yyyy').format(calendarLogic.selectedDate),
-                            style: TextStyle(
-                              fontSize: res['titleFontSize'],
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        ],
-                      ),
-                      dateToggle(res, adjustedIconSize),
-                      modeToggleButton(res, adjustedIconSize),
-                      daymonthForwardButton(res, adjustedIconSize),
-                    ],
-                  ),
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    SizedBox(width: 1),
+                    daymonthBackButton(res, adjustedIconSize),
+                    loadCalendarMenu(res, adjustedIconSize),
+                    Column(
+                      children: [
+                        Text(
+                          DateFormat('MM/dd/yyyy').format(calendarLogic.selectedDate),
+                          style: TextStyle(
+                            fontSize: res['titleFontSize'],
+                            fontWeight: FontWeight.bold,
+                          ),
+                        )
+                      ],
+                    ),
+                    dateToggle(res, adjustedIconSize),
+                    modeToggleButton(res, adjustedIconSize),
+                    daymonthForwardButton(res, adjustedIconSize),
+                    SizedBox(width: 1),
+                  ],
+                  
                 );
               },
             ),
@@ -351,7 +352,7 @@ class _AuthenticatedCalendarState extends State<AuthenticatedCalendar> {
             }
           },
           child: Container(
-            padding: EdgeInsets.all(res['buttonPadding']! * 0.8), // Reduced padding
+            //padding: EdgeInsets.all(res['buttonPadding']! * 0.8), // Reduced padding
             decoration: BoxDecoration(
               color: Theme.of(context).primaryColor.withOpacity(0.1),
               shape: BoxShape.circle,

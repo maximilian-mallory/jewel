@@ -227,11 +227,27 @@ Widget buildHeader(BuildContext context) {
         children: [
           // Force a larger tap target for the account menu on Android
           Container(
-            height: isWebPlatform ? 40 : 48,
-            width: isWebPlatform ? 40 : 48,
-            alignment: Alignment.center,
-            child: accountList(),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 5,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              height: isWebPlatform ? res['iconSize']! * 1.5 : res['iconSize']! * 1.5,
+                width: isWebPlatform ? res['iconSize']! * 1.5 : res['iconSize']! * 1.5,
+              alignment: Alignment.center,
+              child: accountList(),
+            ),
+          ),
+        ),
           SizedBox(
               width: isWebPlatform
                   ? res['horizontalPadding']! * 0.3
@@ -291,7 +307,7 @@ Widget buildHeader(BuildContext context) {
     return PopupMenuButton<int>(
       icon: FaIcon(
         FontAwesomeIcons.google,
-        size: isWebPlatform ? 28 : 32, // Larger icon for Android
+        size: isWebPlatform ? 46 : 32, // Larger icon for Android
         color: brightenColor(Theme.of(context).primaryColor),
       ),
       // Center the icon vertically
